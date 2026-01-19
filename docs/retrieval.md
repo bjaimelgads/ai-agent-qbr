@@ -1,0 +1,66 @@
+# Retrieval
+
+## Hybrid Retrieval (QBR)
+The agent uses a hybrid retrieval strategy inspired by `pengui_iceberg`:
+- Embed the query.
+- Retrieve vector matches (ANN).
+- Retrieve text matches (chunk content).
+- Normalize scores and combine (`text_weight`, `vector_weight`).
+- Return the top-k chunks for prompting.
+
+## Data Source (No Extraction Required)
+Retrieval reads from a SQLite database that already contains QBR documents and chunks.
+If you have a prebuilt DB, you can point the agent at it and skip extraction entirely.
+
+Minimum tables required for retrieval:
+- `documents`
+- `chunks`
+
+Example (repo-shipped DB):
+```
+DATABASE_URL=sqlite+aiosqlite:///qbr_extraction/qbr_intelligence.db
+```
+
+If `chunks.embedding` is empty, vector matches are skipped and only text matches contribute
+to the hybrid score.
+
+Implementation:
+- Use case: `src/qbr_agent/application/use_cases.py` (`HybridSearchKnowledge`).
+- Text search: `src/qbr_agent/infrastructure/sqlalchemy_repository.py`.
+- Vector search: `src/qbr_agent/infrastructure/vector_index.py` or FAISS.
+
+## FAISS Vector Index
+
+### Build the index
+```bash
+# Install retrieval extras
+python -m pip install -e .[retrieval]
+
+# Build FAISS index from stored chunk embeddings
+python scripts/build_faiss_index.py
+```
+
+Optional environment variables:
+- `FAISS_DIR=./data/faiss`
+- `FAISS_NORMALIZE=true`
+- `FAISS_INDEX_TYPE=Flat`
+- `FAISS_METRIC=ip`
+- `FAISS_EMBEDDING_MODEL_FILTER=kreuzberg:fast`
+
+### Run with FAISS
+Set the vector backend in `.env`:
+```
+VECTOR_BACKEND=faiss
+FAISS_AUTO_BUILD=true
+```
+
+If `index.faiss` or `index_ids.json` are missing, the runtime will log a warning and return no vector results.
+Set `FAISS_REBUILD_ON_STARTUP=true` to force rebuilding on every boot.
+
+## Hybrid Scoring
+The combined score is computed as:
+```
+hybrid = (text_norm * RETRIEVAL_TEXT_WEIGHT) + (vector_norm * RETRIEVAL_VECTOR_WEIGHT)
+```
+
+Tune these weights via environment variables.

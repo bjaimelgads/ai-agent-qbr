@@ -1,0 +1,1591 @@
+[
+  {
+    "slide_number": 2,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "100%",
+      "28%",
+      "15%",
+      "28%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 2,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Markets: Czech Republic, Germany, Denmark, Romania, Sweden, Netherlands, Greece, & UK",
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window |",
+      "### Notes:\nSpeaker Julia  Home Screen Roadblocks made up 15% of spend but drove 28%+ unique reach and were 3x more efficient on CPPC. Recommend increasing Roadblock investment on key dates across EMEA."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 3,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Q3:\n  - UK \u2192 6/1- 6/15",
+      "- Q4:\n  - UK, DE, FR & IT\u2192 9/16- 9/27",
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window |",
+      "### Notes:\nSpeaker: Laura"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 4,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "+50%",
+      "+36%",
+      "+5%",
+      "0.38%",
+      "0.37%",
+      "+50%",
+      "28.42%",
+      "18.97%",
+      "-36%",
+      "-0.5%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 4,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Companion: 0.38%",
+      "- 3D: 0.37%",
+      "- Launch RateCompanion: 28.42%",
+      "- 3D:18.97%",
+      "- Cost Per Companion: $0.28",
+      "- 3D: $0.43",
+      "- Average DurationCompanion: 70.68",
+      "- 3D: 71.03",
+      "- Source: LG Ad Solutions Data during Disney+ FY25 Q4  - 8/30 UK Roadblock Carousel Only",
+      "### Notes:\nJulia"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 5,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId3](slide_5_image_rId3.jpg)",
+      "UK Alien Earth",
+      "Split Test Strategy",
+      "Objective: Assess the impact of 3D animated Carousel vs. Video Companion creatives across LG TVs.",
+      "- 6-hour (6pm-12am) High Impact Roadblock, 8/30:",
+      "3D",
+      "Video",
+      "- ",
+      "![rId7](slide_5_image_rId7.jpg)",
+      "Source: LG Ad Solutions Data during Disney+ FY25 Q4  (July - October  2025) | Based on all Home Screen Units."
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 5,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Objective: Assess the impact of 3D animated Carousel vs. Video Companion creatives across LG TVs.",
+      "- 6-hour (6pm-12am) High Impact Roadblock, 8/30:\n- 3D",
+      "- Source: LG Ad Solutions Data during Disney+ FY25 Q4  (July - October  2025) | Based on all Home Screen Units.",
+      "### Notes:\nJulia"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 6,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "+18%",
+      "+4%",
+      "+18%",
+      "0.20%",
+      "0.17%",
+      "+4%",
+      "14.70%",
+      "14.17%",
+      "+2%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 6,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- CTRCountdown: 0.20%",
+      "- BAU: 0.17%",
+      "- Launch RateCountdown: 14.70%",
+      "- BAU: 14.17%",
+      "- Cost pers Countdown: $0.66",
+      "- BAU: $0.66",
+      "- Average DurationCountdown : 68.56 Min",
+      "- BAU: 67.54 Min",
+      "- Source: LG Ad Solutions Data during Disney+ FY25 Q4  (July - October  2025) | Based on Carousel placement only.",
+      "### Notes:\nJulia"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 7,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId3](slide_7_image_rId3.jpg)",
+      "Germany Promo",
+      "Test Strategy",
+      "Objective: Assess the impact of urgency-driven Countdown Clock messaging compared to standard (BAU) creatives across LG TVs.",
+      "- 6-hour (6pm-12am) High Impact Roadblock, 9/27:",
+      "Countdown Clock",
+      "BAU",
+      "- ",
+      "![rId7](slide_7_image_rId7.jpg)",
+      "Source: LG Ad Solutions Data during Disney+ FY25 Q4  (July - October  2025) | Based on all Home Screen Units."
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 7,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Objective: Assess the impact of urgency-driven Countdown Clock messaging compared to standard (BAU) creatives across LG TVs.",
+      "- 6-hour (6pm-12am) High Impact Roadblock, 9/27:\n- Countdown Clock",
+      "- Source: LG Ad Solutions Data during Disney+ FY25 Q4  (July - October  2025) | Based on all Home Screen Units.",
+      "### Notes:\nJulia"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 8,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "96%",
+      "64%",
+      "15%",
+      "28%",
+      "58%",
+      "63%",
+      "96%",
+      "60%",
+      "15%",
+      "25%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 11,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "8%",
+      "37%",
+      "75%",
+      "61%",
+      "32%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 11,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines",
+      "### Notes:\n Speaker: Widya WIDYA/ROSS  TO UPDATE WITH H125 H1 = 42M Launche Last quarter $2,556,629.87 (8% Increase) 224.80M impressions (37% increase) 11.95M launches (1.8x 75%) 975K engagements (61%) $2.62 CPE (32% decrease, $0.83 cheaper"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 12,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines",
+      "### Notes:\nSpeaker: Julia  H1: $2.56M Investment 14.6M Reach 15x Freq 12M Launches 876K Installs 1HR Avg Duration $21.24 CPA $2.62 CPE"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 14,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "+61%",
+      "+18%",
+      "+78%",
+      "-32%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 14,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "H1 vs H2 Analysis",
+      "With an additional $300K in investment, performance improved across all KPIs driven by shifts toward Rotational targeting strategies, the June and September promos, and enhancements to Carousel creative.",
+      "![rId8](slide_14_image_rId8.jpg)",
+      "- ",
+      "+61%",
+      "Proxy ConversionsH1\u201925: 975.1K",
+      "H2\u201925: 1.6M",
+      "+18%",
+      "ReachH1\u201925: 14.6M"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 14,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Proxy ConversionsH1\u201925: 975.1K",
+      "- H2\u201925: 1.6M",
+      "- ReachH1\u201925: 14.6M",
+      "- H2\u201925: 17.3M",
+      "- LaunchesH1\u201925: 12.0M",
+      "- H2\u201925: 21.2M",
+      "- Cost PersH1\u201925: $2.62",
+      "- H2\u201925: $1.79",
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 15,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "30%",
+      "7%",
+      "7%",
+      "20%",
+      "5%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 15,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines",
+      "### Notes:\nSpeaker: Widya"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 16,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "0.12%",
+      "0.13%",
+      "0.19%",
+      "58%",
+      "63%",
+      "22%",
+      "27%",
+      "51%",
+      "4.08%",
+      "1.17%",
+      "10.00%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 16,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- ROS: Targeting Segment Performance Breakdown",
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April - Sept  2025)  - ROS lines only and excluding AV lines",
+      "### Notes:\nJulia Launch Rate Lapsed 4.08% Not Installed 1.17% Suppress Heavy Active 10.00%"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 17,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "40%",
+      "4%",
+      "4%",
+      "32%",
+      "96%",
+      "64%",
+      "90%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 17,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId3](slide_17_image_rId3.jpg)",
+      "Carousel Creative Analysis: H1 vs H2",
+      "H2 reflects a strategic shift towards Carousel Companion and 3D Animated creatives, as nearly 40% of assets adopted dynamic video formats, a proven driver of powerful engagement.",
+      "H1",
+      "H2",
+      "3D Animated",
+      "4%",
+      "Video Companion",
+      "4%",
+      "Video Companion"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 17,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Carousel Creative Analysis: H1 vs H2",
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "### Notes:\nJulia Q4 expands suppression support across 90% of EU markets \u2013 EU5 and GR, HU, PL, & TR \u201cSuppression expanded from 6 markets \u2192 12 in Q4\u201d \u201cLapsed targeting remains consistent across major EU5 markets\u201d \u201cNew markets added: FI, NO. No DK support in Q4"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 18,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "1%",
+      "3%",
+      "2%",
+      "5%",
+      "3%",
+      "1%",
+      "1%",
+      "1%",
+      "1%",
+      "5%",
+      "8%",
+      "0.34%",
+      "30%",
+      "70%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 18,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Cost pers by Secondary Markets",
+      "A majority of secondary markets delivered a cost per proxy conversion under $5.00, with Turkey being the least efficient market while also driving the highest level of investment across the secondary group.",
+      "- % Investment \u2192",
+      "1%",
+      "3%",
+      "2%",
+      "5%",
+      "3%",
+      "1%",
+      "1%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 18,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines",
+      "### Notes:\n Speaker: Widya  Turkey highest CTR (0.34% 2.2x higher than overall) vs. Cost per  Didn\u2019t have high impact, Originals Local - % with no Roadblocks \u2013 most of other markets besides Spain / Turkey did go down quarter over quarter  Turkey shows substantial growth potential: 30% of LG TVs do not have Disney+ installed, and of those that do, 70% are Lapsed users, signaling a sizable win-back and acquisition opportunity. Market investment increased from $269K (H1) to $388K (H2), with efficiency improving from $14.89 to $11.03 CPPC. The market\u2019s strong emphasis on promoting Turkish Originals\u2014relative to Global titles\u2014may be contributing to performance trends and presents an opportunity to diversify creative and campaign mix."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 20,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "59%",
+      "103%",
+      "64%",
+      "36%",
+      "0.15%",
+      "0.13%",
+      "19.31%",
+      "17.45%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 20,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Power of Video within the Carousel Companion",
+      "Across H2, 13 markets deployed the Carousel Companion unit with 16:9 video, and the format consistently delivered top-tier performance across every KPI.",
+      "- ",
+      "- ",
+      "13x",
+      "Markets",
+      "Carousel Companion",
+      "59%",
+      "Higher CTR"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 20,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Across H2, 13 markets deployed the Carousel Companion unit with 16:9 video, and the format consistently delivered top-tier performance across every KPI.",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (April-September 2025) | Confidential",
+      "### Notes:\nJulia 258 Total Creatives/ Lines 64% Static 36% Video (Companion and 3D) (13.4M)  RB       Overall CTR\t0.15%\t0.13%     Launch Rate 19.31%   17.45% Avg Duration 95.22 93.75 CPE: 0.94    1.09"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 22,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Product Innovation: Content Notification",
+      "Product Innovation: Content Notifications",
+      "Content Notifications Beta",
+      "Content Notifications on LG Smart TVs allow Disney+ to reach users in real time when they turn on their TV and direct them straight into the app, turning attention into immediate viewing.",
+      "Disney XLOB will own the Beta in key global markets:",
+      "Australia \u2192 December",
+      "US \u2192 Domestic \u2192  December to March",
+      "- ",
+      "### Notes:"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 22,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Product Innovation: Content Notification",
+      "- Product Innovation: Content Notifications",
+      "- Disney XLOB will own the Beta in key global markets:\n- Australia \u2192 December",
+      "  - Content Alignment: Taylor Swift | The Eras Tour: The End of an Era",
+      "  - Content Alignment:\n    - Percy Jackson, Pole 2 Pole, Paradise S2 & ABC Show TBC",
+      "### Notes:\nSpeaker: Laura Continuing  to improve taking feedback, but wanted to showcase the AU BETA Pop-Up Notification:  A notification message automatically appears on the Home Screen (visible for 5 seconds) along with an alert indicated by a bell icon in the top of the navigation bar  Appears once when the user powers on their LG TV during a 7-day flight. Shows for ~5 seconds. No hover state; purely a visual alert prompting interest. Designed to drive awareness and quick re-engagement. Panel Notification:  User can click on the message pop-up to be directed to app or navigate to the bell icon and be taken to the panel notification. The  panel notification  lives within the  Notification Center  (the bell icon). Once a user clicks the bell icon, the full panel notification appears. Lives persistently in the Notification Center for the full 7-day window. Users can navigate to it manually (one click down). Supports image + text, deeplinkable into content."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 24,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Disney+ App",
+      "On LG TVs"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 25,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Product Innovation: Content Notification",
+      "Product Innovation: Content Notifications",
+      "Content Notifications Beta",
+      "Content Notifications on LG Smart TVs allow Disney+ to reach users in real time when they turn on their TV and direct them straight into the app, turning attention into immediate viewing.",
+      "Disney XLOB will own the Beta in key global markets:",
+      "Australia \u2192 December",
+      "US \u2192 Domestic \u2192  December to March",
+      "- ",
+      "![rId4](slide_25_image_rId4.jpg)"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 25,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Product Innovation: Content Notification",
+      "- Product Innovation: Content Notifications",
+      "- Disney XLOB will own the Beta in key global markets:\n- Australia \u2192 December",
+      "  - Content Alignment: Taylor Swift | The Eras Tour: The End of an Era",
+      "  - Content Alignment:\n    - Percy Jackson, Pole 2 Pole, Paradise S2 & ABC Show TBC",
+      "### Notes:\nSpeaker: Laura Pop-Up Notification:  A notification message automatically appears on the Home Screen (visible for 5 seconds) along with an alert indicated by a bell icon in the top of the navigation bar  Appears once when the user powers on their LG TV during a 7-day flight. Shows for ~5 seconds. No hover state; purely a visual alert prompting interest. Designed to drive awareness and quick re-engagement. Panel Notification:  User can click on the message pop-up to be directed to app or navigate to the bell icon and be taken to the panel notification. The  panel notification  lives within the  Notification Center  (the bell icon). Once a user clicks the bell icon, the full panel notification appears. Lives persistently in the Notification Center for the full 7-day window. Users can navigate to it manually (one click down). Supports image + text, deeplinkable into content."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 26,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "34%",
+      "28%",
+      "29%",
+      "26%",
+      "26%",
+      "30%",
+      "70%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 26,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Disney+ App on LG TVs: EU5",
+      "The Disney+ app has established a solid foothold on LG TVs, but with reach at only 30%, nearly 70% of active LG TVs remain untapped, presenting a clear opportunity to drive adoption through paid media.",
+      "- ",
+      "- ",
+      "Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 26,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Disney+ App on LG TVs: EU5",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential",
+      "### Notes:\n Speaker: Megan On any"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 27,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "+27%",
+      "+18%",
+      "+11%",
+      "+10%",
+      "+10%",
+      "+9%",
+      "30%",
+      "70%",
+      "30%",
+      "70%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 27,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "EMEA Disney+ Active User Growth",
+      "Active User growth was strongest in Turkey, with notable gains also seen in Greece and the Czech Republic. Across the EU5, Spain and Italy recorded double-digit increases, signaling broad regional momentum.",
+      "200M",
+      "Global Smart TVs",
+      "- D+ Growth in MAUs (April 25 - September 25)",
+      "Turkey: 460K            +27%",
+      "Greece: 201K\t         +18%",
+      "Czech: 232K\t         +11%",
+      "Spain: 1.4M\t       +10%",
+      "Italy: 1.0M\t       +10%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 27,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Turkey: 460K            +27%",
+      "- Greece: 201K\t         +18%",
+      "- Czech: 232K\t         +11%",
+      "- Spain: 1.4M\t       +10%",
+      "- Italy: 1.0M\t       +10%",
+      "- Germany: 1.1M        +9%",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential",
+      "### Notes:\nSpeaker: Megan Turkey shows substantial growth potential: 30% of LG TVs do not have Disney+ installed, and of those that do, 70% are Lapsed users, signaling a sizable win-back and acquisition opportunity. Market investment increased from $269K (H1) to $388K (H2), with efficiency improving from $14.89 to $11.03 CPPC. The market\u2019s strong emphasis on promoting Turkish Originals\u2014relative to Global titles\u2014may be contributing to performance trends and presents an opportunity to diversify creative and campaign mix. Turkey: Major Opportunity Market 30% Not Installed 70% of Installed Users are Lapsed Efficiency Gains: H1: $269K | $14.89 CPPC H2: $388K | $11.03 CPPC Heavy focus on local Turkish Originals vs. Global launches presents opportunity for rebalancing strategy. See additional notes within the notes section."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 28,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId3](slide_28_image_rId3.jpg)",
+      "Paid Media Improves App Engagement",
+      "Exposure to LG paid media led to an average time spent per launch of 55 mins versus the overall Disney+ audience across EMEA markets",
+      "Avg duration per launch",
+      "- ",
+      "51",
+      "mins",
+      "55mins",
+      "+8%",
+      "- Disney+ Overall Audience"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 29,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "67%",
+      "24%",
+      "67%",
+      "76%",
+      "33%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 29,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId3](slide_29_image_rId3.jpg)",
+      "Disney+ App User Profile on LG TVs",
+      "Of TVs with Disney+ Installed in EMEA, 67%+ are Lapsed (+1ppt vs last half) providing significant opportunity to target this audience and bring them back into Disney+ to subscribe.",
+      "![rId6](slide_29_image_rId6.jpg)",
+      "Not",
+      "Installed",
+      "Lapsed Users",
+      "24%",
+      "67%",
+      "+1 ppt HoH"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 29,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Installed: All active LG TV users who had the app installed at some point. Not Installed: All active LG TV users who do not have the app installed.",
+      "- Lapsed: All active LG TV users who did not use the app within the last 60 days. Active: All active LG TV users who used the app within the last 60 days.",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 | Confidential",
+      "### Notes:\nSpeaker: Megan Installed +2 HoH Lapsed +1 HoH ROS Tactics - in Q4 we only were  suppressing  heavy active  ROADBLOCKS - lighter in Roadblocks which run untargeted and reach all audiences and drive that high reach promoting tentpole content"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 33,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "30%",
+      "77%",
+      "52%",
+      "96%",
+      "100%",
+      "77%",
+      "100%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 33,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "FY25 Year at a Glance",
+      "Disney XLOB FY25 Partnership: $34M Investment across 20 Lines of Business",
+      "Disney+ Global FY25 Investment - $18M (2x FY24)",
+      "Market Activation & Expansion",
+      "H2 Strategic Growth",
+      "![rId4](slide_33_image_rId4.jpg)"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 36,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "34%",
+      "28%",
+      "29%",
+      "26%",
+      "26%",
+      "30%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 36,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- EU5 App Penetration: Only ~30% LG Ads MAU Reach",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential",
+      "### Notes:\nSpeaker: Laura"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 40,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId5](slide_40_image_rId5.jpg)",
+      "New & Improved",
+      "Global Dashboard",
+      "App Usage Data",
+      "Custom Date Range",
+      "Comparisons"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 41,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "- ",
+      "- ",
+      "- Product Innovation: Carousel Upgrades",
+      "Seamless Home Screen",
+      "As we rollout 2026 LG TVs, we are looking to potentially add in a Seamless Home Screen Ad Unit to run with our Carousel.",
+      "Enhanced User Experience",
+      "Delivers immersive experience with full-screen banner or video ads that auto-expand upon hover",
+      "Sleek and responsive transitions for ad expansions, video playback, and ad closures for seamless engagement",
+      "- "
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 41,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Product Innovation: Carousel Upgrades",
+      "- Note: The LG Ad Solutions Product Roadmap is subject to change and is not a guarantee.",
+      "### Notes:\nSpeaker: Laura \u201cHere\u2019s an early look at the new Seamless Home Screen experience coming to 2026 LG TVs, with plans to push this enhancement back to older models as well. This redesign gives us a major opportunity to elevate the home screen as a premium entry point for brand storytelling. As part of this upgrade, we\u2019re exploring a new Seamless Home Screen Ad Unit that would run alongside the Carousel. This format is built to deliver a truly immersive moment \u2014 think full-screen banner or video creative that auto-expands on hover, paired with buttery-smooth transitions that feel high-end and intentional. It\u2019s designed to blend seamlessly into user behavior while unlocking more impactful real estate for partners. From a performance standpoint, this unit positions LG to compete directly with what other OEMs are already offering \u2014 but with the benefit of our cleaner UX and deeper household-level data. It\u2019s a chance to drive higher engagement, richer storytelling, and incremental visibility during peak discovery moments. Before we finalize development and prioritization, we\u2019d love your perspective. Is this a unit you\u2019d want to test or incorporate into your FY26 planning? Your feedback will directly shape how quickly we bring this to market \u2014 and we\u2019d be excited to build this with you.\u201d"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 42,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- UK Studios - Best Use of CTV Technology award at The Wires Awards",
+      "Blending Creativity and Innovation to Win Big",
+      "3.2x",
+      "CTR Increase",
+      "LG Ad Solutions was awarded with Best Use of CTV Technology award at ExchangeWire's The Wires Awards!",
+      "- The 3D Animated TV Home Screen campaign with Publicis Imagine UK and The Walt Disney Company is a proof point that when creativity and platform innovation meet, the TV experience can evolve in ways that capture attention and create real value for advertisers.",
+      "- ",
+      "![rId4](slide_42_image_rId4.jpg)"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 43,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "8%",
+      "8%",
+      "0.15%",
+      "0.13%",
+      "19.31%",
+      "17.45%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 43,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Q3 Content Store Roadblocks: UK & DE",
+      "Driving 4x CTR and 3x higher launch rates, UK & DE Q3 investment delivered disproportionate impact for just 8% of spend..",
+      "![rId6](slide_43_image_rId6.jpg)",
+      "- ",
+      "8%",
+      "Of Q3 UK & DE Investment",
+      "4x",
+      "Higher CTR",
+      "vs Overall UK & DE Q3"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 43,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Q3 Content Store Roadblocks: UK & DE",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (April-September 2025) | Confidential",
+      "### Notes:\nSpeaker: Laura (13.4M)  RB       Overall CTR\t0.15%\t0.13%     Launch Rate 19.31%   17.45% Avg Duration 95.22 93.75 CPE: 0.94    1.09"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 44,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "- ",
+      "- ",
+      "D+ App Penetration: EU5 Markets - September \u201825",
+      "\u2026",
+      "Updated",
+      "- 29%",
+      "Penetration of LG MAUs",
+      "Source: LG Ad Solutions Apps Data. Analysis duration: FY25 H2. LG vs D+ MAUs by market based on September 2025."
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 44,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- D+ App Penetration: EU5 Markets - September \u201825",
+      "- Source: LG Ad Solutions Apps Data. Analysis duration: FY25 H2. LG vs D+ MAUs by market based on September 2025.",
+      "### Notes:\nSpeaker: Megan"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 45,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "15%",
+      "15%",
+      "15%",
+      "25%",
+      "0.15%",
+      "0.13%",
+      "19.31%",
+      "17.45%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 45,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Power of Home Screen Roadblocks",
+      "Although Home Screen Roadblocks accounted for just 15% of H2 spend within 7x markets, they generated over a quarter of total unique reach and delivered 3x better CPPC efficiency.",
+      "- ",
+      "- 15%",
+      "Overall H2",
+      "Investment",
+      "7x",
+      "Markets",
+      "Invested in HSRB"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 46,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "13%",
+      "0.15%",
+      "0.13%",
+      "19.31%",
+      "17.45%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 46,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Q4 Content Store Roadblocks: UK, DE, IT & FR",
+      "Scaling into Italy and France kept CTR and Launch Rate outperformance strong at 2x benchmarks in Q4.",
+      "![rId6](slide_46_image_rId6.jpg)",
+      "- ",
+      "13%",
+      "Of Q4 UK, DE, IT, & FR Investment",
+      "2x",
+      "Higher CTR",
+      "vs Overall UK, DE, IT, & FR"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 46,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Q4 Content Store Roadblocks: UK, DE, IT & FR",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (April-September 2025) | Confidential",
+      "### Notes:\nSpeaker: Laura (13.4M)  RB       Overall CTR\t0.15%\t0.13%     Launch Rate 19.31%   17.45% Avg Duration 95.22 93.75 CPE: 0.94    1.09"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 47,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Disney+ App on LG TVs: EU5",
+      "France",
+      "![rId8](slide_47_image_rId8.jpg)",
+      "Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 47,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Disney+ App on LG TVs: EU5",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential",
+      "### Notes:\nSpeaker: Laura"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 48,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "65%",
+      "32%",
+      "0.19%",
+      "0.17%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 48,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "- ",
+      "Power of Home Screen Roadblocks",
+      "Hulu\u2019s three premiere-day Roadblocks reached 65% of all LG TVs exposed during Q2 and Q3, underscoring unmatched scale and impact.",
+      "![rId9](slide_48_image_rId9.jpg)",
+      "66K",
+      "Proxy Conversions",
+      "32%",
+      "Overall Q2/Q3",
+      "Hulu Investment",
+      "0.19%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 49,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "34%",
+      "28%",
+      "29%",
+      "26%",
+      "26%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 49,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Disney+ App on LG TVs: EU5",
+      "United Kingdom",
+      "Spain",
+      "Germany",
+      "Italy",
+      "France",
+      "![rId8](slide_49_image_rId8.jpg)",
+      "Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 49,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Disney+ App on LG TVs: EU5",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential",
+      "### Notes:\nSpeaker: Laura"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 50,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Data Updated",
+      "Power of Home Screen Roadblocks",
+      "\u2026",
+      "![rId8](slide_50_image_rId8.jpg)",
+      "- 3x",
+      "More Efficient CPE VS Overall",
+      "15%",
+      "Overall H2 Investment",
+      "2x",
+      "Launch Rate VS Overall"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 51,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- EU5 App Penetration: Only ~30% LG Ads MAU Reach",
+      "- Source: LG Ad Solutions proprietary data, Disney FY25 H2 (September 2025) | Confidential",
+      "### Notes:\nSpeaker: Laura"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 52,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "+43%",
+      "+40%",
+      "+22%",
+      "+31%",
+      "+51%",
+      "+51%",
+      "+53%",
+      "+53%",
+      "+59%",
+      "+66%",
+      "+79%",
+      "+35%",
+      "+49%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 53,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "0.26%",
+      "9.40%",
+      "0.22%",
+      "8.82%",
+      "2%",
+      "22%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 53,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "3D VS Video Companion - UK Alien Earth Split Test (3D Carousel vs Carrousel Companion Video)\u2192 8/30",
+      "- \u2026",
+      "- ",
+      "- ",
+      "![rId5](slide_53_image_rId5.jpg)",
+      "- CTR: 0.26%",
+      "Launch Rate: 9.40%",
+      "CPE: $0.72",
+      "CTR: 0.22%",
+      "Launch Rate: 8.82%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 53,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- CTR: 0.26%",
+      "- Launch Rate: 9.40%",
+      "- CPE: $0.72",
+      "- CTR: 0.22%",
+      "- Launch Rate: 8.82%",
+      "- CPE: $1.32",
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2  (April - Sept  2025) Based on carousel only",
+      "### Notes:\n1. Q4: Heavy implementation of Carousel Video and 3D units (after showcasing results in H1 Presentation), contributing to increased performance of CTR and cost per metrics, within weekly reporting 2. UK Alien Earth Split Test (3D Carousel vs  Carrousel  Companion Video)\u2192 8/30 3. DE September Promo Countdown Clock Audience Test\u2192 9/27"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 54,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "![rId3](slide_54_image_rId3.jpg)",
+      "Carousel Static vs Carousel Companion (ROS)",
+      "Source: LG Ad Solutions TV Campaigns Data ROS Carousel only"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 55,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "0.38%",
+      "18.6%",
+      "0.20%",
+      "0.42%",
+      "25%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 55,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Data Updated",
+      "Content Store Roadblock Spotlight Q3: UK, DE",
+      "Investment",
+      "$65.4K",
+      "Total Reach",
+      "697K",
+      "![rId5](slide_55_image_rId5.jpg)",
+      "Avg. Frequency",
+      "4.58x",
+      "CTR"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 55,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Content Store Roadblock Spotlight Q3: UK, DE",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 Q3 | CTR benchmark is based on 0.20% in EMEA",
+      "### Notes:\nLast Half Spend: $118.6K Reach: 1.4M Avg Freq: 4x CTR: 0.42% Launches: 1.3M Launch Rate: 25% CPA: $28.25 CPE: $1.16"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 56,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "100%",
+      "100%",
+      "5%",
+      "11%",
+      "100%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 56,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Content Store Roadblock: Spotlight Q3 UK, DE",
+      "- Markets: 3 Content Store Roadblocks (UK) \u2192 6/1- 6/15 / (DE)\u2192 6/16- 6/30",
+      "- Flights:\n  - UK: 11/16- 11/30 & 3/16- 3/31",
+      "  - DE: 3/16- 3/31",
+      "- Availability: France, Italy, and Spain",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H2",
+      "### Notes:\n100% SOV across 2 In FY25-H1 the Content Store Roadblock was only  5% of the international investment  but drove over  11% of total launches  and contributed to  1.3M total streaming hours  for Disney+, effectively engaging audiences actively seeking new content or apps to download.  The Details Markets: UK & DE  Flights:  UK: 11/16- 11/30 | 3/16- 3/31 DE: 3/16- 3/31 Supported  13  Titles 100% SOV across 2 weeks each"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 57,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "0.30%",
+      "18%",
+      "0.20%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 57,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Data Updated",
+      "Content Store Roadblock Spotlight Q4: FR, DE, IT, UK",
+      "Investment",
+      "$95.4K",
+      "Total Reach",
+      "1M",
+      "![rId5](slide_57_image_rId5.jpg)",
+      "Avg. Frequency",
+      "5x",
+      "CTR"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 58,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "8%",
+      "11%",
+      "22%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 58,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Power of the Content Store Roadblock Q3 - UK, DE",
+      "\u2026",
+      "Data Updated",
+      "![rId8](slide_58_image_rId8.jpg)",
+      "- 8%",
+      "4x",
+      "3X",
+      "Launch Rate",
+      "vs. Overall Q3 UK & DE",
+      "of Q3 Investment"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 59,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "28%",
+      "0.12%",
+      "15%",
+      "0.17%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 60,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Data Updated",
+      "Power of the Content Store Roadblock Q4 - FR, DE, IT, UK",
+      "\u2026",
+      "![rId8](slide_60_image_rId8.jpg)",
+      "- 13%",
+      "2x",
+      "2X",
+      "x",
+      "Launch Rate",
+      "vs. Total Q4 Launch Rate in FR, DE, IT, UK"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 61,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "2%",
+      "5%",
+      "3%",
+      "1%",
+      "1%",
+      "1%",
+      "1%",
+      "5%",
+      "8%",
+      "1%",
+      "3%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 61,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Data Updated",
+      "CPE by Secondary Markets- All Lines",
+      "\u2026",
+      "- 2%",
+      "5%",
+      "3%",
+      "1%",
+      "1%",
+      "1%",
+      "1%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 62,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "14.57%",
+      "9.89%",
+      "8.90%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 62,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Launch Rate:\n- 14.57%",
+      "- Launch Rate:\n- 9.89%",
+      "- Launch Rate:\n- 8.90%",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H2. | CPE Based on all carousel ROS lines",
+      "- Source: LG Ad Solutions proprietary campaign data for 11/01/2024 to 01/07/2025."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 64,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Engaged User: any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window",
+      "- Cost per Engaged User (CPE): Cost to engage a Lapsed user",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H2 | CPE Based on ROS Lapsed + Suppress Heavy Active Targeting."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 69,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "0.49%",
+      "0.33%",
+      "0.32%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 69,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- CTR:\n- 0.49%",
+      "- CTR:\n- 0.33%",
+      "- CTR:\n- 0.32%",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H2. | CPE Based on all carousel ROS lines",
+      "- Source: LG Ad Solutions proprietary campaign data for 11/01/2024 to 01/07/2025."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 72,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- CPE:\n- $0.56",
+      "- CPE:\n- $0.57",
+      "- CPE:\n- $0.92",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H2. | CPE Based on all ROS lines",
+      "- Source: LG Ad Solutions proprietary campaign data for 11/01/2024 to 01/07/2025."
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 73,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines",
+      "### Notes:\nJune Roadblocks (DK, SE, UK, CZ, DE, GR, NL, RO) -"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 75,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "96%",
+      "76%",
+      "38%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 75,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "Recommendations",
+      "Expand Lapsed ROS targeting to all EMEA markets, bringing Lapsed users back into Disney+ and converting them to Active Users",
+      "Increase Lapsed",
+      "Investment",
+      "While Static creative runs ~96% of the time, prioritize Carousel Companion w/ Video to capitalize on CTR and Acquisition goal.",
+      "Carousel Video",
+      "Companion",
+      "- Content Store Roadblock proved to an effective Disney+ high impact strategy for UK and DE for Acquisition.  Prioritize booking Content Store Roadblocks across available markets for H2",
+      "Content Store",
+      "Roadblock"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 76,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Source: LG Ads 1P Campaign Data during Disney FY25 H2 (April -Sept  2025)",
+      "- *Proxy Conversions: Any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window | Based on all lines",
+      "### Notes:\nSpeaker:"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 77,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "28%",
+      "23%",
+      "30%",
+      "24%",
+      "27%",
+      "29%",
+      "25%",
+      "39%",
+      "31%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 77,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "CPA by EU5 - Not Installed ROS",
+      "- Cost efficiencies have continued to improve, with CPA dropping by approximately $4.50 in Italy and Germany, and by around $1 in the UK, Spain, and France compared to H2\u201924",
+      "% Not Installed\u2192",
+      "28%",
+      "23%",
+      "30%",
+      "24%",
+      "27%",
+      "Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H1 | CPA Based on ROS Not Installed Targeting."
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 78,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "FY25 H1 CPA - Not Installed ROS",
+      "- Disney+ invested $1.24M towards Not Installed native ROS lines, acquiring 81K+ new users across EMEA in 1H\u201925 at a $15.25 CPA = $2.00 more efficient vs last half",
+      "Sign-Up + Subscription Proxy",
+      "- ",
+      "Impressions",
+      "112M",
+      "- Acquired User: any user that installs and launches Disney+ for a +30 minute session within 7 day attribution window",
+      "- Installs",
+      "819K",
+      "- "
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 78,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Acquired User: any user that installs and launches Disney+ for a +30 minute session within 7 day attribution window",
+      "- Cost per Acquired User (CPA): Cost to acquire a net new user",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H1  | CPA Based on ROS Not Installed Targeting.",
+      "### Notes:\nJULIA $1.3M Not Installed ROS budget 119M Impressions 682K Installs 74K Acquired Users $17.80 CPA"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  },
+  {
+    "slide_number": 80,
+    "chart_type_guess": "bar_chart_or_comparison",
+    "raw_elements": [
+      "17%",
+      "22%",
+      "22%",
+      "25%",
+      "28%",
+      "24%",
+      "21%",
+      "31%",
+      "20%",
+      "37%",
+      "35%",
+      "23%",
+      "21%",
+      "26%",
+      "38%",
+      "30%",
+      "41%",
+      "34%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Reconstruct the bar chart data with labels and values"
+  },
+  {
+    "slide_number": 80,
+    "chart_type_guess": "comparison_chart",
+    "raw_elements": [
+      "CPA by Secondary Markets - Not Installed ROS",
+      "- All secondary markets achieved $13 average decrease in CPA vs last half, indicating room to continue expanding ROS in H2",
+      "% Not Installed\u2192",
+      "17%",
+      "22%",
+      "22%",
+      "25%",
+      "28%",
+      "24%",
+      "21%"
+    ],
+    "confidence": "medium",
+    "llm_enhancement": "Extract comparison dimensions and values"
+  },
+  {
+    "slide_number": 82,
+    "chart_type_guess": "table_or_key_value_pairs",
+    "raw_elements": [
+      "- Engaged User: any user that Launches Disney+ for 2 or more +30 minute session within 7 day attribution window",
+      "- Cost per Engaged User (CPE): Cost to engage a Lapsed user",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25 H2 | CPE Based on ROS Lapsed Targeting.",
+      "### Notes:\nLast quarter 59M impressions 2.4M launches 153K engagements $4.40 CPE"
+    ],
+    "confidence": "high",
+    "llm_enhancement": "Parse into structured table format"
+  }
+]

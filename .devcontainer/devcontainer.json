@@ -1,0 +1,50 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+	"name": "ai-agent-qbr",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/base:noble",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "bash ./setup.sh",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"charliermarsh.ruff",
+				"MermaidChart.vscode-mermaid-chart"
+			]
+		}
+	},
+	"containerEnv": {
+		"UV_PYTHON": "3.12"
+	},
+
+	// Allow access to host files (Windows). These mounts are best-effort.
+	"mounts": [
+		"source=${localEnv:USERPROFILE},target=/host/user,type=bind,consistency=cached",
+		"source=${localEnv:SystemDrive}\\,target=/host/c,type=bind,consistency=cached"
+	],
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+	"forwardPorts": [1455, 1456],
+	"portsAttributes": {
+		"1455": {
+			"label": "Codex Auth Callback",
+			"onAutoForward": "notify"
+		},
+		"1456": {
+			"label": "Codex Auth Proxy",
+			"onAutoForward": "notify"
+		}
+	},
+	"runArgs": ["-p", "1455:1455", "-p", "1456:1456"]
+}

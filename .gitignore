@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.venv/
+.venv*/
+.env
+.env.*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Data
+*.db
+*.sqlite
+*.sqlite3
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.pdf
+*.zip
+*.7z
+*.tar.gz
+*.pptx
+*.docx
+
+# Build
+build/
+dist/
+
+# Kreuzberg cache
+.kreuzberg/
