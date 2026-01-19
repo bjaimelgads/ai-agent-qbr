@@ -71,6 +71,18 @@ python -m pip install -e .[dev]
 pytest
 ```
 
+## Playground (Dev)
+
+```bash
+./scripts/penguiflow_dev.sh
+```
+
+### Playground UI
+
+```bash
+python -m ai_agent_qbr.playground_ui
+```
+
 ## FAISS Retrieval
 Build the FAISS index and run with `VECTOR_BACKEND=faiss`:
 

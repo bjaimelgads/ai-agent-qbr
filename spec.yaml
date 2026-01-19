@@ -1,0 +1,43 @@
+# PenguiFlow Agent Specification
+
+agent:
+  name: ai_agent_qbr
+  description: "QBR retrieval agent with hybrid search over SQLite + FAISS and WebSocket/AG-UI streaming."
+  template: react
+  flags:
+    memory: true
+    streaming: true
+    hitl: false
+
+llm:
+  primary:
+    provider: databricks
+    model: databricks/databricks-claude-sonnet-4-5
+
+  summarizer:
+    enabled: true
+    provider: databricks
+    model: databricks/databricks-claude-sonnet-4-5
+
+tools:
+  - name: search_documents
+    description: "Search QBR chunks using hybrid vector + text retrieval."
+    tags: ["qbr", "search", "retrieval"]
+    side_effects: pure
+  - name: analyze_results
+    description: "Summarise retrieval results for the user."
+    tags: ["qbr", "summary"]
+    side_effects: pure
+
+planner:
+  max_iters: 20
+  hop_budget: 10
+  absolute_max_parallel: 3
+  system_prompt_extra: |
+    You are the QBR agent. Answer questions using retrieved QBR context.
+
+    - Use the `qbr_context` provided in the LLM context whenever available.
+    - Cite slide ranges when possible.
+    - If no context is provided, say that you could not find relevant QBR content.
+  memory_prompt: |
+    Keep a short summary of the conversation to support follow-up questions.

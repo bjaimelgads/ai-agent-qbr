@@ -8,6 +8,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal, Union, cast
 
+from penguiflow.catalog import build_catalog
 from penguiflow.planner import PlannerEventCallback, ReactPlanner
 from penguiflow.planner.memory import MemoryBudget, MemoryIsolation, ShortTermMemoryConfig
 from penguiflow.rich_output import DEFAULT_ALLOWLIST, RichOutputConfig, attach_rich_output_nodes, get_runtime
@@ -198,6 +199,21 @@ def _create_llm_client(config: Config) -> Any:
         logger.info("Using stub LLM (ScriptedLLM) for planner")
         return ScriptedLLM()
 
+    # Native streaming path for Playground AG-UI
+    if config.output_protocol == "agui" and config.planner_stream_final_response:
+        api_base = config.databricks_api_base or ""
+        if not api_base and config.databricks_host:
+            api_base = f"{config.databricks_host.rstrip('/')}/serving-endpoints"
+        api_key = config.databricks_api_key or config.databricks_token
+        if not api_base or not api_key:
+            raise ValueError(
+                "Databricks native streaming requires DATABRICKS_API_BASE (or DATABRICKS_HOST) "
+                "and DATABRICKS_API_KEY (or DATABRICKS_TOKEN)."
+            )
+        model_id = f"databricks/{config.llm_model_name}"
+        logger.info("Using native Databricks streaming for model=%s", model_id)
+        return {"model": model_id, "api_base": api_base, "api_key": api_key}
+
     # Validate required config
     if not config.databricks_host:
         raise ValueError(
@@ -313,18 +329,33 @@ def build_planner(
     """
     nodes, registry = build_catalog_bundle()
     rich_output_config = _build_rich_output_config(config)
-    nodes.extend(attach_rich_output_nodes(registry, config=rich_output_config))
+    if rich_output_config.enabled:
+        nodes.extend(attach_rich_output_nodes(registry, config=rich_output_config))
+    catalog = build_catalog(nodes, registry)
     rich_output_prompt = get_runtime().prompt_section()
 
     # Create LLM client based on config (stub or real)
     llm_client = _create_llm_client(config)
 
+    if isinstance(llm_client, ScriptedLLM) or isinstance(llm_client, DatabricksDSPyClient):
+        planner = ReactPlanner(
+            llm_client=llm_client,
+            catalog=catalog,
+            registry=registry,
+            system_prompt_extra=_build_system_prompt(rich_output_prompt),
+            event_callback=event_callback,
+            stream_final_response=config.planner_stream_final_response,
+            short_term_memory=_build_short_term_memory(config),
+        )
+        return PlannerBundle(planner=planner, llm_client=llm_client)
+
     planner = ReactPlanner(
-        llm_client=llm_client,
-        nodes=nodes,
+        llm=llm_client,
+        catalog=catalog,
         registry=registry,
         system_prompt_extra=_build_system_prompt(rich_output_prompt),
         event_callback=event_callback,
+        stream_final_response=config.planner_stream_final_response,
         short_term_memory=_build_short_term_memory(config),
     )
     return PlannerBundle(planner=planner, llm_client=llm_client)

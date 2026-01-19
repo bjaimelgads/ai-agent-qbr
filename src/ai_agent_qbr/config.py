@@ -79,6 +79,8 @@ class Config:
     # Databricks LLM configuration
     databricks_host: str = ""
     databricks_token: str = ""
+    databricks_api_base: str = ""
+    databricks_api_key: str = ""
     llm_model_name: str = "databricks-claude-sonnet-4-5"
     llm_max_tokens: int = 4000
     llm_cache_enabled: bool = True
@@ -161,6 +163,8 @@ class Config:
             # Databricks LLM configuration
             databricks_host=os.getenv("DATABRICKS_HOST", ""),
             databricks_token=os.getenv("DATABRICKS_TOKEN", ""),
+            databricks_api_base=os.getenv("DATABRICKS_API_BASE", ""),
+            databricks_api_key=os.getenv("DATABRICKS_API_KEY", ""),
             llm_model_name=os.getenv("LLM_MODEL_NAME", "databricks-claude-sonnet-4-5"),
             llm_max_tokens=_env_int("LLM_MAX_TOKENS", 4000),
             llm_cache_enabled=_env_flag("LLM_CACHE_ENABLED", True),
