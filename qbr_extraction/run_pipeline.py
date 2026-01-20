@@ -52,6 +52,8 @@ async def process_document(
     file_path: str,
     database_url: str,
     run_llm_enhancement: bool = True,
+    export_outputs: bool = False,
+    output_dir: str | None = None,
 ) -> int:
     """
     Process a QBR document through the full pipeline.
@@ -99,6 +101,8 @@ async def process_document(
     doc_id = processor.process_document(
         file_path=file_path,
         run_llm_enhancement=run_llm_enhancement,
+        export_outputs=export_outputs,
+        output_dir=output_dir,
     )
 
     print(f"\n[4/4] Processing complete. Document ID: {doc_id}")
@@ -267,6 +271,16 @@ def main():
         metavar="DIR",
         help="Export document data to JSON files in the specified directory",
     )
+    parser.add_argument(
+        "--export-extraction",
+        action="store_true",
+        help="Write extraction artifacts to the extraction output directory",
+    )
+    parser.add_argument(
+        "--extraction-output-dir",
+        metavar="DIR",
+        help="Override the extraction output directory (default: extraction_output)",
+    )
 
     args = parser.parse_args()
 
@@ -279,6 +293,8 @@ def main():
                 file_path=args.file,
                 database_url=args.db,
                 run_llm_enhancement=not args.no_llm,
+                export_outputs=args.export_extraction,
+                output_dir=args.extraction_output_dir,
             )
 
         # Run query demo

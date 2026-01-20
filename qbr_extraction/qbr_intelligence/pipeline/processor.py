@@ -7,9 +7,13 @@ Complete pipeline for:
 3. Storing in SQLAlchemy database
 """
 
+import base64
+import json
 import re
+import zipfile
 from datetime import datetime
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 import kreuzberg
 from kreuzberg import (
@@ -276,12 +280,287 @@ class QBRProcessor:
 
         return charts
 
+    @staticmethod
+    def _extract_business_terms(content: str) -> set[str]:
+        """Extract common QBR business terms from raw content."""
+        business_terms: set[str] = set()
+        patterns = [
+            r"\b(?:CTR|CPM|CPC|CPPC|CPV|ROI|ROAS)\b",
+            r"\b(?:reach|engagement|impressions|conversions?|clicks?)\b",
+            r"\b(?:campaign|roadblock|carousel|banner|ad|creative)\b",
+            r"\b(?:UK|DE|FR|IT|EMEA)\b",
+        ]
+        for pattern in patterns:
+            matches = re.findall(pattern, content, re.I)
+            business_terms.update(m.upper() if len(m) <= 4 else m.title() for m in matches)
+        return business_terms
+
+    def _export_extraction_outputs(
+        self,
+        *,
+        file_path: Path,
+        result: ExtractionResult,
+        slides: list[dict],
+        metrics: list[dict],
+        charts: list[dict],
+        business_terms: set[str],
+        output_dir: Path,
+    ) -> None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        images_dir = output_dir / "images"
+        images_dir.mkdir(parents=True, exist_ok=True)
+
+        slide_texts = self._load_pptx_slide_texts(file_path) if file_path.suffix.lower() == ".pptx" else []
+        pages = self._split_pages(result.content)
+        remap = self._build_page_remap(pages, slide_texts) if slide_texts and pages else None
+
+        slides_export = slides
+        metrics_export = metrics
+        charts_export = charts
+        raw_content_export = result.content
+
+        if remap:
+            pages_by_num = {page["page_number"]: page for page in pages}
+            raw_blocks: list[str] = []
+            slides_by_num = {slide["slide_number"]: slide for slide in slides}
+            slides_export = []
+            for new_num, entry in enumerate(remap, start=1):
+                old_num = entry["source_page_number"]
+                page = pages_by_num.get(old_num)
+                if page is None:
+                    continue
+                raw_blocks.append(f"<!-- PAGE {new_num} -->\n{page['content']}\n")
+                slide = slides_by_num.get(old_num)
+                if slide:
+                    updated = dict(slide)
+                    updated["slide_number"] = new_num
+                    updated["source_slide_number"] = old_num
+                    slides_export.append(updated)
+            raw_content_export = "\n".join(raw_blocks).strip() + "\n"
+
+            page_to_new = {entry["source_page_number"]: entry["slide_number"] for entry in remap}
+            metrics_export = []
+            for metric in metrics:
+                updated = dict(metric)
+                source_num = metric.get("slide_number")
+                updated["slide_number"] = page_to_new.get(source_num, source_num)
+                metrics_export.append(updated)
+            charts_export = []
+            for chart in charts:
+                updated = dict(chart)
+                source_num = chart.get("slide_number")
+                updated["slide_number"] = page_to_new.get(source_num, source_num)
+                charts_export.append(updated)
+
+        output_metadata = {
+            "source_file": str(file_path),
+            "extraction_timestamp": datetime.now().isoformat(),
+            "kreuzberg_version": kreuzberg.version("kreuzberg"),
+            "mime_type": result.mime_type,
+            "page_count": result.get_page_count(),
+            "detected_languages": result.detected_languages,
+            "table_count": len(result.tables),
+            "image_count": len(result.images) if result.images else 0,
+            "chunk_count": result.get_chunk_count(),
+            "metadata": result.metadata,
+        }
+        (output_dir / "01_extraction_metadata.json").write_text(
+            json.dumps(output_metadata, indent=2, default=str),
+            encoding="utf-8",
+        )
+
+        (output_dir / "02_raw_content.txt").write_text(raw_content_export, encoding="utf-8")
+        (output_dir / "03_slides_parsed.json").write_text(
+            json.dumps(slides_export, indent=2),
+            encoding="utf-8",
+        )
+        (output_dir / "04_metrics_extracted.json").write_text(
+            json.dumps(metrics_export, indent=2),
+            encoding="utf-8",
+        )
+        (output_dir / "05_charts_detected.json").write_text(
+            json.dumps(charts_export, indent=2),
+            encoding="utf-8",
+        )
+
+        keywords_payload: dict[str, object] = {
+            "business_terms_detected": sorted(business_terms),
+        }
+        if result.metadata and "keywords" in result.metadata:
+            keywords_payload["raw_keywords"] = result.metadata["keywords"]
+        (output_dir / "06_keywords_topics.json").write_text(
+            json.dumps(keywords_payload, indent=2, default=str),
+            encoding="utf-8",
+        )
+
+        images_payload: list[dict] = []
+        for idx, img in enumerate(result.images or []):
+            img_info = {
+                "index": idx,
+                "content_type": img.get("content_type", "unknown"),
+                "size_bytes": len(img.get("data", b"")) if img.get("data") else 0,
+                "source_location": img.get("source", "unknown"),
+            }
+            if img.get("data"):
+                ext = "jpg"
+                if "png" in img.get("content_type", ""):
+                    ext = "png"
+                elif "gif" in img.get("content_type", ""):
+                    ext = "gif"
+                img_path = images_dir / f"image_{idx:04d}.{ext}"
+                data = img["data"]
+                if isinstance(data, str):
+                    data = base64.b64decode(data)
+                with img_path.open("wb") as handle:
+                    handle.write(data)
+                img_info["saved_path"] = str(img_path)
+            images_payload.append(img_info)
+        (output_dir / "07_images_metadata.json").write_text(
+            json.dumps(images_payload, indent=2),
+            encoding="utf-8",
+        )
+
+        chunks_payload: list[dict] = []
+        embedding_model = EmbeddingSettings.from_env().model_label()
+        for idx, chunk in enumerate(result.chunks or []):
+            embedding = chunk.get("embedding")
+            chunks_payload.append(
+                {
+                    "chunk_index": idx,
+                    "content": chunk.get("content", ""),
+                    "char_count": len(chunk.get("content", "")),
+                    "metadata": chunk.get("metadata", {}),
+                    "has_embedding": embedding is not None,
+                    "embedding_model": embedding_model if embedding is not None else None,
+                    "embedding_dimensions": len(embedding) if embedding is not None else None,
+                }
+            )
+        (output_dir / "08_chunks_rag.json").write_text(
+            json.dumps(chunks_payload, indent=2),
+            encoding="utf-8",
+        )
+
+        tables_payload: list[dict] = []
+        for idx, table in enumerate(result.tables or []):
+            tables_payload.append(
+                {
+                    "index": idx,
+                    "headers": getattr(table, "headers", None),
+                    "rows": getattr(table, "rows", None),
+                    "raw": str(table),
+                }
+            )
+        (output_dir / "09_tables_extracted.json").write_text(
+            json.dumps(tables_payload, indent=2),
+            encoding="utf-8",
+        )
+
+        if remap:
+            (output_dir / "00_slide_order_map.json").write_text(
+                json.dumps(remap, indent=2),
+                encoding="utf-8",
+            )
+
+    @staticmethod
+    def _split_pages(content: str) -> list[dict]:
+        """Split raw content into page-numbered blocks."""
+        pattern = r"<!-- PAGE (\\d+) -->"
+        parts = re.split(pattern, content)
+        pages: list[dict] = []
+        for i in range(1, len(parts), 2):
+            if i + 1 < len(parts):
+                page_num = int(parts[i])
+                page_content = parts[i + 1].strip()
+                pages.append({"page_number": page_num, "content": page_content})
+        return pages
+
+    @staticmethod
+    def _normalize_tokens(text: str) -> set[str]:
+        cleaned = re.sub(r"[^a-z0-9]+", " ", text.lower())
+        return {token for token in cleaned.split() if len(token) > 2}
+
+    @staticmethod
+    def _load_pptx_slide_texts(file_path: Path) -> list[dict]:
+        """Load slide text in PPTX order from the PPTX XML."""
+        ns = {
+            "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+            "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+            "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+        }
+        with zipfile.ZipFile(file_path) as zf:
+            pres_xml = zf.read("ppt/presentation.xml")
+            rels_xml = zf.read("ppt/_rels/presentation.xml.rels")
+
+            pres = ET.fromstring(pres_xml)
+            rels = ET.fromstring(rels_xml)
+            rId_to_target = {
+                rel.attrib["Id"]: rel.attrib["Target"]
+                for rel in rels.findall(
+                    ".//{http://schemas.openxmlformats.org/package/2006/relationships}Relationship"
+                )
+            }
+            slide_targets = []
+            for sldId in pres.findall(".//p:sldIdLst/p:sldId", ns):
+                rId = sldId.attrib.get(f"{{{ns['r']}}}id")
+                target = rId_to_target.get(rId)
+                if target:
+                    slide_targets.append(target)
+
+            slides: list[dict] = []
+            for idx, target in enumerate(slide_targets, start=1):
+                slide_xml = zf.read(f"ppt/{target}")
+                slide = ET.fromstring(slide_xml)
+                texts = [
+                    t.text
+                    for t in slide.findall(".//a:t", ns)
+                    if t.text and t.text.strip()
+                ]
+                slide_text = " ".join(texts)
+                slides.append({"slide_number": idx, "text": slide_text})
+            return slides
+
+    def _build_page_remap(self, pages: list[dict], slides: list[dict]) -> list[dict]:
+        """Map extracted pages to PPTX slide order using token overlap."""
+        if not pages or not slides:
+            return []
+        page_tokens = {
+            page["page_number"]: self._normalize_tokens(page["content"]) for page in pages
+        }
+        slide_tokens = {
+            slide["slide_number"]: self._normalize_tokens(slide.get("text", "")) for slide in slides
+        }
+
+        unassigned_pages = set(page_tokens)
+        remap: list[dict] = []
+        for slide in slides:
+            slide_num = slide["slide_number"]
+            best_page = None
+            best_score = -1
+            for page_num in unassigned_pages:
+                score = len(slide_tokens[slide_num] & page_tokens[page_num])
+                if score > best_score:
+                    best_score = score
+                    best_page = page_num
+            if best_page is None:
+                continue
+            unassigned_pages.remove(best_page)
+            remap.append(
+                {
+                    "slide_number": slide_num,
+                    "source_page_number": best_page,
+                    "token_overlap": best_score,
+                }
+            )
+        return remap
+
     def process_document(
         self,
         file_path: str | Path,
         client_name: str | None = None,
         report_period: str | None = None,
         run_llm_enhancement: bool = True,
+        export_outputs: bool = False,
+        output_dir: Path | str | None = None,
     ) -> int:
         """
         Process a document through the full pipeline.
@@ -322,10 +601,25 @@ class QBRProcessor:
         slides = self.parse_slides(result.content)
         metrics = self.extract_metrics(result.content)
         charts = self.detect_charts(slides)
+        business_terms = self._extract_business_terms(result.content)
 
         print(f"  - Slides parsed: {len(slides)}")
         print(f"  - Metrics found: {len(metrics)}")
         print(f"  - Charts detected: {len(charts)}")
+
+        if export_outputs:
+            base_dir = Path(output_dir) if output_dir else self.output_dir
+            target_dir = base_dir / file_path.stem
+            self._export_extraction_outputs(
+                file_path=file_path,
+                result=result,
+                slides=slides,
+                metrics=metrics,
+                charts=charts,
+                business_terms=business_terms,
+                output_dir=target_dir,
+            )
+            print(f"  - Extraction outputs saved: {target_dir}")
 
         # Step 3: Create database records
         print("\n" + "=" * 60)
@@ -439,17 +733,6 @@ class QBRProcessor:
                 print(f"  - Images created: {len(result.images)}")
 
             # Extract and create keywords (bulk insert)
-            business_terms = set()
-            patterns = [
-                r"\b(?:CTR|CPM|CPC|CPPC|CPV|ROI|ROAS)\b",
-                r"\b(?:reach|engagement|impressions|conversions?|clicks?)\b",
-                r"\b(?:campaign|roadblock|carousel|banner|ad|creative)\b",
-                r"\b(?:UK|DE|FR|IT|EMEA)\b",
-            ]
-            for pattern in patterns:
-                matches = re.findall(pattern, result.content, re.I)
-                business_terms.update(m.upper() if len(m) <= 4 else m.title() for m in matches)
-
             keywords_to_add = [
                 Keyword(document_id=document.id, keyword=term, category="business_term")
                 for term in business_terms
