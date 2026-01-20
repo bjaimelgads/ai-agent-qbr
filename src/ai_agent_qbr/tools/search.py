@@ -11,6 +11,9 @@ from qbr_agent.application.use_cases import HybridSearchKnowledge
 
 @tool(desc="Search internal QBR knowledge", side_effects="read", tags=["planner"])
 async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
+    status_publisher = ctx.tool_context.get("status_publisher")
+    if callable(status_publisher):
+        status_publisher("Searching QBR materials for relevant details.", "Searching")
     use_case = ctx.tool_context.get("qbr_search_use_case")
     if not isinstance(use_case, HybridSearchKnowledge):
         return SearchResults(results=[])

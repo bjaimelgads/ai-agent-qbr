@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .api_models import OutputThinking, PlannerEventPayload, ServerMessage
+from .steps import format_progress_update
 
 
 def parse_planner_event(event: Any) -> ServerMessage | None:
@@ -29,5 +30,12 @@ def parse_planner_event(event: Any) -> ServerMessage | None:
     payload = payload or {}
 
     if event_type in {"thinking", "step", "plan", "node_start"}:
-        return OutputThinking(message=payload.get("message"), step=payload.get("step"))
+        message, step = format_progress_update(
+            step_name=payload.get("step_name") or payload.get("node_name"),
+            message=payload.get("message"),
+            step=payload.get("step"),
+        )
+        if message is None and step is None:
+            return None
+        return OutputThinking(message=message, step=step)
     return None

@@ -31,6 +31,7 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - Use the `qbr_context` provided in the LLM context whenever available.
 - Cite slide ranges when possible.
 - If no context is provided, say that you could not find relevant QBR content.
+- If the user asks about capabilities, what you can do, or how you can help, call `agent_capabilities`.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
 

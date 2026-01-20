@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .schemas import OutputThinking, PlannerEventPayload, ServerMessage
+from ...steps import format_completion, format_progress_update
 
 
 def parse_planner_event(event: Any) -> ServerMessage | None:
@@ -37,22 +38,33 @@ def parse_planner_event(event: Any) -> ServerMessage | None:
 
     # Map planner events to thinking updates
     if event_type in {"thinking", "step", "plan", "node_start", "iteration_start", "step_start"}:
-        message = payload.get("message") or payload.get("step_name") or payload.get("node_name")
-        step = payload.get("step")
+        step_name = payload.get("step_name") or payload.get("node_name")
+        message, step = format_progress_update(
+            step_name=step_name,
+            message=payload.get("message"),
+            step=payload.get("step"),
+        )
         if message is None and step is None:
             return None
         return OutputThinking(message=message, step=step)
 
     # node_end or step_complete events indicate progress
     if event_type in {"node_end", "step_complete"}:
-        node_name = payload.get("node_name") or payload.get("step_name") or ""
-        return OutputThinking(message=f"Completed: {node_name}" if node_name else None)
+        node_name = payload.get("node_name") or payload.get("step_name")
+        message = format_completion(node_name)
+        return OutputThinking(message=message) if message else None
 
     if event_type == "stream_chunk":
         meta = payload.get("meta") or {}
         if not isinstance(meta, dict):
             meta = {}
-        message = payload.get("text") or meta.get("message") or meta.get("step_name")
-        return OutputThinking(message=message, step=meta.get("step"))
+        message, step = format_progress_update(
+            step_name=meta.get("step_name"),
+            message=payload.get("text") or meta.get("message"),
+            step=meta.get("step"),
+        )
+        if message is None and step is None:
+            return None
+        return OutputThinking(message=message, step=step)
 
     return None

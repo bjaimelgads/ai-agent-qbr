@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover - fallback for older penguiflow
         def project(self, event: PlannerEvent):
             return []
 
+from ai_agent_qbr.steps import resolve_step_display
 
 class AGUIWebsocketAdapter(AGUIAdapter):
     """Translate planner events into AG-UI events for WebSocket delivery."""
@@ -71,12 +72,14 @@ class AGUIWebsocketAdapter(AGUIAdapter):
 
         if event.event_type == "step_start":
             step_name = extra.get("step_name") or event.node_name or f"step_{event.trajectory_step}"
-            mapped.append(self.step_start(step_name, **extra))
+            display = resolve_step_display(step_name)
+            mapped.append(self.step_start(display.label if display else step_name, **extra))
             return mapped
 
         if event.event_type == "step_complete":
             step_name = event.node_name or extra.get("step_name") or f"step_{event.trajectory_step}"
-            mapped.append(self.step_end(step_name, **extra))
+            display = resolve_step_display(step_name)
+            mapped.append(self.step_end(display.label if display else step_name, **extra))
             return mapped
 
         if event.event_type == "stream_chunk":

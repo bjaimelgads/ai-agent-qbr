@@ -18,7 +18,10 @@ from ai_agent_qbr.models import AgentCapabilitiesArgs, AgentCapabilitiesResult
 async def agent_capabilities(
     args: AgentCapabilitiesArgs, ctx: ToolContext
 ) -> AgentCapabilitiesResult:
-    del ctx
+    if ctx and isinstance(ctx.tool_context, dict):
+        status_publisher = ctx.tool_context.get("status_publisher")
+        if callable(status_publisher):
+            status_publisher("Sharing what I can help with.", "Explaining Capabilities")
     capabilities_text = (
         "I can help you get answers grounded in LG Ads QBRs, including:\n"
         "- Executive summaries of a quarter's performance and outcomes.\n"

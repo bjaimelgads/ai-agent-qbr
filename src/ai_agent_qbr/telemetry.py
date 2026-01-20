@@ -31,6 +31,24 @@ class AgentTelemetry:
             callback(message, step)
 
     def record_planner_event(self, event: Any) -> None:
+        if self._logger.isEnabledFor(logging.DEBUG):
+            event_type = None
+            payload: Any = None
+            if isinstance(event, dict):
+                event_type = event.get("event_type") or event.get("type")
+                payload = event.get("payload") or event.get("extra")
+            else:
+                if hasattr(event, "event_type"):
+                    event_type = getattr(event, "event_type")
+                if hasattr(event, "extra"):
+                    payload = getattr(event, "extra", None)
+                elif hasattr(event, "to_payload"):
+                    payload = event.to_payload()
+            node_name = None
+            if isinstance(payload, dict):
+                node_name = payload.get("node_name") or payload.get("step_name")
+            if event_type:
+                self._logger.debug("Planner event: %s node=%s", event_type, node_name)
         for callback in list(self._event_callbacks):
             callback(event)
 
