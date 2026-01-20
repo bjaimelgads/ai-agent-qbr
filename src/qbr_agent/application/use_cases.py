@@ -168,7 +168,18 @@ class AnswerQuestion:
             chunk = result.chunk
             slide_range = _format_slide_range(chunk.start_slide, chunk.end_slide)
             label = f"[{idx}] Doc {chunk.document_id.value}{slide_range}"
-            context_lines.append(f"{label}: {chunk.content}")
+            meta = chunk.metadata or {}
+            extras = []
+            title = meta.get("slide_title")
+            if title:
+                extras.append(f"Title: {title}")
+            key_message = meta.get("slide_key_message")
+            if key_message:
+                extras.append(f"Key message: {key_message}")
+            if extras:
+                context_lines.append(f"{label}: {' | '.join(extras)}\n{chunk.content}")
+            else:
+                context_lines.append(f"{label}: {chunk.content}")
         context_text = "\n\n".join(context_lines)
 
         return Answer(

@@ -1,0 +1,2701 @@
+{
+  "slides": [
+    {
+      "slide_number": 1,
+      "analysis": {
+        "slide_type": "title",
+        "title": "FY25 H2 EMEA Business Review",
+        "key_message": "This is a business review presentation covering the second half of fiscal year 2025 for the EMEA region, presented in December 2025.",
+        "metrics": [],
+        "insights": [],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.98
+      }
+    },
+    {
+      "slide_number": 2,
+      "analysis": {
+        "slide_type": "transition",
+        "title": "Meet The Team",
+        "key_message": "Introduction to the Media & Entertainment account team, featuring leadership from sales, analytics, operations, and account management roles.",
+        "metrics": [],
+        "insights": [
+          "Team includes senior leadership (VP and Managing Director level) showing executive commitment",
+          "Cross-functional team structure with representation from Sales, Analytics, Operations, and Account Management",
+          "Dedicated Media & Entertainment vertical focus with specialized team members"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 3,
+      "analysis": {
+        "slide_type": "agenda",
+        "title": "Today's Agenda",
+        "key_message": "This QBR presentation will cover six main areas: partnership highlights, latest updates, D+ app profile, FY25 H2 performance results, high impact spotlight, and forward-looking recommendations.",
+        "metrics": [],
+        "insights": [
+          "The presentation follows a standard QBR structure moving from retrospective (partnership highlights, performance) to prospective (recommendations and looking ahead)",
+          "Focus on D+ (likely Disney+) app performance in fiscal year 2025 second half",
+          "Includes a 'High Impact Spotlight' section suggesting emphasis on key achievements or initiatives"
+        ],
+        "action_items": [
+          "Follow the agenda structure through the remaining slides",
+          "Pay attention to FY25 H2 performance metrics in section 04",
+          "Review recommendations in section 06 for next steps"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 4,
+      "analysis": {
+        "slide_type": "data",
+        "title": "FY25 Year at a Glance - Disney XLOB Partnership Performance",
+        "key_message": "FY25 delivered exceptional growth with $34M total investment (77% YoY increase from $17M), driven primarily by Disney+ Global's $18M contribution (2x FY24), with strategic expansion across 24 markets and H2 acceleration generating over $500K in added value.",
+        "metrics": [
+          {
+            "name": "Total XLOB Investment",
+            "value": "$34M",
+            "normalized_value": 34000000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "FY25 total across 20 Lines of Business"
+          },
+          {
+            "name": "YoY Growth",
+            "value": "77%",
+            "normalized_value": 77.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Total investment growth from FY24"
+          },
+          {
+            "name": "Starting Endeavor",
+            "value": "$17M",
+            "normalized_value": 17000000.0,
+            "unit": "$",
+            "trend": null,
+            "context": "FY25 initial investment baseline"
+          },
+          {
+            "name": "Disney+ Global Investment",
+            "value": "$18M",
+            "normalized_value": 18000000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "FY25 Disney+ Global contribution"
+          },
+          {
+            "name": "Disney+ Global Growth",
+            "value": "2x",
+            "normalized_value": 2.0,
+            "unit": "x",
+            "trend": "up",
+            "context": "Growth vs FY24 ($9.4M)"
+          },
+          {
+            "name": "Disney+ Global Share",
+            "value": "52%",
+            "normalized_value": 52.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Percentage of total XLOB investment"
+          },
+          {
+            "name": "EMEA Investment",
+            "value": "$5.4M",
+            "normalized_value": 5400000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "Disney+ EMEA FY25 contribution"
+          },
+          {
+            "name": "EMEA Share of Global",
+            "value": "30%",
+            "normalized_value": 30.0,
+            "unit": "%",
+            "trend": null,
+            "context": "EMEA as percentage of Disney+ Global"
+          },
+          {
+            "name": "EMEA H2 Investment",
+            "value": "$3.168M",
+            "normalized_value": 3168000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "Second half EMEA investment"
+          },
+          {
+            "name": "Added Value",
+            "value": "$500K+",
+            "normalized_value": 500000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "Total added value delivered in FY25"
+          },
+          {
+            "name": "Market Coverage",
+            "value": "24",
+            "normalized_value": 24.0,
+            "unit": "markets",
+            "trend": "up",
+            "context": "Live paid media markets (up from 21 in FY24)"
+          },
+          {
+            "name": "USA Disney+ Investment",
+            "value": "$8.5M",
+            "normalized_value": 8500000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "Domestic Disney+ total investment"
+          },
+          {
+            "name": "USA Domestic Added Value",
+            "value": "$800K+",
+            "normalized_value": 800000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "Domestic value delivered back to business"
+          }
+        ],
+        "insights": [
+          "Disney+ Global was the primary growth driver, contributing 52% of total XLOB investment and doubling FY24 performance",
+          "Second-half acceleration was significant, with EMEA contributing $3.168M in H2 alone (nearly 60% of their annual total)",
+          "Market expansion from 21 to 24 markets demonstrates geographic scaling strategy",
+          "Strategic shift from 96% static creative to more dynamic formats including video/interactivity carousel",
+          "Structured testing program across multiple variables (Price vs. No Price, Asset Mix, Tune-In vs. Evergreen) established foundation for FY26 optimization",
+          "100% Bundle Duo/Trio support and EDTC/Unlimited Bundle launch were key strategic priorities",
+          "Two-thirds of USA Disney+ investment ($8.5M total) came in H2, showing strong partnership momentum and scalability"
+        ],
+        "action_items": [
+          "Leverage FY25 test learnings (Price vs. No Price, Asset Mix, Tune-In vs. Evergreen, Promo creative) for FY26 planning",
+          "Continue H2 momentum and scaling strategies into FY26",
+          "Expand on suppression tactics and video/interactivity carousel creative approaches",
+          "Build on Bundle Duo/Trio success and promotional campaign learnings"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 5,
+      "analysis": {
+        "slide_type": "agenda",
+        "title": "But First\u2026",
+        "key_message": "This slide introduces the upcoming strategic topics for discussion, including the LG Ads x Disney FY26 partnership, retention planning, sports on Disney+, market expansions, and CTV video product expansion.",
+        "metrics": [],
+        "insights": [
+          "The presentation will cover cross-line-of-business (XLOB) partnership strategies between LG Ads and Disney for FY26",
+          "Sports content on Disney+ is a key strategic focus area",
+          "Geographic expansion into MENA (Middle East and North Africa) and other markets is planned",
+          "Product expansion into CTV (Connected TV) video advertising is a priority initiative"
+        ],
+        "action_items": [
+          "Review retention planning strategies",
+          "Evaluate market expansion opportunities in MENA and other regions",
+          "Assess CTV video product expansion roadmap"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 6,
+      "analysis": {
+        "slide_type": "transition",
+        "title": "Latest & Greatest @ LG Ads",
+        "key_message": "This section introduces recent updates, achievements, or new features from LG Ads.",
+        "metrics": [],
+        "insights": [
+          "The presentation is transitioning to discuss recent LG Ads updates or highlights"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 7,
+      "analysis": {
+        "slide_type": "data",
+        "title": "New & Improved Global Dashboard",
+        "key_message": "The enhanced Global Dashboard now provides real-time access to EOC App Usage Metrics with three major improvements: App Data by Market (including MAUs and % Installed), a new Date Range Comparison module for side-by-side analysis, and two new metrics (Acquired Users and Engaged Users) for deeper performance evaluation.",
+        "metrics": [
+          {
+            "name": "MAUs",
+            "value": "MAUs",
+            "normalized_value": null,
+            "unit": null,
+            "trend": null,
+            "context": "App Data by Market - Active vs. Lapsed audiences"
+          },
+          {
+            "name": "% Installed",
+            "value": "% Installed",
+            "normalized_value": null,
+            "unit": "%",
+            "trend": null,
+            "context": "App Data by Market - Active vs. Lapsed audiences"
+          },
+          {
+            "name": "Acquired Users",
+            "value": "Acquired Users",
+            "normalized_value": null,
+            "unit": "users",
+            "trend": null,
+            "context": "New metric - users meeting full acquisition criteria (Not Installed)"
+          },
+          {
+            "name": "Engaged Users",
+            "value": "Engaged Users",
+            "normalized_value": null,
+            "unit": "users",
+            "trend": null,
+            "context": "New metric - users completing 2\u00d730-minute sessions within 7 days"
+          }
+        ],
+        "insights": [
+          "Dashboard provides real-time access to app usage and exposure data across all markets",
+          "New MENA markets have been added to the App Data by Market feature",
+          "Date Range Comparison module enables side-by-side analysis of any two custom periods with independent date selectors",
+          "Planning can now be anchored to device-level activity rather than just clicks",
+          "New metrics enable more nuanced performance evaluation beyond traditional click metrics",
+          "Dashboard supports multiple aggregation levels: daily, weekly, and monthly views"
+        ],
+        "action_items": [
+          "Access the Global Dashboard at the provided URL",
+          "Use App Data by Market to anchor planning decisions to device-level activity",
+          "Leverage Date Range Comparison module for period-over-period analysis",
+          "Incorporate Acquired Users and Engaged Users metrics into performance evaluation",
+          "Provide feedback to continue dashboard evolution"
+        ],
+        "has_chart": true,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 8,
+      "analysis": {
+        "slide_type": "recommendation",
+        "title": "Stay Connected with Consumers Throughout their Entertainment Journey",
+        "key_message": "The strategy recommends maintaining consumer engagement across multiple entertainment touchpoints using Content Store, CTV Video, and Carousel ad formats, with planned roadblock campaigns in Q3 and Q4 across European markets.",
+        "metrics": [
+          {
+            "name": "Q3 Content Store Roadblock UK",
+            "value": "6/1-6/15",
+            "normalized_value": null,
+            "unit": "date range",
+            "trend": null,
+            "context": "UK market campaign timing"
+          },
+          {
+            "name": "Q3 Content Store Roadblock DE",
+            "value": "6/16-6/30",
+            "normalized_value": null,
+            "unit": "date range",
+            "trend": null,
+            "context": "Germany market campaign timing"
+          },
+          {
+            "name": "Q4 Content Store Roadblock",
+            "value": "9/16-9/27",
+            "normalized_value": null,
+            "unit": "date range",
+            "trend": null,
+            "context": "FR, DE, IT, UK markets campaign timing"
+          }
+        ],
+        "insights": [
+          "Multi-format advertising approach using Content Store, CTV Video, and Carousel placements",
+          "Phased European market rollout with Q3 focus on UK and Germany",
+          "Q4 expansion to four European markets (France, Germany, Italy, UK) with synchronized roadblock campaigns"
+        ],
+        "action_items": [
+          "Execute Q3 Content Store Roadblocks in UK (June 1-15) and Germany (June 16-30)",
+          "Prepare Q4 Content Store Roadblocks across FR, DE, IT, UK markets (September 16-27)",
+          "Ensure creative assets are ready for Content Store, CTV Video, and Carousel formats"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.75
+      }
+    },
+    {
+      "slide_number": 9,
+      "analysis": {
+        "slide_type": "data",
+        "title": "UK Studios - Best Use of CTV Technology award at The Wires Awards",
+        "key_message": "LG Ad Solutions won Best Use of CTV Technology award for a Disney Lilo & Stitch campaign that achieved 3.2x CTR increase by combining 3D animated creative with strategic Home Screen placement and ACR-based audience targeting.",
+        "metrics": [
+          {
+            "name": "CTR Increase",
+            "value": "3.2x",
+            "normalized_value": 3.2,
+            "unit": "x",
+            "trend": "up",
+            "context": "Disney Lilo & Stitch 3D Home Screen campaign"
+          }
+        ],
+        "insights": [
+          "LG Ad Solutions won Best Use of CTV Technology award at The Wires Awards",
+          "Campaign successfully blended creativity and platform innovation to drive measurable results",
+          "3D animated TV Home Screen takeover created native, attention-grabbing experience",
+          "Strategic use of LG's first-party ACR data enabled precise audience targeting",
+          "100% SOV Home Screen Roadblock on theatrical release day maximized visibility",
+          "Campaign targeted high-value households, especially parents with kids, for cultural resonance"
+        ],
+        "action_items": [
+          "Leverage first-party ACR data for precise audience targeting in future campaigns",
+          "Consider 3D creative takeovers for high-impact product launches",
+          "Deploy roadblock strategies on key launch dates for maximum awareness",
+          "Maintain campaign continuity with supporting placements before and after main activation"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 10,
+      "analysis": {
+        "slide_type": "recommendation",
+        "title": "Product Innovation: Carousel Upgrades - Seamless Home Screen",
+        "key_message": "LG is proposing a new Seamless Home Screen Ad Unit for 2026 TVs that delivers immersive full-screen experiences with auto-expand on hover, positioning LG competitively while seeking client feedback to shape FY26 development priorities.",
+        "metrics": [],
+        "insights": [
+          "New ad unit planned for 2026 LG TVs with potential rollback to older models",
+          "Format features full-screen banner/video ads with auto-expand on hover and smooth transitions",
+          "Positions LG competitively with other OEMs while leveraging cleaner UX and household-level data advantages",
+          "Designed to drive higher engagement and richer brand storytelling during peak discovery moments",
+          "Product roadmap is subject to change and not guaranteed"
+        ],
+        "action_items": [
+          "Client to provide feedback on interest in testing the Seamless Home Screen Ad Unit",
+          "Client to consider incorporating this unit into FY26 planning",
+          "Client feedback will directly influence development timeline and prioritization"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 11,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Product Innovation: CTV Video Branded Player",
+        "key_message": "Introduction of a new CTV Video Branded Player product innovation, representing an enhancement to the company's Connected TV video advertising capabilities.",
+        "metrics": [],
+        "insights": [
+          "New product innovation focused on CTV (Connected TV) video capabilities",
+          "Introduction of a Branded Player feature for CTV video advertising",
+          "Expansion of video advertising product offerings into the CTV space"
+        ],
+        "action_items": [
+          "Review the CTV Video Branded Player capabilities and features",
+          "Assess potential applications and client opportunities for the new CTV product",
+          "Understand how this innovation fits into the broader product roadmap"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.75
+      }
+    },
+    {
+      "slide_number": 12,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Product Innovation: Sports Hub",
+        "key_message": "Sports Hub offers exclusive sponsorship opportunities across 9 markets with 70% of UK users tracking sports teams, featuring premium pricing of $1M per quarter during major 2026 sporting events (Winter Olympics, FIFA World Cup) in the US market.",
+        "metrics": [
+          {
+            "name": "UK Users Track Sports Team",
+            "value": "70%",
+            "normalized_value": 70.0,
+            "unit": "%",
+            "trend": null,
+            "context": "User engagement with sports content in UK market"
+          },
+          {
+            "name": "US Sports Hub Premium Minimum",
+            "value": "$1M",
+            "normalized_value": 1000000.0,
+            "unit": "$",
+            "trend": null,
+            "context": "Per quarter during Winter Olympics (Feb 2026) and FIFA World Cup (June-July 2026)"
+          },
+          {
+            "name": "Lead Time Required",
+            "value": "17 days",
+            "normalized_value": 17.0,
+            "unit": "days",
+            "trend": null,
+            "context": "Assets, flighting, and details due prior to Hub launch"
+          },
+          {
+            "name": "Minimum Cards Required",
+            "value": "4x",
+            "normalized_value": 4.0,
+            "unit": "cards",
+            "trend": null,
+            "context": "Cards (3792x978) within Sports Hub"
+          },
+          {
+            "name": "Sponsorship Duration",
+            "value": "1-month",
+            "normalized_value": 1.0,
+            "unit": "month",
+            "trend": null,
+            "context": "Fixed Sports Hub sponsorship period"
+          }
+        ],
+        "insights": [
+          "Strong sports content engagement with 70% of UK users tracking sports teams, indicating high audience interest",
+          "Premium pricing strategy during major sporting events (Winter Olympics, FIFA World Cup) reflects anticipated increased viewership and impressions",
+          "Sports Hub available across 9 major markets: US, UK, Germany, France, Italy, Spain, Australia, Brazil, and Canada",
+          "Sponsorship includes both Sports Hub placement and Home Screen co-branded featured card for maximum visibility",
+          "Operational requirements include 17-day lead time and LG creative approval process"
+        ],
+        "action_items": [
+          "Submit all assets, flighting, and details 17 days prior to Sports Hub launch",
+          "Prepare 4x cards minimum (3792x978 dimensions) with sports IP messaging",
+          "Schedule creative flights 7 days prior to launch",
+          "Ensure all creatives receive LG approval",
+          "Plan budget for $1M per quarter minimum during February 2026 (Winter Olympics) and June-July 2026 (FIFA World Cup) for US market"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 13,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Product Innovation: Content Notifications Beta",
+        "key_message": "Disney+ is launching Content Notifications Beta on LG Smart TVs in Australia (December) and US (December-March) to reach users in real-time when they turn on their TV, driving immediate engagement with featured content like Taylor Swift's Eras Tour and Percy Jackson.",
+        "metrics": [
+          {
+            "name": "Pop-up Display Duration",
+            "value": "5 seconds",
+            "normalized_value": 5.0,
+            "unit": "seconds",
+            "trend": null,
+            "context": "Initial notification visibility on TV power-on"
+          },
+          {
+            "name": "Notification Flight Window",
+            "value": "7 days",
+            "normalized_value": 7.0,
+            "unit": "days",
+            "trend": null,
+            "context": "Duration notification remains accessible in Notification Center"
+          },
+          {
+            "name": "Beta Markets",
+            "value": "2",
+            "normalized_value": 2.0,
+            "unit": "markets",
+            "trend": null,
+            "context": "Australia and US Domestic"
+          }
+        ],
+        "insights": [
+          "Content Notifications enable Disney+ to capture user attention at the moment of TV power-on, converting passive device usage into active app engagement",
+          "Two-tier notification system: immediate 5-second pop-up for awareness, plus persistent 7-day panel notification for deeper engagement",
+          "Beta strategy targets high-value content (Taylor Swift Eras Tour, Percy Jackson, Pole 2 Pole) to test feature effectiveness",
+          "Australia serves as initial test market in December before broader US rollout through March",
+          "Feature is deeplinkable, allowing direct navigation from notification to content, reducing friction in user journey"
+        ],
+        "action_items": [
+          "Monitor beta performance in Australia (December) with Taylor Swift Eras Tour content",
+          "Prepare US domestic rollout for December-March with aligned content (Percy Jackson, Pole 2 Pole, Paradise S2, ABC Show TBC)",
+          "Collect user feedback during beta to improve notification effectiveness",
+          "Track conversion metrics from notification view to content engagement"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 14,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Product Innovation: Content Notifications Beta",
+        "key_message": "Disney+ is launching Content Notifications on LG Smart TVs in Australia and US markets to reach users in real-time when they turn on their TV, with a beta program running December through March featuring high-profile content like Taylor Swift and Percy Jackson.",
+        "metrics": [
+          {
+            "name": "Pop-up Display Duration",
+            "value": "5 seconds",
+            "normalized_value": 5.0,
+            "unit": "seconds",
+            "trend": null,
+            "context": "Pop-up notification visibility"
+          },
+          {
+            "name": "Notification Window",
+            "value": "7 days",
+            "normalized_value": 7.0,
+            "unit": "days",
+            "trend": null,
+            "context": "Panel notification persistence"
+          },
+          {
+            "name": "Beta Markets",
+            "value": "2",
+            "normalized_value": 2.0,
+            "unit": "markets",
+            "trend": null,
+            "context": "Australia and US"
+          },
+          {
+            "name": "Beta Duration",
+            "value": "December to March",
+            "normalized_value": null,
+            "unit": "months",
+            "trend": null,
+            "context": "US market rollout timeline"
+          }
+        ],
+        "insights": [
+          "Content Notifications enable Disney+ to capture user attention at the moment of TV power-on, converting passive device usage into active app engagement",
+          "Two-tier notification system (pop-up + persistent panel) provides both immediate awareness and sustained discoverability over a 7-day window",
+          "Beta focuses on high-value content (Taylor Swift, Percy Jackson, Pole 2 Pole) to test engagement with premium titles",
+          "Disney XLOB is taking ownership of this global innovation, starting with Australia and US markets",
+          "The feature is deeplinkable, allowing direct navigation from notification to content, reducing friction in the user journey"
+        ],
+        "action_items": [
+          "Monitor beta performance in Australia (December) with Taylor Swift content",
+          "Track engagement metrics for US rollout (December-March) across Percy Jackson, Pole 2 Pole, Paradise S2, and ABC show",
+          "Evaluate effectiveness of pop-up vs panel notification engagement patterns",
+          "Assess potential for expansion to additional markets based on beta results"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 15,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Disney+ App on LG TVs: EU5",
+        "key_message": "Disney+ has established solid presence on LG TVs across EU5 markets with rankings between #4-5, but with only 30% reach of active LG TVs, there's a significant 70% untapped opportunity to drive adoption through paid media.",
+        "metrics": [
+          {
+            "name": "App Ranking",
+            "value": "#5",
+            "normalized_value": 5.0,
+            "unit": "rank",
+            "trend": null,
+            "context": "United Kingdom"
+          },
+          {
+            "name": "Monthly Streaming Hours",
+            "value": "15M",
+            "normalized_value": 15000000.0,
+            "unit": "hours",
+            "trend": null,
+            "context": "United Kingdom"
+          },
+          {
+            "name": "Monthly Unique Devices",
+            "value": "2M",
+            "normalized_value": 2000000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "United Kingdom"
+          },
+          {
+            "name": "Reach of LG Active TVs",
+            "value": "34%",
+            "normalized_value": 34.0,
+            "unit": "%",
+            "trend": null,
+            "context": "United Kingdom"
+          },
+          {
+            "name": "App Ranking",
+            "value": "#4",
+            "normalized_value": 4.0,
+            "unit": "rank",
+            "trend": null,
+            "context": "Spain"
+          },
+          {
+            "name": "Monthly Streaming Hours",
+            "value": "8M",
+            "normalized_value": 8000000.0,
+            "unit": "hours",
+            "trend": null,
+            "context": "Spain"
+          },
+          {
+            "name": "Monthly Unique Devices",
+            "value": "1.4M",
+            "normalized_value": 1400000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "Spain"
+          },
+          {
+            "name": "Reach of LG Active TVs",
+            "value": "28%",
+            "normalized_value": 28.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Spain"
+          },
+          {
+            "name": "App Ranking",
+            "value": "#4",
+            "normalized_value": 4.0,
+            "unit": "rank",
+            "trend": null,
+            "context": "Germany"
+          },
+          {
+            "name": "Monthly Streaming Hours",
+            "value": "7M",
+            "normalized_value": 7000000.0,
+            "unit": "hours",
+            "trend": null,
+            "context": "Germany"
+          },
+          {
+            "name": "Monthly Unique Devices",
+            "value": "1.1M",
+            "normalized_value": 1100000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "Germany"
+          },
+          {
+            "name": "Reach of LG Active TVs",
+            "value": "29%",
+            "normalized_value": 29.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Germany"
+          },
+          {
+            "name": "App Ranking",
+            "value": "#4",
+            "normalized_value": 4.0,
+            "unit": "rank",
+            "trend": null,
+            "context": "Italy"
+          },
+          {
+            "name": "Monthly Streaming Hours",
+            "value": "6M",
+            "normalized_value": 6000000.0,
+            "unit": "hours",
+            "trend": null,
+            "context": "Italy"
+          },
+          {
+            "name": "Monthly Unique Devices",
+            "value": "1.0M",
+            "normalized_value": 1000000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "Italy"
+          },
+          {
+            "name": "Reach of LG Active TVs",
+            "value": "26%",
+            "normalized_value": 26.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Italy"
+          },
+          {
+            "name": "App Ranking",
+            "value": "#4",
+            "normalized_value": 4.0,
+            "unit": "rank",
+            "trend": null,
+            "context": "France"
+          },
+          {
+            "name": "Monthly Streaming Hours",
+            "value": "3M",
+            "normalized_value": 3000000.0,
+            "unit": "hours",
+            "trend": null,
+            "context": "France"
+          },
+          {
+            "name": "Monthly Unique Devices",
+            "value": "549K",
+            "normalized_value": 549000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "France"
+          },
+          {
+            "name": "Reach of LG Active TVs",
+            "value": "26%",
+            "normalized_value": 26.0,
+            "unit": "%",
+            "trend": null,
+            "context": "France"
+          },
+          {
+            "name": "Average Reach",
+            "value": "30%",
+            "normalized_value": 30.0,
+            "unit": "%",
+            "trend": null,
+            "context": "EU5 markets"
+          },
+          {
+            "name": "Untapped Market",
+            "value": "70%",
+            "normalized_value": 70.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Active LG TVs"
+          }
+        ],
+        "insights": [
+          "UK leads in all metrics with 15M monthly streaming hours and 2M unique devices",
+          "App rankings are consistently strong across EU5 markets (#4-5 positions)",
+          "Average reach across EU5 is approximately 30%, indicating significant room for growth",
+          "70% of active LG TVs remain untapped, representing a major growth opportunity",
+          "Spain shows second-highest engagement with 8M streaming hours despite lower reach than UK"
+        ],
+        "action_items": [
+          "Develop paid media strategy to increase Disney+ app adoption on LG TVs",
+          "Target the 70% of untapped active LG TV users across EU5 markets",
+          "Prioritize UK market given its leading performance metrics",
+          "Consider market-specific strategies given varying reach percentages (26-34%)"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 16,
+      "analysis": {
+        "slide_type": "data",
+        "title": "EMEA Disney+ Active User Growth",
+        "key_message": "Turkey leads EMEA Disney+ growth at +27% (460K MAUs), with strong double-digit gains across Southern Europe (Spain +10%, Italy +10%), indicating broad regional momentum from April to September 2025.",
+        "metrics": [
+          {
+            "name": "Turkey MAU Growth",
+            "value": "+27%",
+            "normalized_value": 27.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "D+ Growth in MAUs (April 25 - September 25)"
+          },
+          {
+            "name": "Turkey Active Users",
+            "value": "460K",
+            "normalized_value": 460000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Turkey MAUs"
+          },
+          {
+            "name": "Greece MAU Growth",
+            "value": "+18%",
+            "normalized_value": 18.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "D+ Growth in MAUs (April 25 - September 25)"
+          },
+          {
+            "name": "Greece Active Users",
+            "value": "201K",
+            "normalized_value": 201000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Greece MAUs"
+          },
+          {
+            "name": "Czech MAU Growth",
+            "value": "+11%",
+            "normalized_value": 11.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "D+ Growth in MAUs (April 25 - September 25)"
+          },
+          {
+            "name": "Czech Active Users",
+            "value": "232K",
+            "normalized_value": 232000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Czech MAUs"
+          },
+          {
+            "name": "Spain MAU Growth",
+            "value": "+10%",
+            "normalized_value": 10.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "D+ Growth in MAUs (April 25 - September 25)"
+          },
+          {
+            "name": "Spain Active Users",
+            "value": "1.4M",
+            "normalized_value": 1400000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Spain MAUs"
+          },
+          {
+            "name": "Italy MAU Growth",
+            "value": "+10%",
+            "normalized_value": 10.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "D+ Growth in MAUs (April 25 - September 25)"
+          },
+          {
+            "name": "Italy Active Users",
+            "value": "1.0M",
+            "normalized_value": 1000000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Italy MAUs"
+          },
+          {
+            "name": "Germany MAU Growth",
+            "value": "+9%",
+            "normalized_value": 9.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "D+ Growth in MAUs (April 25 - September 25)"
+          },
+          {
+            "name": "Germany Active Users",
+            "value": "1.1M",
+            "normalized_value": 1100000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Germany MAUs"
+          },
+          {
+            "name": "Global Smart TVs",
+            "value": "200M",
+            "normalized_value": 200000000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "LG Smart TV install base"
+          },
+          {
+            "name": "Turkey Non-Installation Rate",
+            "value": "30%",
+            "normalized_value": 30.0,
+            "unit": "%",
+            "trend": null,
+            "context": "LG TVs without Disney+ installed in Turkey"
+          },
+          {
+            "name": "Turkey Lapsed Users",
+            "value": "70%",
+            "normalized_value": 70.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Of installed Disney+ users in Turkey"
+          },
+          {
+            "name": "Turkey H1 Investment",
+            "value": "$269K",
+            "normalized_value": 269000.0,
+            "unit": "$",
+            "trend": null,
+            "context": "Turkey market investment H1"
+          },
+          {
+            "name": "Turkey H2 Investment",
+            "value": "$388K",
+            "normalized_value": 388000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "Turkey market investment H2"
+          },
+          {
+            "name": "Turkey H1 CPPC",
+            "value": "$14.89",
+            "normalized_value": 14.89,
+            "unit": "$",
+            "trend": null,
+            "context": "Cost Per Paying Customer H1"
+          },
+          {
+            "name": "Turkey H2 CPPC",
+            "value": "$11.03",
+            "normalized_value": 11.03,
+            "unit": "$",
+            "trend": "down",
+            "context": "Cost Per Paying Customer H2"
+          }
+        ],
+        "insights": [
+          "Turkey demonstrates the highest growth rate in EMEA at +27%, significantly outpacing other markets",
+          "Southern European markets (Spain, Italy) show strong double-digit growth at +10%, indicating regional momentum",
+          "Turkey represents a major opportunity market with 30% of LG TVs lacking Disney+ installation and 70% of installed users being lapsed",
+          "Turkey's marketing efficiency improved significantly from H1 to H2, with CPPC decreasing from $14.89 to $11.03 despite increased investment",
+          "Investment in Turkey increased 44% from H1 ($269K) to H2 ($388K), correlating with improved efficiency metrics",
+          "Heavy focus on Turkish Originals versus Global titles may be influencing performance and presents content strategy optimization opportunity"
+        ],
+        "action_items": [
+          "Capitalize on Turkey's growth momentum by targeting the 30% non-installed LG TV base",
+          "Develop win-back campaigns for the 70% lapsed user segment in Turkey",
+          "Rebalance Turkey's content promotion strategy to include more Global launches alongside Turkish Originals",
+          "Replicate Turkey's efficiency improvements (26% CPPC reduction) in other high-growth markets",
+          "Investigate drivers of double-digit growth in Spain and Italy to scale best practices across EU5"
+        ],
+        "has_chart": true,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 17,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Disney+ App on LG TVs: EU5 Performance",
+        "key_message": "Disney+ demonstrates strong growth on LG TVs across five major European markets, with MAU growing from 549K to 2.0M, reaching up to 34% of active LG TVs, and maintaining a #4 app ranking position.",
+        "metrics": [
+          {
+            "name": "Disney+ MAU",
+            "value": "2.0M",
+            "normalized_value": 2000000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Peak performance across EU5 markets"
+          },
+          {
+            "name": "Disney+ MAU",
+            "value": "549K",
+            "normalized_value": 549000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Starting baseline"
+          },
+          {
+            "name": "LG MAU",
+            "value": "5.9M",
+            "normalized_value": 5900000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Peak LG platform usage"
+          },
+          {
+            "name": "LG MAU",
+            "value": "2.1M",
+            "normalized_value": 2100000.0,
+            "unit": "users",
+            "trend": "up",
+            "context": "Starting baseline"
+          },
+          {
+            "name": "Reach of Active LG TVs",
+            "value": "34%",
+            "normalized_value": 34.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Peak reach percentage"
+          },
+          {
+            "name": "Reach of Active LG TVs",
+            "value": "26%",
+            "normalized_value": 26.0,
+            "unit": "%",
+            "trend": "stable",
+            "context": "Baseline reach"
+          },
+          {
+            "name": "App Ranking",
+            "value": "#4",
+            "normalized_value": 4.0,
+            "unit": "rank",
+            "trend": "stable",
+            "context": "Consistent top 5 position"
+          }
+        ],
+        "insights": [
+          "Disney+ MAU grew 264% from 549K to 2.0M across the measurement period",
+          "LG platform MAU increased 181% from 2.1M to 5.9M, indicating overall platform growth",
+          "Disney+ reach of active LG TVs improved from 26% to 34%, showing market penetration gains",
+          "App ranking improved from #5 to #4 and stabilized, demonstrating competitive positioning",
+          "Data covers five major European markets: UK, Spain, Germany, Italy, and France"
+        ],
+        "action_items": [
+          "Analyze individual market performance to identify best practices from top-performing countries",
+          "Investigate opportunities to improve app ranking from #4 to top 3 position",
+          "Leverage the 34% reach achievement as a benchmark for other markets"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 18,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Disney+ App User Profile on LG TVs",
+        "key_message": "67% of LG TVs with Disney+ installed in EMEA are lapsed users (up 1ppt from last half), representing a significant re-engagement opportunity, while overall app installation reached 76% (up 2ppt).",
+        "metrics": [
+          {
+            "name": "Lapsed Users",
+            "value": "67%",
+            "normalized_value": 67.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Of TVs with Disney+ installed in EMEA"
+          },
+          {
+            "name": "Lapsed Users Change",
+            "value": "+1 ppt",
+            "normalized_value": 1.0,
+            "unit": "ppt",
+            "trend": "up",
+            "context": "Half over Half change"
+          },
+          {
+            "name": "Active Users",
+            "value": "33%",
+            "normalized_value": 33.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Of TVs with Disney+ installed"
+          },
+          {
+            "name": "Installers",
+            "value": "76%",
+            "normalized_value": 76.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "All active LG TV users"
+          },
+          {
+            "name": "Installers Change",
+            "value": "+2 ppt",
+            "normalized_value": 2.0,
+            "unit": "ppt",
+            "trend": "up",
+            "context": "Half over Half change"
+          },
+          {
+            "name": "Not Installed",
+            "value": "24%",
+            "normalized_value": 24.0,
+            "unit": "%",
+            "trend": null,
+            "context": "All active LG TV users"
+          }
+        ],
+        "insights": [
+          "67% of Disney+ installed base on LG TVs in EMEA are lapsed users, indicating significant churn or dormancy",
+          "Installation rate increased 2 percentage points to 76%, showing positive growth in app adoption",
+          "Lapsed user percentage increased by 1 percentage point, suggesting engagement challenges despite growing install base",
+          "Only 33% of users with the app installed are active (used within last 60 days), highlighting retention opportunity",
+          "Q4 tactical shift focused on suppressing only heavy active users and reducing untargeted roadblocks"
+        ],
+        "action_items": [
+          "Target the 67% lapsed user segment with re-engagement campaigns to drive subscriptions",
+          "Continue ROS (Run of Site) tactics with selective suppression of heavy active users",
+          "Optimize roadblock strategy to balance reach with targeted efficiency",
+          "Develop campaigns specifically for tentpole content to drive high reach among lapsed users"
+        ],
+        "has_chart": true,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 19,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Paid Media Improves App Engagement",
+        "key_message": "Users exposed to LG paid Disney+ campaigns spent 8% more time per app launch (55 mins vs 51 mins) compared to the overall Disney+ audience across EMEA markets, demonstrating that paid media drives meaningful engagement improvements.",
+        "metrics": [
+          {
+            "name": "Avg duration per launch - Overall Audience",
+            "value": "51 mins",
+            "normalized_value": 51.0,
+            "unit": "minutes",
+            "trend": null,
+            "context": "Disney+ Overall Audience across EMEA"
+          },
+          {
+            "name": "Avg duration per launch - Exposed to Campaign",
+            "value": "55 mins",
+            "normalized_value": 55.0,
+            "unit": "minutes",
+            "trend": "up",
+            "context": "Users exposed to Paid Disney+ Campaign"
+          },
+          {
+            "name": "Engagement Lift",
+            "value": "+8%",
+            "normalized_value": 8.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Improvement from paid media exposure"
+          },
+          {
+            "name": "Avg duration per launch - Overall Audience (H2)",
+            "value": "52 mins",
+            "normalized_value": 52.0,
+            "unit": "minutes",
+            "trend": null,
+            "context": "Last Half performance mentioned in speaker notes"
+          },
+          {
+            "name": "Avg duration per launch - Exposed (H2)",
+            "value": "60 mins",
+            "normalized_value": 60.0,
+            "unit": "minutes",
+            "trend": "up",
+            "context": "Last Half performance for exposed users"
+          },
+          {
+            "name": "Engagement Lift (H2)",
+            "value": "15%",
+            "normalized_value": 15.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Last Half improvement mentioned in speaker notes"
+          }
+        ],
+        "insights": [
+          "Paid media exposure correlates with 8% higher average time spent per app launch in EMEA markets",
+          "Users exposed to campaigns averaged 55 minutes per launch versus 51 minutes for overall audience",
+          "Speaker notes reveal even stronger results in the last half: 15% lift (60 mins vs 52 mins)",
+          "For ad-supported models, increased engagement time directly impacts revenue potential",
+          "LG Ad Solutions data demonstrates measurable impact of paid campaigns on user behavior"
+        ],
+        "action_items": [
+          "Continue investing in paid media campaigns given the positive engagement lift",
+          "Investigate factors driving the stronger 15% performance in the last half",
+          "Consider expanding successful EMEA campaign strategies to other markets"
+        ],
+        "has_chart": true,
+        "has_comparison": true,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 20,
+      "analysis": {
+        "slide_type": "transition",
+        "title": "FY25 H2 Performance - Discovery Capabilities",
+        "key_message": "This slide introduces the FY25 H2 performance section focusing on discovery capabilities across gaming, music, shopping, and other domains.",
+        "metrics": [],
+        "insights": [
+          "The presentation is transitioning to discuss FY25 H2 performance metrics",
+          "Focus area includes discovery capabilities across multiple verticals (gaming, music, shopping)"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.7
+      }
+    }
+  ],
+  "metrics": {
+    "metrics": [
+      {
+        "original_value": "8%",
+        "metric_name": "Quarterly Spend Increase",
+        "normalized_value": 8.0,
+        "unit": "percentage",
+        "category": "cost",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "previous quarter",
+        "change_percentage": 8.0,
+        "significance": "Investment increased by 8% to $2.56M, indicating continued commitment to the platform while maintaining cost discipline.",
+        "benchmark_notes": "Moderate increase aligned with scaling campaigns"
+      },
+      {
+        "original_value": "37%",
+        "metric_name": "Impression Growth",
+        "normalized_value": 37.0,
+        "unit": "percentage",
+        "category": "reach",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "previous quarter",
+        "change_percentage": 37.0,
+        "significance": "Impressions grew to 224.8M, representing strong reach expansion and improved campaign distribution.",
+        "benchmark_notes": "Significantly outpacing spend growth, indicating improved efficiency"
+      },
+      {
+        "original_value": "75%",
+        "metric_name": "Launch Volume Growth",
+        "normalized_value": 75.0,
+        "unit": "percentage",
+        "category": "engagement",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "previous quarter",
+        "change_percentage": 75.0,
+        "significance": "Launches reached 11.95M (1.8x increase), demonstrating exceptional user interest and intent to engage with content.",
+        "benchmark_notes": "Outstanding growth rate, more than double the impression growth"
+      },
+      {
+        "original_value": "61%",
+        "metric_name": "Engagement Growth",
+        "normalized_value": 61.0,
+        "unit": "percentage",
+        "category": "engagement",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "previous quarter",
+        "change_percentage": 61.0,
+        "significance": "Engagements increased to 975K, showing strong conversion from impressions to meaningful interactions.",
+        "benchmark_notes": "Solid growth indicating improved creative relevance"
+      },
+      {
+        "original_value": "32%",
+        "metric_name": "Cost Per Engagement Reduction",
+        "normalized_value": -32.0,
+        "unit": "percentage",
+        "category": "efficiency",
+        "trend": "down",
+        "is_positive": true,
+        "comparison_baseline": "previous quarter",
+        "change_percentage": -32.0,
+        "significance": "CPE decreased by 32% to $2.62 ($0.83 cheaper), demonstrating significantly improved campaign efficiency and ROI.",
+        "benchmark_notes": "Exceptional efficiency gain while scaling volume"
+      },
+      {
+        "original_value": "$2.62",
+        "metric_name": "Cost Per Engagement",
+        "normalized_value": 2.62,
+        "unit": "USD",
+        "category": "efficiency",
+        "trend": "down",
+        "is_positive": true,
+        "comparison_baseline": "previous quarter",
+        "change_percentage": null,
+        "significance": "Current CPE of $2.62 represents strong value for qualified user engagement on premium CTV inventory.",
+        "benchmark_notes": "Competitive CPE for streaming service acquisition campaigns"
+      },
+      {
+        "original_value": "$1.79",
+        "metric_name": "Cost Per Proxy Conversion",
+        "normalized_value": 1.79,
+        "unit": "USD",
+        "category": "efficiency",
+        "trend": "stable",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "CPPC of $1.79 for 1.6M proxy conversions indicates efficient lower-funnel performance.",
+        "benchmark_notes": "Strong conversion efficiency for subscription-based service"
+      },
+      {
+        "original_value": "30%",
+        "metric_name": "LG TV Platform Reach",
+        "normalized_value": 30.0,
+        "unit": "percentage",
+        "category": "reach",
+        "trend": "stable",
+        "is_positive": false,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Disney+ reaches only 30% of active LG TVs across EU5, leaving 70% untapped and representing significant growth opportunity.",
+        "benchmark_notes": "Below optimal penetration for established streaming service"
+      },
+      {
+        "original_value": "34%",
+        "metric_name": "UK Market Reach",
+        "normalized_value": 34.0,
+        "unit": "percentage",
+        "category": "reach",
+        "trend": "stable",
+        "is_positive": false,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "UK shows highest reach at 34% among EU5 markets but still indicates substantial room for growth.",
+        "benchmark_notes": "Leading market but below saturation"
+      },
+      {
+        "original_value": "0.49%",
+        "metric_name": "Peak Campaign CTR",
+        "normalized_value": 0.49,
+        "unit": "percentage",
+        "category": "performance",
+        "trend": "stable",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Best-performing creative achieved 0.49% CTR, demonstrating strong content resonance for specific titles.",
+        "benchmark_notes": "Above-average CTR for CTV display advertising"
+      },
+      {
+        "original_value": "9.40%",
+        "metric_name": "3D Creative Launch Rate",
+        "normalized_value": 9.4,
+        "unit": "percentage",
+        "category": "performance",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "3D animated format achieved 9.40% launch rate with $0.72 CPE, outperforming video companion format.",
+        "benchmark_notes": "Excellent launch rate indicating high creative engagement"
+      },
+      {
+        "original_value": "$0.72",
+        "metric_name": "3D Creative CPE",
+        "normalized_value": 0.72,
+        "unit": "USD",
+        "category": "efficiency",
+        "trend": "stable",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "3D format delivered $0.72 CPE, 45% more efficient than video companion format at $1.32.",
+        "benchmark_notes": "Outstanding efficiency for premium creative format"
+      },
+      {
+        "original_value": "40%",
+        "metric_name": "Dynamic Creative Adoption",
+        "normalized_value": 40.0,
+        "unit": "percentage",
+        "category": "performance",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "H1 to H2",
+        "change_percentage": null,
+        "significance": "Nearly 40% of H2 assets used dynamic video formats (up from 8% in H1), showing strategic shift toward higher-engagement creative.",
+        "benchmark_notes": "Strong adoption of premium formats"
+      },
+      {
+        "original_value": "28%",
+        "metric_name": "Home Screen Roadblock Unique Reach",
+        "normalized_value": 28.0,
+        "unit": "percentage",
+        "category": "reach",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Roadblocks delivered 28% unique reach while representing only 15% of spend, proving 3x more efficient on CPPC.",
+        "benchmark_notes": "Exceptional reach efficiency for premium placement"
+      },
+      {
+        "original_value": "$4.22",
+        "metric_name": "Lapsed User CPE",
+        "normalized_value": 4.22,
+        "unit": "USD",
+        "category": "efficiency",
+        "trend": "stable",
+        "is_positive": false,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Re-engaging lapsed users costs $4.22 per engagement, indicating higher acquisition cost for win-back campaigns.",
+        "benchmark_notes": "Expected premium for reactivation campaigns"
+      },
+      {
+        "original_value": "15%",
+        "metric_name": "Launch Rate",
+        "normalized_value": 15.0,
+        "unit": "percentage",
+        "category": "performance",
+        "trend": "stable",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Overall launch rate of 15% from 6.2M launches shows strong intent-to-view conversion.",
+        "benchmark_notes": "Strong performance for streaming app launches"
+      },
+      {
+        "original_value": "90%",
+        "metric_name": "Suppression Coverage",
+        "normalized_value": 90.0,
+        "unit": "percentage",
+        "category": "efficiency",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Suppression support expanded to 90% of EU markets, enabling better frequency management and reduced waste.",
+        "benchmark_notes": "Near-complete market coverage for targeting optimization"
+      }
+    ],
+    "summary": "Disney+ campaigns on LG TV platform demonstrated exceptional performance with 75% launch growth and 32% CPE reduction despite only 8% spend increase. The strategic shift to dynamic creative formats (40% adoption in H2) and premium placements like Home Screen Roadblocks drove efficiency gains. However, with only 30% reach across active LG TVs in EU5, significant untapped opportunity remains for expansion.",
+    "top_performers": [
+      "Cost Per Engagement Reduction (32% decrease to $2.62)",
+      "Launch Volume Growth (75% increase to 11.95M)",
+      "3D Creative Format ($0.72 CPE with 9.40% launch rate)",
+      "Home Screen Roadblocks (28% reach at 15% of spend, 3x CPPC efficiency)",
+      "Impression Growth (37% increase outpacing spend growth)"
+    ],
+    "areas_of_concern": [
+      "Platform Reach (only 30% of active LG TVs, 70% untapped)",
+      "Lapsed User Re-engagement Cost ($4.22 CPE, 61% higher than standard)",
+      "Geographic Penetration (all EU5 markets below 35% reach)",
+      "Market Saturation Risk (need to expand beyond current 30% ceiling)"
+    ]
+  },
+  "charts": [
+    {
+      "slide_number": 22,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 22,
+      "reconstruction": {
+        "chart_type": "comparison",
+        "title": "LG Ads Campaign Performance: H1 vs H2 FY25",
+        "x_axis_label": null,
+        "y_axis_label": null,
+        "data_series": [
+          {
+            "label": "Spend",
+            "values": [
+              2556629.87
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "Impressions",
+            "values": [
+              224.8
+            ],
+            "unit": "M"
+          },
+          {
+            "label": "Launches",
+            "values": [
+              11.95
+            ],
+            "unit": "M"
+          },
+          {
+            "label": "Engagements",
+            "values": [
+              975.0
+            ],
+            "unit": "K"
+          },
+          {
+            "label": "CPE",
+            "values": [
+              2.62
+            ],
+            "unit": "$"
+          }
+        ],
+        "data_table": [
+          [
+            "Metric",
+            "H2 Value",
+            "Change vs H1",
+            "Unit"
+          ],
+          [
+            "Spend",
+            "2,556,629.87",
+            "+8%",
+            "$"
+          ],
+          [
+            "Impressions",
+            "224.80",
+            "+37%",
+            "M"
+          ],
+          [
+            "Launches",
+            "11.95",
+            "+75% (1.8x)",
+            "M"
+          ],
+          [
+            "Engagements",
+            "975",
+            "+61%",
+            "K"
+          ],
+          [
+            "CPE",
+            "2.62",
+            "-32% ($0.83 cheaper)",
+            "$"
+          ]
+        ],
+        "insights": [
+          "Campaign spend increased by 8% to $2.56M in H2",
+          "Impressions grew significantly by 37% to 224.8M",
+          "Launches nearly doubled with 1.8x growth (75% increase) to 11.95M",
+          "Engagements increased by 61% to 975K",
+          "Cost per engagement improved by 32%, decreasing by $0.83 to $2.62",
+          "H1 baseline was 42M launches, showing strong efficiency gains in H2"
+        ],
+        "trends": [
+          "Strong growth across all volume metrics (impressions, launches, engagements)",
+          "Improving cost efficiency with decreasing CPE despite increased spend",
+          "Launch rate significantly outpaced impression growth, indicating better targeting or creative performance"
+        ],
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 15,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 15,
+      "reconstruction": {
+        "chart_type": "unknown",
+        "title": "Disney+ App on LG TVs: EU5",
+        "x_axis_label": null,
+        "y_axis_label": null,
+        "data_series": [],
+        "data_table": [],
+        "insights": [
+          "Reference to Disney+ app performance on LG TVs in EU5 region",
+          "Data sourced from LG Ad Solutions for Disney FY25 H2 (September 2025)"
+        ],
+        "trends": [],
+        "confidence": 0.2
+      }
+    },
+    {
+      "slide_number": 43,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 59,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 59,
+      "reconstruction": {
+        "chart_type": "comparison",
+        "title": "CTR Performance Comparison",
+        "x_axis_label": "Campaign/Segment",
+        "y_axis_label": "Click-Through Rate (%)",
+        "data_series": [
+          {
+            "label": "CTR",
+            "values": [
+              0.49,
+              0.33,
+              0.32
+            ],
+            "unit": "%"
+          }
+        ],
+        "data_table": [
+          [
+            "Metric",
+            "Value"
+          ],
+          [
+            "CTR 1",
+            "0.49%"
+          ],
+          [
+            "CTR 2",
+            "0.33%"
+          ],
+          [
+            "CTR 3",
+            "0.32%"
+          ]
+        ],
+        "insights": [
+          "Highest CTR performance at 0.49%, showing strongest engagement",
+          "Second and third metrics show similar performance at 0.33% and 0.32%",
+          "Performance gap of 0.16-0.17 percentage points between top performer and others",
+          "Data sourced from LG Ad Solutions TV Campaigns for Disney+ FY25 H2",
+          "Analysis period covers 11/01/2024 to 01/07/2025"
+        ],
+        "trends": [
+          "Declining CTR trend across the three measured segments",
+          "Approximately 33% decrease from highest to lowest CTR value"
+        ],
+        "confidence": 0.7
+      }
+    },
+    {
+      "slide_number": 64,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 64,
+      "reconstruction": {
+        "chart_type": "comparison",
+        "title": "LG Ads Campaign Performance Comparison",
+        "x_axis_label": null,
+        "y_axis_label": null,
+        "data_series": [
+          {
+            "label": "CTR",
+            "values": [
+              0.26,
+              0.22
+            ],
+            "unit": "%"
+          },
+          {
+            "label": "Launch Rate",
+            "values": [
+              9.4,
+              8.82
+            ],
+            "unit": "%"
+          },
+          {
+            "label": "CPE",
+            "values": [
+              0.72,
+              1.32
+            ],
+            "unit": "$"
+          }
+        ],
+        "data_table": [
+          [
+            "Metric",
+            "Scenario 1",
+            "Scenario 2"
+          ],
+          [
+            "CTR",
+            "0.26%",
+            "0.22%"
+          ],
+          [
+            "Launch Rate",
+            "9.40%",
+            "8.82%"
+          ],
+          [
+            "CPE",
+            "$0.72",
+            "$1.32"
+          ]
+        ],
+        "insights": [
+          "First scenario shows higher CTR (0.26% vs 0.22%) indicating better click-through performance",
+          "Launch Rate is higher in first scenario (9.40% vs 8.82%), suggesting better user engagement",
+          "CPE is significantly lower in first scenario ($0.72 vs $1.32), indicating more cost-efficient engagement",
+          "Data based on carousel-only campaigns during Disney FY25 H2 (April-Sept 2025)",
+          "Q4 saw heavy implementation of Carousel Video and 3D units which improved CTR and cost metrics"
+        ],
+        "trends": [
+          "First scenario demonstrates better overall performance across all three metrics",
+          "Cost per engagement nearly doubled in second scenario, suggesting less efficient targeting or creative",
+          "CTR and Launch Rate show relatively smaller variance compared to CPE which shows 83% increase"
+        ],
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 17,
+      "error": "'NoneType' object is not subscriptable"
+    }
+  ],
+  "entities": {
+    "entities": [
+      {
+        "name": "Disney+",
+        "entity_type": "brand",
+        "normalized_name": "Disney Plus",
+        "description": "Streaming service and primary advertiser/client",
+        "mentions": 50,
+        "related_entities": [
+          "LG Ads",
+          "LG TVs",
+          "United Kingdom",
+          "Germany",
+          "Spain",
+          "Italy",
+          "France"
+        ]
+      },
+      {
+        "name": "LG Ads",
+        "entity_type": "company",
+        "normalized_name": "LG Ad Solutions",
+        "description": "Advertising platform provider for LG smart TVs",
+        "mentions": 30,
+        "related_entities": [
+          "Disney+",
+          "LG TVs"
+        ]
+      },
+      {
+        "name": "LG Ad Solutions",
+        "entity_type": "company",
+        "normalized_name": "LG Ad Solutions",
+        "description": "Full name of LG's advertising solutions division",
+        "mentions": 25,
+        "related_entities": [
+          "Disney+",
+          "LG TVs"
+        ]
+      },
+      {
+        "name": "LG TVs",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Smart television platform where Disney+ campaigns run",
+        "mentions": 40,
+        "related_entities": [
+          "Disney+",
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "United Kingdom",
+        "entity_type": "market",
+        "normalized_name": "UK",
+        "description": "Primary European market with 2M Disney+ MAU and 5.9M LG MAU",
+        "mentions": 15,
+        "related_entities": [
+          "Disney+",
+          "Germany",
+          "Spain",
+          "Italy",
+          "France"
+        ]
+      },
+      {
+        "name": "Germany",
+        "entity_type": "market",
+        "normalized_name": "DE",
+        "description": "Major European market with 1.1M Disney+ MAU and 3.8M LG MAU",
+        "mentions": 12,
+        "related_entities": [
+          "Disney+",
+          "United Kingdom",
+          "France"
+        ]
+      },
+      {
+        "name": "Spain",
+        "entity_type": "market",
+        "normalized_name": "ES",
+        "description": "European market with 1.4M Disney+ MAU and 5.0M LG MAU",
+        "mentions": 10,
+        "related_entities": [
+          "Disney+",
+          "United Kingdom",
+          "Italy"
+        ]
+      },
+      {
+        "name": "Italy",
+        "entity_type": "market",
+        "normalized_name": "IT",
+        "description": "European market with 1.0M Disney+ MAU and 3.9M LG MAU",
+        "mentions": 10,
+        "related_entities": [
+          "Disney+",
+          "France",
+          "Spain"
+        ]
+      },
+      {
+        "name": "France",
+        "entity_type": "market",
+        "normalized_name": "FR",
+        "description": "European market with 549K Disney+ MAU and 2.1M LG MAU",
+        "mentions": 10,
+        "related_entities": [
+          "Disney+",
+          "Germany",
+          "Italy"
+        ]
+      },
+      {
+        "name": "Poland",
+        "entity_type": "market",
+        "normalized_name": "PL",
+        "description": "Secondary European market with 2.4M LG TVs",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Netherlands",
+        "entity_type": "market",
+        "normalized_name": "NL",
+        "description": "European market with 1.5M LG TVs",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Turkey",
+        "entity_type": "market",
+        "normalized_name": "TR",
+        "description": "European market with 1.8M LG TVs",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Romania",
+        "entity_type": "market",
+        "normalized_name": "RO",
+        "description": "European market with 1.7M LG TVs",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Czech Republic",
+        "entity_type": "market",
+        "normalized_name": "CZ",
+        "description": "European market with 1.1M LG TVs",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Sweden",
+        "entity_type": "market",
+        "normalized_name": "SE",
+        "description": "European market with 863K LG TVs",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Denmark",
+        "entity_type": "market",
+        "normalized_name": "DK",
+        "description": "European market with 726K LG TVs",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Finland",
+        "entity_type": "market",
+        "normalized_name": "FI",
+        "description": "European market with 649K LG TVs",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Norway",
+        "entity_type": "market",
+        "normalized_name": "NO",
+        "description": "European market with 486K LG TVs",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Greece",
+        "entity_type": "market",
+        "normalized_name": "GR",
+        "description": "European market with 796K LG TVs",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Hungary",
+        "entity_type": "market",
+        "normalized_name": "HU",
+        "description": "European market with 1.4M LG TVs",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Australia",
+        "entity_type": "market",
+        "normalized_name": "AU",
+        "description": "Market for Content Notifications Beta in December",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "United States",
+        "entity_type": "market",
+        "normalized_name": "US",
+        "description": "Market for Content Notifications Beta and Sports Hub",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Brazil",
+        "entity_type": "market",
+        "normalized_name": null,
+        "description": "Market mentioned for Sports Hub availability",
+        "mentions": 1,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Canada",
+        "entity_type": "market",
+        "normalized_name": null,
+        "description": "Market mentioned for Sports Hub availability",
+        "mentions": 1,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Carousel",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Ad format on LG TVs, primary creative unit",
+        "mentions": 20,
+        "related_entities": [
+          "Video Companion",
+          "3D Animated",
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Video Companion",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Enhanced carousel ad format with 16:9 video, showing 59% higher CTR vs static",
+        "mentions": 15,
+        "related_entities": [
+          "Carousel",
+          "Disney+"
+        ]
+      },
+      {
+        "name": "3D Animated",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "3D animated carousel creative format",
+        "mentions": 8,
+        "related_entities": [
+          "Carousel",
+          "Video Companion"
+        ]
+      },
+      {
+        "name": "Home Screen Roadblock",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "100% SOV ad placement during primetime (6pm-12am), driving 28% reach with 15% of spend",
+        "mentions": 12,
+        "related_entities": [
+          "Disney+",
+          "Content Store Roadblock"
+        ]
+      },
+      {
+        "name": "Content Store Roadblock",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "2-week fixed flight ad placement in LG Content Store, driving 2-4x higher CTR",
+        "mentions": 10,
+        "related_entities": [
+          "Disney+",
+          "Home Screen Roadblock"
+        ]
+      },
+      {
+        "name": "Sports Hub",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "New product innovation for sports-focused content sponsorship",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+",
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "Content Notifications",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Beta product allowing pop-up notifications on LG TV home screen",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+",
+          "LG TVs"
+        ]
+      },
+      {
+        "name": "Global Dashboard",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Analytics dashboard with app usage metrics and custom date ranges",
+        "mentions": 3,
+        "related_entities": [
+          "LG Ads",
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Spring Offer Campaign",
+        "entity_type": "campaign",
+        "normalized_name": "2025 Spring Offer",
+        "description": "Promotional campaign featuring Daredevil and other content",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+",
+          "Daredevil"
+        ]
+      },
+      {
+        "name": "September Promo",
+        "entity_type": "campaign",
+        "normalized_name": "September 2025 Promo",
+        "description": "Major promotional campaign in September with countdown clock, featuring Moana 2",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+",
+          "Moana 2"
+        ]
+      },
+      {
+        "name": "June Roadblocks",
+        "entity_type": "campaign",
+        "normalized_name": null,
+        "description": "Home Screen Roadblock campaigns on 6/14 and 6/28",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+",
+          "Home Screen Roadblock"
+        ]
+      },
+      {
+        "name": "Alien Earth",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Disney+ content title used in UK split test campaign",
+        "mentions": 4,
+        "related_entities": [
+          "Disney+",
+          "United Kingdom"
+        ]
+      },
+      {
+        "name": "Moana 2",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Disney+ content featured in September 2025 promotional campaign",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+",
+          "September Promo"
+        ]
+      },
+      {
+        "name": "Lilo & Stitch",
+        "entity_type": "product",
+        "normalized_name": "Lilo and Stitch 2025",
+        "description": "Disney+ content with top creative performance, $0.56 CPE",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Daredevil",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Disney+ content featured in Spring Offer campaign",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+",
+          "Spring Offer Campaign"
+        ]
+      },
+      {
+        "name": "Percy Jackson",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Disney+ content aligned with US Content Notifications Beta",
+        "mentions": 1,
+        "related_entities": [
+          "Disney+",
+          "United States"
+        ]
+      },
+      {
+        "name": "Taylor Swift Eras Tour",
+        "entity_type": "product",
+        "normalized_name": "Taylor Swift | The Eras Tour: The End of an Era",
+        "description": "Content aligned with Australia Content Notifications Beta in December",
+        "mentions": 1,
+        "related_entities": [
+          "Disney+",
+          "Australia",
+          "Taylor Swift"
+        ]
+      },
+      {
+        "name": "Taylor Swift",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Artist featured in Disney+ content for Australia Beta",
+        "mentions": 1,
+        "related_entities": [
+          "Taylor Swift Eras Tour",
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Widya",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Speaker mentioned in presentation notes",
+        "mentions": 1,
+        "related_entities": [
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "Ross",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Speaker mentioned in presentation notes",
+        "mentions": 1,
+        "related_entities": [
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "Megan",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Speaker mentioned multiple times in presentation notes",
+        "mentions": 2,
+        "related_entities": [
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "Laura",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Primary speaker mentioned frequently throughout presentation",
+        "mentions": 8,
+        "related_entities": [
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "Julia",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Speaker mentioned in presentation notes",
+        "mentions": 2,
+        "related_entities": [
+          "LG Ads"
+        ]
+      },
+      {
+        "name": "FY25 H1",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Disney fiscal year 2025 first half (comparison period)",
+        "mentions": 10,
+        "related_entities": [
+          "Disney+",
+          "FY25 H2"
+        ]
+      },
+      {
+        "name": "FY25 H2",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Disney fiscal year 2025 second half (April-September 2025), primary reporting period",
+        "mentions": 25,
+        "related_entities": [
+          "Disney+",
+          "FY25 H1"
+        ]
+      },
+      {
+        "name": "April 2025",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Start of FY25 H2 reporting period",
+        "mentions": 3,
+        "related_entities": [
+          "FY25 H2"
+        ]
+      },
+      {
+        "name": "September 2025",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "End of FY25 H2 reporting period and month of major promotional campaign",
+        "mentions": 8,
+        "related_entities": [
+          "FY25 H2",
+          "September Promo"
+        ]
+      },
+      {
+        "name": "December 2025",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Presentation date and Australia Beta launch month",
+        "mentions": 3,
+        "related_entities": [
+          "Australia",
+          "Content Notifications"
+        ]
+      },
+      {
+        "name": "Proxy Conversions",
+        "entity_type": "metric_name",
+        "normalized_name": null,
+        "description": "Users launching Disney+ for 2+ sessions of 30+ minutes within 7-day attribution window",
+        "mentions": 15,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Cost per Proxy Conversion",
+        "entity_type": "metric_name",
+        "normalized_name": "CPE",
+        "description": "Primary efficiency metric, improved from $2.62 in H1 to $1.79 in H2",
+        "mentions": 12,
+        "related_entities": [
+          "Proxy Conversions",
+          "Disney+"
+        ]
+      },
+      {
+        "name": "CTR",
+        "entity_type": "metric_name",
+        "normalized_name": "Click-Through Rate",
+        "description": "Click-through rate metric, Video Companion showed 59% higher CTR vs static",
+        "mentions": 18,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Launch Rate",
+        "entity_type": "metric_name",
+        "normalized_name": null,
+        "description": "Rate of app launches, Video Companion showed 103% higher vs static",
+        "mentions": 10,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "EU5",
+        "entity_type": "market",
+        "normalized_name": null,
+        "description": "Collective term for top 5 European markets (UK, Germany, Spain, Italy, France)",
+        "mentions": 5,
+        "related_entities": [
+          "United Kingdom",
+          "Germany",
+          "Spain",
+          "Italy",
+          "France"
+        ]
+      },
+      {
+        "name": "EMEA",
+        "entity_type": "market",
+        "normalized_name": null,
+        "description": "Europe, Middle East, and Africa region covered in the presentation",
+        "mentions": 8,
+        "related_entities": [
+          "EU5",
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Winter Olympics",
+        "entity_type": "campaign",
+        "normalized_name": null,
+        "description": "February 2026 sporting event driving Sports Hub premium pricing",
+        "mentions": 1,
+        "related_entities": [
+          "Sports Hub"
+        ]
+      },
+      {
+        "name": "FIFA World Cup",
+        "entity_type": "campaign",
+        "normalized_name": null,
+        "description": "June-July 2026 sporting event driving Sports Hub premium pricing",
+        "mentions": 1,
+        "related_entities": [
+          "Sports Hub"
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "source": "Disney+",
+        "target": "LG Ads",
+        "relation_type": "advertises_with",
+        "description": "Disney+ is the client running campaigns through LG Ad Solutions"
+      },
+      {
+        "source": "Disney+",
+        "target": "LG TVs",
+        "relation_type": "markets_on",
+        "description": "Disney+ app runs on LG smart TV platform"
+      },
+      {
+        "source": "LG Ads",
+        "target": "LG TVs",
+        "relation_type": "operates",
+        "description": "LG Ad Solutions operates advertising platform on LG TVs"
+      },
+      {
+        "source": "Disney+",
+        "target": "United Kingdom",
+        "relation_type": "markets_in",
+        "description": "Disney+ has 2M MAU in UK market"
+      },
+      {
+        "source": "Disney+",
+        "target": "Germany",
+        "relation_type": "markets_in",
+        "description": "Disney+ has 1.1M MAU in German market"
+      },
+      {
+        "source": "Disney+",
+        "target": "Spain",
+        "relation_type": "markets_in",
+        "description": "Disney+ has 1.4M MAU in Spanish market"
+      },
+      {
+        "source": "Disney+",
+        "target": "Italy",
+        "relation_type": "markets_in",
+        "description": "Disney+ has 1.0M MAU in Italian market"
+      },
+      {
+        "source": "Disney+",
+        "target": "France",
+        "relation_type": "markets_in",
+        "description": "Disney+ has 549K MAU in French market"
+      },
+      {
+        "source": "Video Companion",
+        "target": "Carousel",
+        "relation_type": "enhances",
+        "description": "Video Companion is enhanced version of Carousel with 59% higher CTR"
+      },
+      {
+        "source": "September Promo",
+        "target": "Moana 2",
+        "relation_type": "features",
+        "description": "September promotional campaign featured Moana 2 content"
+      },
+      {
+        "source": "Spring Offer Campaign",
+        "target": "Daredevil",
+        "relation_type": "features",
+        "description": "Spring Offer campaign featured Daredevil content"
+      },
+      {
+        "source": "Home Screen Roadblock",
+        "target": "Disney+",
+        "relation_type": "drives_performance_for",
+        "description": "Roadblocks drove 28% reach with only 15% of spend, 3x CPPC efficiency"
+      },
+      {
+        "source": "Content Store Roadblock",
+        "target": "Disney+",
+        "relation_type": "drives_performance_for",
+        "description": "Content Store Roadblock drove 2-4x higher CTR vs benchmarks"
+      },
+      {
+        "source": "Laura",
+        "target": "LG Ads",
+        "relation_type": "works_for",
+        "description": "Laura is primary speaker from LG Ad Solutions team"
+      },
+      {
+        "source": "Megan",
+        "target": "LG Ads",
+        "relation_type": "works_for",
+        "description": "Megan is speaker from LG Ad Solutions team"
+      },
+      {
+        "source": "Julia",
+        "target": "LG Ads",
+        "relation_type": "works_for",
+        "description": "Julia is speaker from LG Ad Solutions team"
+      },
+      {
+        "source": "FY25 H2",
+        "target": "FY25 H1",
+        "relation_type": "compares_to",
+        "description": "H2 showed 61% increase in proxy conversions vs H1"
+      },
+      {
+        "source": "EU5",
+        "target": "United Kingdom",
+        "relation_type": "includes",
+        "description": "UK is part of EU5 top markets"
+      },
+      {
+        "source": "EU5",
+        "target": "Germany",
+        "relation_type": "includes",
+        "description": "Germany is part of EU5 top markets"
+      },
+      {
+        "source": "EU5",
+        "target": "Spain",
+        "relation_type": "includes",
+        "description": "Spain is part of EU5 top markets"
+      },
+      {
+        "source": "EU5",
+        "target": "Italy",
+        "relation_type": "includes",
+        "description": "Italy is part of EU5 top markets"
+      },
+      {
+        "source": "EU5",
+        "target": "France",
+        "relation_type": "includes",
+        "description": "France is part of EU5 top markets"
+      },
+      {
+        "source": "Sports Hub",
+        "target": "Winter Olympics",
+        "relation_type": "aligns_with",
+        "description": "Sports Hub premium pricing during Winter Olympics in February 2026"
+      },
+      {
+        "source": "Sports Hub",
+        "target": "FIFA World Cup",
+        "relation_type": "aligns_with",
+        "description": "Sports Hub premium pricing during FIFA World Cup June-July 2026"
+      },
+      {
+        "source": "Content Notifications",
+        "target": "Australia",
+        "relation_type": "launches_in",
+        "description": "Content Notifications Beta launching in Australia in December"
+      },
+      {
+        "source": "Taylor Swift Eras Tour",
+        "target": "Australia",
+        "relation_type": "markets_in",
+        "description": "Taylor Swift content aligned with Australia Beta launch"
+      }
+    ],
+    "companies": [
+      "LG Ads",
+      "LG Ad Solutions",
+      "Disney+"
+    ],
+    "products": [
+      "LG TVs",
+      "Disney+ app",
+      "Carousel",
+      "Video Companion",
+      "3D Animated",
+      "Home Screen Roadblock",
+      "Content Store Roadblock",
+      "Sports Hub",
+      "Content Notifications",
+      "Global Dashboard",
+      "Alien Earth",
+      "Moana 2",
+      "Lilo & Stitch",
+      "Daredevil",
+      "Percy Jackson",
+      "Taylor Swift Eras Tour"
+    ],
+    "people": [
+      "Widya",
+      "Ross",
+      "Megan",
+      "Laura",
+      "Julia",
+      "Taylor Swift"
+    ],
+    "markets": [
+      "United Kingdom",
+      "Germany",
+      "Spain",
+      "Italy",
+      "France",
+      "Poland",
+      "Netherlands",
+      "Turkey",
+      "Romania",
+      "Czech Republic",
+      "Sweden",
+      "Denmark",
+      "Finland",
+      "Norway",
+      "Greece",
+      "Hungary",
+      "Australia",
+      "United States",
+      "Brazil",
+      "Canada",
+      "EU5",
+      "EMEA"
+    ],
+    "campaigns": [
+      "Spring Offer Campaign",
+      "September Promo",
+      "June Roadblocks",
+      "Winter Olympics",
+      "FIFA World Cup"
+    ],
+    "dates": [
+      "FY25 H1",
+      "FY25 H2",
+      "April 2025",
+      "September 2025",
+      "December 2025"
+    ]
+  },
+  "executive_summary": {
+    "summary": "Disney+ achieved exceptional performance on LG TV advertising during FY25 H2 (April-September 2025), delivering 1.6M proxy conversions from a $2.8M investment across EMEA markets. The campaign generated 308M impressions, 21M app launches, and reached 17M unique users at a cost per proxy conversion of $1.79. Performance improved dramatically versus H1, with launches up 78%, proxy conversions up 61%, reach up 18%, and cost per engagement down 32%. These gains were driven by strategic shifts toward video-enhanced carousel formats (increasing from 4% to 36% of creative mix), expanded suppression-based audience targeting, and increased investment in high-impact Home Screen Roadblocks. Despite strong performance, significant growth opportunity remains as Disney+ reaches only ~30% of active LG TVs across EU5 markets, with 67% of installed users classified as lapsed, presenting a clear path for continued acquisition and reactivation efforts.",
+    "key_wins": [
+      "Delivered 1.6M proxy conversions at $1.79 CPE, representing 61% increase versus H1 with 32% lower cost per engagement",
+      "Generated 21M app launches (78% increase vs H1) and reached 17.3M unique users (18% increase) from $2.8M investment",
+      "Home Screen Roadblocks delivered outsized impact, representing only 15% of spend but driving 28% of total reach with 3x better cost per proxy conversion efficiency",
+      "Content Store Roadblocks achieved 2-4x higher CTR and launch rates versus benchmarks, successfully expanding from UK/DE to include France and Italy in Q4",
+      "Strategic creative evolution from 96% static assets in H1 to 64% in H2, with Carousel Video Companion delivering 59% higher CTR and 103% higher launch rates versus static formats"
+    ],
+    "areas_for_improvement": [
+      "Disney+ app penetration remains at only ~30% of active LG TVs across EU5 markets, leaving approximately 70% of devices untapped for acquisition",
+      "67% of users with Disney+ installed are classified as lapsed (inactive for 60+ days), indicating significant reactivation opportunity",
+      "Lapsed ROS targeting not yet expanded to all EMEA markets, with opportunities in Romania, Czech Republic, Finland, and Denmark",
+      "Static carousel creative still represents 64% of assets despite video formats showing significantly stronger performance across all KPIs"
+    ],
+    "recommendations": [
+      "Expand lapsed user targeting to all EMEA markets including Romania, Czech Republic, Finland, and Denmark to maximize reactivation opportunities across the 67% lapsed user base",
+      "Increase investment in Carousel Video Companion formats given 59% higher CTR, 103% higher launch rates, and 2.5x proxy conversions versus static creative",
+      "Scale Home Screen Roadblock investment on key tentpole dates across EMEA, as this placement delivers 3x cost per proxy conversion efficiency while driving 28%+ reach with only 15% of budget",
+      "Prioritize Content Store Roadblock bookings across all available markets (currently France, Italy, Spain) given consistent 2-4x performance versus benchmarks and strong acquisition results"
+    ],
+    "next_steps": [
+      "Implement suppression-based audience targeting across expanded EMEA markets to replicate the 58% CTR improvement and 63% cost per proxy conversion gains achieved in tested markets",
+      "Transition creative mix to minimum 50% video-enhanced formats (Carousel Companion and 3D Animated) for FY26 campaigns based on H2 performance data",
+      "Secure Content Store Roadblock inventory for FY26 tentpole moments across UK, DE, FR, IT, and ES with 2-week fixed flights aligned to major content launches",
+      "Leverage new Global Dashboard capabilities including custom date ranges, MAU data by market, and Acquired/Engaged User metrics for enhanced campaign planning and optimization",
+      "Pilot Content Notifications beta in Australia (December) and US (December-March) to test real-time user engagement at TV power-on moments"
+    ],
+    "overall_sentiment": "positive",
+    "key_metrics_highlighted": [
+      "$2.8M total investment generating 1.6M proxy conversions at $1.79 CPE",
+      "308M impressions delivered with 17M unique reach and 21M app launches",
+      "78% increase in launches and 61% increase in proxy conversions versus H1",
+      "Home Screen Roadblocks: 15% of spend driving 28% of reach with 3x CPPC efficiency",
+      "Carousel Video Companion: 59% higher CTR and 103% higher launch rate versus static formats"
+    ],
+    "time_period_covered": "Disney FY25 H2 (April - September 2025)"
+  },
+  "sections": [
+    {
+      "name": "Introduction",
+      "description": "Opening materials including title slide, team introductions, and agenda overview",
+      "start_slide": 1,
+      "end_slide": 3,
+      "subsections": []
+    },
+    {
+      "name": "Partnership Overview",
+      "description": "High-level FY25 partnership performance summary and strategic topics preview",
+      "start_slide": 4,
+      "end_slide": 5,
+      "subsections": []
+    },
+    {
+      "name": "LG Ads Platform Updates & Product Innovations",
+      "description": "Latest features, achievements, and product innovations from LG Ads including dashboard improvements, awards, and new ad products",
+      "start_slide": 6,
+      "end_slide": 14,
+      "subsections": [
+        {
+          "name": "Platform Updates & Recognition",
+          "description": "Dashboard improvements, consumer engagement strategy, and industry awards",
+          "start_slide": 7,
+          "end_slide": 9
+        },
+        {
+          "name": "Product Innovations",
+          "description": "New advertising products and features including Carousel upgrades, Branded Player, Sports Hub, and Content Notifications",
+          "start_slide": 10,
+          "end_slide": 14
+        }
+      ]
+    },
+    {
+      "name": "Disney+ App Performance Analysis",
+      "description": "Comprehensive analysis of Disney+ app performance on LG TVs across EMEA markets, including user growth, engagement metrics, and paid media impact",
+      "start_slide": 15,
+      "end_slide": 19,
+      "subsections": [
+        {
+          "name": "Market Performance & Growth",
+          "description": "Disney+ app rankings, active user growth across EMEA markets, and EU5 performance metrics",
+          "start_slide": 15,
+          "end_slide": 17
+        },
+        {
+          "name": "User Insights & Campaign Impact",
+          "description": "User profile analysis and paid media effectiveness on app engagement",
+          "start_slide": 18,
+          "end_slide": 19
+        }
+      ]
+    },
+    {
+      "name": "Discovery Capabilities",
+      "description": "Section on discovery capabilities across gaming and entertainment (transition slide indicates continuation)",
+      "start_slide": 20,
+      "end_slide": 20,
+      "subsections": []
+    }
+  ]
+}

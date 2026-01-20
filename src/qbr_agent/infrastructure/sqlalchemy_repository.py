@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import replace
 from dataclasses import dataclass
 import logging
 from typing import Any
@@ -18,6 +19,7 @@ _METADATA = MetaData()
 
 _DOCUMENTS: Table | None = None
 _CHUNKS: Table | None = None
+_SLIDES: Table | None = None
 _WARNED_MISSING_TABLES = False
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,18 +30,25 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
     sessionmaker: async_sessionmaker[AsyncSession]
 
     async def _ensure_reflection(self, session: AsyncSession) -> None:
-        global _DOCUMENTS, _CHUNKS, _WARNED_MISSING_TABLES
-        if _DOCUMENTS is not None and _CHUNKS is not None:
+        global _DOCUMENTS, _CHUNKS, _SLIDES, _WARNED_MISSING_TABLES
+        if _DOCUMENTS is not None and _CHUNKS is not None and _SLIDES is not None:
             return
 
         conn = await session.connection()
         await conn.run_sync(_METADATA.reflect)
         _DOCUMENTS = _METADATA.tables.get("documents")
         _CHUNKS = _METADATA.tables.get("chunks")
-        if not _WARNED_MISSING_TABLES and (_DOCUMENTS is None or _CHUNKS is None):
+        _SLIDES = _METADATA.tables.get("slides")
+        if not _WARNED_MISSING_TABLES and (
+            _DOCUMENTS is None or _CHUNKS is None or _SLIDES is None
+        ):
             missing = [
                 name
-                for name, table in (("documents", _DOCUMENTS), ("chunks", _CHUNKS))
+                for name, table in (
+                    ("documents", _DOCUMENTS),
+                    ("chunks", _CHUNKS),
+                    ("slides", _SLIDES),
+                )
                 if table is None
             ]
             _LOGGER.warning("Missing tables in QBR database: %s", ", ".join(missing))
@@ -108,7 +117,17 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             ).where(chunks.c.id.in_(ids))
             result = await session.execute(query)
             rows = result.fetchall()
-            return [self._row_to_chunk(row) for row in rows]
+            slide_metadata = await self._fetch_slide_metadata(session, rows)
+            chunks_out: list[Chunk] = []
+            for row in rows:
+                chunk = self._row_to_chunk(row)
+                meta = slide_metadata.get(
+                    (int(row.document_id), getattr(row, "start_slide", None))
+                )
+                if meta:
+                    chunk = replace(chunk, metadata=meta)
+                chunks_out.append(chunk)
+            return chunks_out
 
     async def fetch_chunk_embeddings(
         self,
@@ -189,6 +208,49 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             embedding=embedding,
         )
 
+    async def _fetch_slide_metadata(
+        self,
+        session: AsyncSession,
+        rows: list[Any],
+    ) -> dict[tuple[int, int | None], dict[str, Any]]:
+        if _SLIDES is None:
+            return {}
+        slide_keys: dict[int, set[int]] = {}
+        for row in rows:
+            slide_num = getattr(row, "start_slide", None)
+            if slide_num is None:
+                continue
+            slide_keys.setdefault(int(row.document_id), set()).add(int(slide_num))
+        if not slide_keys:
+            return {}
+
+        slides = _SLIDES
+        metadata: dict[tuple[int, int], dict[str, Any]] = {}
+        for document_id, slide_numbers in slide_keys.items():
+            query = select(
+                slides.c.document_id,
+                slides.c.slide_number,
+                slides.c.title,
+                slides.c.key_message,
+                slides.c.slide_type,
+                slides.c.insights,
+                slides.c.action_items,
+            ).where(
+                slides.c.document_id == document_id,
+                slides.c.slide_number.in_(slide_numbers),
+            )
+            result = await session.execute(query)
+            for row in result.fetchall():
+                metadata[(int(row.document_id), int(row.slide_number))] = {
+                    "slide_number": int(row.slide_number),
+                    "slide_title": row.title,
+                    "slide_key_message": row.key_message,
+                    "slide_type": row.slide_type,
+                    "slide_insights": row.insights,
+                    "slide_action_items": row.action_items,
+                }
+        return metadata
+
 
 def _coerce_vector(value: Any) -> list[float]:
     if value is None:
@@ -196,4 +258,3 @@ def _coerce_vector(value: Any) -> list[float]:
     if isinstance(value, list):
         return [float(item) for item in value]
     return []
-

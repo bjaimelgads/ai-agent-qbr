@@ -9,6 +9,7 @@ Complete pipeline for:
 
 import base64
 import json
+import os
 import re
 import zipfile
 from datetime import datetime
@@ -535,6 +536,85 @@ class QBRProcessor:
         return chunks
 
     @staticmethod
+    def _infer_chunk_slide_range(chunk: dict) -> tuple[int | None, int | None]:
+        metadata = chunk.get("metadata", {}) or {}
+        page_number = metadata.get("page_number")
+        if isinstance(page_number, int):
+            return page_number, page_number
+        content = chunk.get("content", "")
+        match = re.search(r"<!-- PAGE (\d+) -->", content)
+        if match:
+            slide_num = int(match.group(1))
+            return slide_num, slide_num
+        return None, None
+
+    @classmethod
+    def _build_chunk_record(
+        cls,
+        *,
+        document_id: int,
+        chunk_data: dict,
+        chunk_index: int,
+        embedding_model: str,
+    ) -> Chunk:
+        start_slide, end_slide = cls._infer_chunk_slide_range(chunk_data)
+        embedding = chunk_data.get("embedding")
+        return Chunk(
+            document_id=document_id,
+            content=chunk_data.get("content", ""),
+            chunk_index=chunk_index,
+            byte_start=chunk_data.get("metadata", {}).get("byte_start"),
+            byte_end=chunk_data.get("metadata", {}).get("byte_end"),
+            char_count=len(chunk_data.get("content", "")),
+            start_slide=start_slide,
+            end_slide=end_slide,
+            embedding=embedding,
+            embedding_model=chunk_data.get("embedding_model")
+            or (embedding_model if embedding is not None else None),
+        )
+
+    @staticmethod
+    def _apply_slide_remap(
+        *,
+        slides: list[dict],
+        metrics: list[dict],
+        charts: list[dict],
+        remap: list[dict] | None,
+    ) -> tuple[list[dict], list[dict], list[dict]]:
+        """Remap slide/metric/chart slide numbers into PPTX order."""
+        if not remap:
+            return slides, metrics, charts
+
+        slides_by_num = {slide["slide_number"]: slide for slide in slides}
+        remapped_slides: list[dict] = []
+        for entry in remap:
+            old_num = entry["source_page_number"]
+            slide = slides_by_num.get(old_num)
+            if slide is None:
+                continue
+            updated = dict(slide)
+            updated["slide_number"] = entry["slide_number"]
+            updated["source_slide_number"] = old_num
+            remapped_slides.append(updated)
+
+        page_to_new = {entry["source_page_number"]: entry["slide_number"] for entry in remap}
+        remapped_metrics = []
+        for metric in metrics:
+            updated = dict(metric)
+            source_num = metric.get("slide_number")
+            updated["slide_number"] = page_to_new.get(source_num, source_num)
+            remapped_metrics.append(updated)
+
+        remapped_charts = []
+        for chart in charts:
+            updated = dict(chart)
+            source_num = chart.get("slide_number")
+            updated["slide_number"] = page_to_new.get(source_num, source_num)
+            remapped_charts.append(updated)
+
+        return remapped_slides, remapped_metrics, remapped_charts
+
+    @staticmethod
     def _build_llm_task_manifest(
         *,
         document_path: str,
@@ -870,11 +950,17 @@ Categories:
         slides = self.parse_slides(result.content)
         metrics = self.extract_metrics(result.content)
         charts = self.detect_charts(slides)
+        slides_ordered, metrics_ordered, charts_ordered = self._apply_slide_remap(
+            slides=slides,
+            metrics=metrics,
+            charts=charts,
+            remap=remap,
+        )
         business_terms = self._extract_business_terms(result.content)
 
-        print(f"  - Slides parsed: {len(slides)}")
-        print(f"  - Metrics found: {len(metrics)}")
-        print(f"  - Charts detected: {len(charts)}")
+        print(f"  - Slides parsed: {len(slides_ordered)}")
+        print(f"  - Metrics found: {len(metrics_ordered)}")
+        print(f"  - Charts detected: {len(charts_ordered)}")
 
         if export_outputs:
             base_dir = Path(output_dir) if output_dir else self.output_dir
@@ -904,7 +990,7 @@ Categories:
                 mime_type=result.mime_type,
                 status=DocumentStatus.EXTRACTED.value,
                 page_count=result.get_page_count(),
-                slide_count=len(slides),
+                slide_count=len(slides_ordered),
                 image_count=len(result.images) if result.images else 0,
                 chunk_count=len(chunks_for_storage),
                 extraction_metadata=result.metadata,
@@ -927,7 +1013,7 @@ Categories:
                     has_images=s["has_images"],
                     image_count=s["image_count"],
                 )
-                for s in slides
+                for s in slides_ordered
             ]
             session.add_all(slides_to_add)
             session.flush()
@@ -945,10 +1031,10 @@ Categories:
                     raw_context=m.get("context"),
                     raw_metric_type=m["metric_type"],
                 )
-                for m in metrics
+                for m in metrics_ordered
             ]
             session.add_all(metrics_to_add)
-            print(f"  - Metrics created: {len(metrics)}")
+            print(f"  - Metrics created: {len(metrics_ordered)}")
 
             # Create charts (bulk insert)
             charts_to_add = [
@@ -959,29 +1045,20 @@ Categories:
                     detection_confidence=c.get("confidence"),
                     raw_elements=c.get("raw_elements"),
                 )
-                for c in charts
+                for c in charts_ordered
             ]
             session.add_all(charts_to_add)
-            print(f"  - Charts created: {len(charts)}")
+            print(f"  - Charts created: {len(charts_ordered)}")
 
             # Create chunks (bulk insert)
             if chunks_for_storage:
                 embedding_model = self.embedding_settings.model_label()
                 chunks_to_add = [
-                    Chunk(
+                    self._build_chunk_record(
                         document_id=document.id,
-                        content=chunk_data.get("content", ""),
+                        chunk_data=chunk_data,
                         chunk_index=idx,
-                        byte_start=chunk_data.get("metadata", {}).get("byte_start"),
-                        byte_end=chunk_data.get("metadata", {}).get("byte_end"),
-                        char_count=len(chunk_data.get("content", "")),
-                        embedding=chunk_data.get("embedding"),
-                        embedding_model=chunk_data.get("embedding_model")
-                        or (
-                            embedding_model
-                            if chunk_data.get("embedding") is not None
-                            else None
-                        ),
+                        embedding_model=embedding_model,
                     )
                     for idx, chunk_data in enumerate(chunks_for_storage)
                 ]
@@ -1019,7 +1096,13 @@ Categories:
             print("STEP 4: LLM ENHANCEMENT")
             print("=" * 60)
 
-            llm_results = self.enhance_document(doc_id, result.content, slides, metrics, charts)
+            llm_results = self.enhance_document(
+                doc_id,
+                result.content,
+                slides_ordered,
+                metrics_ordered,
+                charts_ordered,
+            )
             if export_outputs and llm_results is not None:
                 base_dir = Path(output_dir) if output_dir else self.output_dir
                 target_dir = base_dir / file_path.stem
@@ -1063,7 +1146,9 @@ Categories:
                 context = f"Client: {doc.client_name or 'Unknown'}, Period: {doc.report_period or 'Unknown'}"
 
             # Run enhancement (limit for cost control)
-            limited_slides = slides[:20]  # Limit slides for now
+            limit_env = (os.getenv("LLM_SLIDE_LIMIT") or "").strip()
+            slide_limit = int(limit_env) if limit_env.isdigit() else 20
+            limited_slides = slides[:slide_limit]
             limited_metrics = metrics[:50]
             limited_charts = charts[:10]
 
