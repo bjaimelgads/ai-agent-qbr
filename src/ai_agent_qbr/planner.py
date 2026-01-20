@@ -26,6 +26,7 @@ SYSTEM_PROMPT_EXTRA = """You are the QBR agent. Answer questions using retrieved
 - Use the `qbr_context` provided in the LLM context whenever available.
 - Cite slide ranges when possible.
 - If no context is provided, say that you could not find relevant QBR content.
+- When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
 
 
@@ -91,12 +92,7 @@ class ScriptedLLM:
 
 
 class DatabricksDSPyClient:
-    """DSPy-based LLM client for Databricks that implements the full JSONLLMClient protocol.
-
-    This client directly uses a pre-configured dspy.LM instance, which allows us to
-    pass Databricks credentials (api_key, api_base) that the standard DSPyLLMClient
-    doesn't support.
-    """
+    """DSPy-based LLM client for Databricks compatible with ReactPlanner."""
 
     expects_json_schema = True
 
@@ -104,8 +100,7 @@ class DatabricksDSPyClient:
         self._lm = lm
 
     def _messages_to_text(self, messages: Sequence[Mapping[str, str]]) -> str:
-        """Convert OpenAI-style messages to a single text prompt."""
-        parts = []
+        parts: list[str] = []
         for msg in messages:
             role = msg.get("role", "user")
             content = msg.get("content", "")
@@ -129,66 +124,82 @@ class DatabricksDSPyClient:
     ) -> str | tuple[str, float]:
         """Generate completion using DSPy with structured output."""
         import asyncio
+        import json as jsonlib
         import dspy
         from pydantic import BaseModel
-
-        # Import PlannerAction for structured output
         from penguiflow.planner.react import PlannerAction
 
-        # Ignore streaming (DSPy doesn't support it natively)
-        del stream, on_stream_chunk
+        del response_format, stream, on_stream_chunk
 
-        # Create signature for structured output
-        attrs = {
-            "__doc__": "Generate a structured PlannerAction output.",
-            "__annotations__": {"messages": str, "response": PlannerAction},
-            "messages": dspy.InputField(desc="Conversation and query"),
-            "response": dspy.OutputField(desc="Structured PlannerAction"),
-        }
-        signature_class = type("PlannerActionSignature", (dspy.Signature,), attrs)
-
-        # Create predictor
-        predictor = dspy.Predict(signature_class)
-
-        # Convert messages to text
         input_text = self._messages_to_text(messages)
-
-        # Run DSPy in executor (it's synchronous)
         loop = asyncio.get_running_loop()
 
-        def _run_dspy() -> Any:
+        def _run_dspy(predictor: Any) -> Any:
             with dspy.context(lm=self._lm):
                 return predictor(messages=input_text)
 
-        result = await loop.run_in_executor(None, _run_dspy)
+        try:
+            attrs = {
+                "__doc__": "Generate a structured PlannerAction output.",
+                "__annotations__": {"messages": str, "response": PlannerAction},
+                "messages": dspy.InputField(desc="Conversation and query"),
+                "response": dspy.OutputField(desc="Structured PlannerAction"),
+            }
+            signature_class = type("PlannerActionSignature", (dspy.Signature,), attrs)
+            predictor = dspy.Predict(signature_class)
+            result = await loop.run_in_executor(None, _run_dspy, predictor)
 
-        # Extract response
-        if hasattr(result, "response"):
-            response_obj = result.response
-            if isinstance(response_obj, BaseModel):
-                return response_obj.model_dump_json(), 0.0
-            elif isinstance(response_obj, dict):
-                return json.dumps(response_obj), 0.0
-            else:
-                # Try to parse as JSON
+            if hasattr(result, "response"):
+                response_obj = result.response
+                if isinstance(response_obj, BaseModel):
+                    return response_obj.model_dump_json(), 0.0
+                if isinstance(response_obj, dict):
+                    return jsonlib.dumps(response_obj), 0.0
                 response_str = str(response_obj)
                 try:
-                    json.loads(response_str)
+                    jsonlib.loads(response_str)
                     return response_str, 0.0
-                except json.JSONDecodeError:
-                    # Extract JSON from response if wrapped in other text
-                    if "{" in response_str and "}" in response_str:
-                        start = response_str.find("{")
-                        end = response_str.rfind("}") + 1
-                        candidate = response_str[start:end]
-                        try:
-                            json.loads(candidate)
-                            return candidate, 0.0
-                        except json.JSONDecodeError:
-                            pass
-                    raise RuntimeError(f"DSPy returned non-JSON response: {response_str[:200]}")
-        else:
-            raise RuntimeError("DSPy returned no response field")
+                except jsonlib.JSONDecodeError:
+                    pass
+        except Exception:
+            pass
+
+        attrs = {
+            "__doc__": "Generate a planner action JSON output.",
+            "__annotations__": {
+                "messages": str,
+                "thought": str,
+                "next_node": str,
+                "args": dict,
+                "plan": list | None,
+                "join": dict | None,
+            },
+            "messages": dspy.InputField(desc="Conversation and query"),
+            "thought": dspy.OutputField(desc="Planner reasoning"),
+            "next_node": dspy.OutputField(desc="Next node name or null"),
+            "args": dspy.OutputField(desc="Planner action arguments"),
+            "plan": dspy.OutputField(desc="Parallel plan actions (optional)"),
+            "join": dspy.OutputField(desc="Parallel join configuration (optional)"),
+        }
+        signature_class = type("PlannerActionSignature", (dspy.Signature,), attrs)
+        predictor = dspy.Predict(signature_class)
+        result = await loop.run_in_executor(None, _run_dspy, predictor)
+
+        thought = getattr(result, "thought", None)
+        next_node = getattr(result, "next_node", None)
+        args = getattr(result, "args", None)
+        plan = getattr(result, "plan", None)
+        join = getattr(result, "join", None)
+        if thought is None or args is None:
+            raise RuntimeError("DSPy returned no planner action fields")
+        response_payload = {
+            "thought": thought,
+            "next_node": next_node,
+            "args": args,
+            "plan": plan,
+            "join": join,
+        }
+        return jsonlib.dumps(response_payload), 0.0
 
 
 def _fetch_service_principal_token(config: Config) -> str | None:

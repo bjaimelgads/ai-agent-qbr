@@ -43,19 +43,89 @@ class AgentResponse:
 def _extract_answer(payload: Any) -> str | None:
     if payload is None:
         return None
+    if isinstance(payload, str):
+        return payload.strip() or None
     if isinstance(payload, Mapping):
-        for key in ("raw_answer", "answer", "text", "content", "message", "greeting", "response", "result"):
-            if key in payload:
-                value = payload.get(key)
-                return None if value is None else str(value)
+        candidate = _extract_answer_from_mapping(payload)
+        if candidate is not None:
+            return str(candidate)
         return str(payload)
 
-    for attr in ("raw_answer", "answer", "text", "content", "message", "greeting", "response", "result"):
+    for attr in (
+        "raw_answer",
+        "answer",
+        "text",
+        "content",
+        "message",
+        "greeting",
+        "response",
+        "result",
+        "final_answer",
+    ):
         if hasattr(payload, attr):
             value = getattr(payload, attr)
-            return None if value is None else str(value)
+            if isinstance(value, str) and value.strip():
+                return value
+            if value is not None and not isinstance(value, str):
+                return str(value)
 
+    if hasattr(payload, "args"):
+        nested_args = getattr(payload, "args")
+        if isinstance(nested_args, Mapping):
+            candidate = _extract_answer_from_mapping(nested_args)
+            if candidate is not None:
+                return str(candidate)
     return str(payload)
+
+
+def _extract_answer_from_mapping(payload: Mapping[str, Any]) -> str | None:
+    raw_answer = payload.get("raw_answer")
+    if isinstance(raw_answer, str) and raw_answer.strip():
+        return raw_answer
+    if raw_answer is not None and not isinstance(raw_answer, str):
+        return str(raw_answer)
+
+    nested_args = payload.get("args")
+    if isinstance(nested_args, Mapping):
+        nested_raw = nested_args.get("raw_answer")
+        if isinstance(nested_raw, str) and nested_raw.strip():
+            return nested_raw
+        if nested_raw is not None and not isinstance(nested_raw, str):
+            return str(nested_raw)
+
+    for key in (
+        "answer",
+        "text",
+        "content",
+        "message",
+        "greeting",
+        "response",
+        "result",
+        "final_answer",
+    ):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+        if value is not None and not isinstance(value, str):
+            return str(value)
+
+    if isinstance(nested_args, Mapping):
+        for key in (
+            "answer",
+            "text",
+            "content",
+            "message",
+            "greeting",
+            "response",
+            "result",
+            "final_answer",
+        ):
+            value = nested_args.get(key)
+            if isinstance(value, str) and value.strip():
+                return value
+            if value is not None and not isinstance(value, str):
+                return str(value)
+    return None
 
 
 class AiAgentQbrOrchestrator:
