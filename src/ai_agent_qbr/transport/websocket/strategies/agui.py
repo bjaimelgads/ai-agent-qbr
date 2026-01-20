@@ -82,6 +82,7 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
                     telemetry_factory=lambda: telemetry,
                 )
             except Exception as exc:
+                self._logger.exception("AG-UI run task failed")
                 run_error = exc
             finally:
                 queue.put_nowait(sentinel)
@@ -107,7 +108,7 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
                 async for event in adapter.with_run_lifecycle(run_input, stream_events()):
                     await self._send_event(session_id, event)
             except Exception as exc:
-                self._logger.warning("AG-UI run failed: %s", exc)
+                self._logger.exception("AG-UI run failed")
             finally:
                 adapter.end_run()
 

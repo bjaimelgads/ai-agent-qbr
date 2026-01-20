@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
     "penguiflow[planner]",
     "dspy>=3.1",
+    "databricks-sdk>=0.57.0",
     "fastapi>=0.115.2",
     "pydantic>=2.6",
     "python-dotenv>=1.0.0",

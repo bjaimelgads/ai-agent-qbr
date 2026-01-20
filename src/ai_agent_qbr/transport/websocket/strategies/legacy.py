@@ -81,6 +81,7 @@ class LegacyWebsocketOutputStrategy(WebsocketOutputStrategy):
                     telemetry_factory=lambda: telemetry,
                 )
         except Exception as exc:
+            self._logger.exception("WebSocket run failed")
             await self._send_payload(session_id, OutputError(message=str(exc)))
             return
 

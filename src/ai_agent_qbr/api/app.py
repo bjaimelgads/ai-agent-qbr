@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import shutil
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket
@@ -21,6 +23,31 @@ from ai_agent_qbr.transport.websocket.strategies import build_websocket_strategy
 from qbr_agent.infrastructure.faiss_builder import FaissBuildConfig, build_faiss_index
 
 logger = logging.getLogger(__name__)
+
+
+def _maybe_seed_sqlite_db(database_url: str) -> None:
+    if not database_url.startswith("sqlite"):
+        return
+    parsed = urlparse(database_url.replace("sqlite+aiosqlite", "sqlite"))
+    if not parsed.path:
+        return
+    db_path = Path(parsed.path)
+    if db_path.exists():
+        logger.info("SQLite database already exists at %s", db_path)
+        return
+    source_root = Path(__file__).resolve().parents[3]
+    seed_candidates = [
+        source_root / "qbr_extraction" / "qbr_intelligence.db",
+        source_root / "qbr_intelligence.db",
+        source_root / "data" / "qbr_intelligence.db",
+    ]
+    seed_path = next((path for path in seed_candidates if path.exists()), None)
+    if seed_path is None:
+        logger.warning("Seed database not found. Checked: %s", seed_candidates)
+        return
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(seed_path, db_path)
+    logger.info("Seeded SQLite database at %s", db_path)
 
 
 def create_app(
@@ -81,10 +108,17 @@ def create_app(
 
     @app.on_event("startup")
     async def _startup() -> None:
+        _maybe_seed_sqlite_db(config.database_url)
         if config.vector_backend != "faiss":
             return
         if not config.faiss_auto_build:
             return
+        logger.info(
+            "FAISS auto-build enabled (dir=%s, db=%s, rebuild=%s)",
+            config.faiss_dir,
+            config.database_url,
+            config.faiss_rebuild_on_startup,
+        )
         build_config = FaissBuildConfig(
             database_url=config.database_url,
             base_dir=Path(config.faiss_dir),

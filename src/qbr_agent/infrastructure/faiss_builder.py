@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from qbr_agent.infrastructure.sqlalchemy_repository import SqlAlchemyKnowledgeRepository
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -30,6 +33,7 @@ async def build_faiss_index(config: FaissBuildConfig) -> bool:
     index_path = config.base_dir / "index.faiss"
     ids_path = config.base_dir / "index_ids.json"
     if not config.force and index_path.exists() and ids_path.exists():
+        logger.info("FAISS index already exists at %s", config.base_dir)
         return False
 
     try:  # pragma: no cover - optional dependency
@@ -52,6 +56,7 @@ async def build_faiss_index(config: FaissBuildConfig) -> bool:
         embedding_model=config.embedding_model_filter
     )
     if not embeddings:
+        logger.warning("No embeddings found in database; skipping FAISS build")
         await engine.dispose()
         return False
 

@@ -81,6 +81,10 @@ class Config:
     databricks_token: str = ""
     databricks_api_base: str = ""
     databricks_api_key: str = ""
+    databricks_client_id: str = ""
+    databricks_client_secret: str = ""
+    databricks_oauth_token_url: str = ""
+    databricks_oauth_scope: str = "all-apis"
     llm_model_name: str = "databricks-claude-sonnet-4-5"
     llm_max_tokens: int = 4000
     llm_cache_enabled: bool = True
@@ -165,6 +169,10 @@ class Config:
             databricks_token=os.getenv("DATABRICKS_TOKEN", ""),
             databricks_api_base=os.getenv("DATABRICKS_API_BASE", ""),
             databricks_api_key=os.getenv("DATABRICKS_API_KEY", ""),
+            databricks_client_id=os.getenv("DATABRICKS_CLIENT_ID", ""),
+            databricks_client_secret=os.getenv("DATABRICKS_CLIENT_SECRET", ""),
+            databricks_oauth_token_url=os.getenv("DATABRICKS_OAUTH_TOKEN_URL", ""),
+            databricks_oauth_scope=os.getenv("DATABRICKS_OAUTH_SCOPE", "all-apis"),
             llm_model_name=os.getenv("LLM_MODEL_NAME", "databricks-claude-sonnet-4-5"),
             llm_max_tokens=_env_int("LLM_MAX_TOKENS", 4000),
             llm_cache_enabled=_env_flag("LLM_CACHE_ENABLED", True),

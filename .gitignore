@@ -24,9 +24,6 @@ htmlcov/
 .DS_Store
 .claude
 # Data
-*.db
-*.sqlite
-*.sqlite3
 *.png
 *.jpg
 *.jpeg
@@ -46,5 +43,3 @@ dist/
 # Kreuzberg cache
 .kreuzberg/
 
-# FAISS index data
-data/

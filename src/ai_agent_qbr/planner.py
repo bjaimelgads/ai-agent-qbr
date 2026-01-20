@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import base64
 import json
+import urllib.parse
+import urllib.request
 import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -188,6 +191,81 @@ class DatabricksDSPyClient:
             raise RuntimeError("DSPy returned no response field")
 
 
+def _fetch_service_principal_token(config: Config) -> str | None:
+    if not config.databricks_client_id or not config.databricks_client_secret:
+        return None
+    token_url = config.databricks_oauth_token_url
+    if not token_url:
+        if not config.databricks_host:
+            return None
+        token_url = f"{config.databricks_host.rstrip('/')}/oidc/v1/token"
+    payload = urllib.parse.urlencode(
+        {
+            "grant_type": "client_credentials",
+            "scope": config.databricks_oauth_scope or "all-apis",
+        }
+    ).encode("utf-8")
+    basic = base64.b64encode(
+        f"{config.databricks_client_id}:{config.databricks_client_secret}".encode("utf-8")
+    ).decode("ascii")
+    request = urllib.request.Request(
+        token_url,
+        data=payload,
+        headers={
+            "Authorization": f"Basic {basic}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to fetch Databricks OAuth token: %s", exc)
+        return None
+    token = data.get("access_token")
+    if not token:
+        logger.warning("Databricks OAuth response missing access_token")
+        return None
+    return str(token)
+
+
+def _resolve_workspace_client_credentials() -> tuple[str | None, str | None]:
+    """Resolve Databricks host/token from implicit workspace client auth."""
+    try:
+        from databricks.sdk import WorkspaceClient
+    except ImportError:
+        return None, None
+
+    try:
+        workspace_client = WorkspaceClient()
+        return workspace_client.config.host, workspace_client.config.token
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to resolve Databricks credentials from workspace client: %s", exc)
+        return None, None
+
+
+def _resolve_databricks_token(config: Config) -> str | None:
+    if config.databricks_api_key:
+        return config.databricks_api_key
+    if config.databricks_token:
+        return config.databricks_token
+
+    token = _fetch_service_principal_token(config)
+    if token:
+        return token
+
+    _, implicit_token = _resolve_workspace_client_credentials()
+    return implicit_token
+
+
+def _resolve_databricks_host(config: Config) -> str | None:
+    if config.databricks_host:
+        return config.databricks_host
+    implicit_host, _ = _resolve_workspace_client_credentials()
+    return implicit_host
+
+
 def _create_llm_client(config: Config) -> Any:
     """Create LLM client - real DSPy-backed or stub based on config.
 
@@ -202,9 +280,10 @@ def _create_llm_client(config: Config) -> Any:
     # Native streaming path for Playground AG-UI
     if config.output_protocol == "agui" and config.planner_stream_final_response:
         api_base = config.databricks_api_base or ""
-        if not api_base and config.databricks_host:
-            api_base = f"{config.databricks_host.rstrip('/')}/serving-endpoints"
-        api_key = config.databricks_api_key or config.databricks_token
+        resolved_host = _resolve_databricks_host(config)
+        if not api_base and resolved_host:
+            api_base = f"{resolved_host.rstrip('/')}/serving-endpoints"
+        api_key = _resolve_databricks_token(config)
         if not api_base or not api_key:
             raise ValueError(
                 "Databricks native streaming requires DATABRICKS_API_BASE (or DATABRICKS_HOST) "
@@ -215,15 +294,17 @@ def _create_llm_client(config: Config) -> Any:
         return {"model": model_id, "api_base": api_base, "api_key": api_key}
 
     # Validate required config
-    if not config.databricks_host:
+    resolved_host = _resolve_databricks_host(config)
+    if not resolved_host:
         raise ValueError(
             "DATABRICKS_HOST is required when USE_STUB_LLM=false. "
             "Set it to your Databricks workspace URL (e.g., https://your-workspace.cloud.databricks.com)"
         )
-    if not config.databricks_token:
+    if not _resolve_databricks_token(config):
         raise ValueError(
-            "DATABRICKS_TOKEN is required when USE_STUB_LLM=false. "
-            "Set it to your Databricks personal access token."
+            "Databricks authentication is required when USE_STUB_LLM=false. "
+            "Set DATABRICKS_TOKEN or DATABRICKS_API_KEY, or configure service principal "
+            "credentials (DATABRICKS_CLIENT_ID/SECRET)."
         )
 
     # Import DSPy
@@ -235,8 +316,11 @@ def _create_llm_client(config: Config) -> Any:
         ) from e
 
     # Create DSPy LM with Databricks endpoint
-    serving_host = f"{config.databricks_host}/serving-endpoints"
+    serving_host = f"{resolved_host}/serving-endpoints"
     model_id = f"databricks/{config.llm_model_name}"
+    api_key = _resolve_databricks_token(config)
+    if not api_key:
+        raise ValueError("Databricks authentication failed to produce an API token.")
 
     logger.info(
         f"Creating DSPy LM: model={model_id}, "
@@ -247,7 +331,7 @@ def _create_llm_client(config: Config) -> Any:
 
     lm = dspy.LM(
         model_id,
-        api_key=config.databricks_token,
+        api_key=api_key,
         api_base=serving_host,
         max_tokens=config.llm_max_tokens,
         cache=config.llm_cache_enabled,
