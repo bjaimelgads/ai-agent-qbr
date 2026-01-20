@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import secrets
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -20,6 +21,17 @@ from qbr_agent.application.use_cases import AnswerQuestion, HybridSearchKnowledg
 from qbr_agent.infrastructure.factory import InfrastructureBundle, build_infrastructure
 
 _LOGGER = logging.getLogger(__name__)
+
+_GREETING_RE = re.compile(
+    r"^\s*(hi|hello|hey|hiya|yo|sup|good\s+(morning|afternoon|evening))(\s+there)?\s*[!.?]*\s*$",
+    re.IGNORECASE,
+)
+
+
+def _is_greeting(text: str) -> bool:
+    if not text:
+        return False
+    return bool(_GREETING_RE.match(text))
 
 
 class AiAgentQbrFlowError(RuntimeError):
@@ -215,6 +227,28 @@ class AiAgentQbrOrchestrator:
                 tenant_id=tenant_id,
                 user_id=user_id,
                 session_id=session_id,
+            )
+
+        if _is_greeting(query):
+            answer_text = "Hi!"
+            await self._memory.ingest_interaction(
+                tenant_id=tenant_id,
+                user_id=user_id,
+                session_id=session_id,
+                user_prompt=query,
+                agent_response=answer_text,
+            )
+            self._append_recent_turn(
+                tenant_id=tenant_id,
+                user_id=user_id,
+                session_id=session_id,
+                user_prompt=query,
+                agent_response=answer_text,
+            )
+            return AgentResponse(
+                answer=answer_text,
+                trace_id=trace_id,
+                metadata={},
             )
 
         infra = await self._get_infrastructure()
