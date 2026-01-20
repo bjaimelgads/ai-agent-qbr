@@ -464,7 +464,7 @@ class QBRProcessor:
     @staticmethod
     def _split_pages(content: str) -> list[dict]:
         """Split raw content into page-numbered blocks."""
-        pattern = r"<!-- PAGE (\\d+) -->"
+        pattern = r"<!-- PAGE (\d+) -->"
         parts = re.split(pattern, content)
         pages: list[dict] = []
         for i in range(1, len(parts), 2):
