@@ -32,3 +32,16 @@ class FinalAnswer(BaseModel):
     """Final agent answer."""
 
     text: str
+
+
+class AgentCapabilitiesArgs(BaseModel):
+    """Arguments for agent_capabilities tool."""
+
+    include_examples: bool = True
+
+
+class AgentCapabilitiesResult(BaseModel):
+    """Capabilities response for users."""
+
+    capabilities_text: str
+    sample_queries: list[str]
