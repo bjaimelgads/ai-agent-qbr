@@ -12,6 +12,7 @@ import json
 import re
 import zipfile
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -61,6 +62,9 @@ class QBRProcessor:
 
     Handles extraction, LLM enhancement, and database storage.
     """
+
+    CHUNK_MAX_CHARS = 1500
+    CHUNK_OVERLAP = 200
 
     def __init__(
         self,
@@ -305,10 +309,13 @@ class QBRProcessor:
         charts: list[dict],
         business_terms: set[str],
         output_dir: Path,
+        chunks: list[dict] | None = None,
     ) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         images_dir = output_dir / "images"
         images_dir.mkdir(parents=True, exist_ok=True)
+
+        chunks_source = chunks if chunks is not None else (result.chunks or [])
 
         slide_texts = self._load_pptx_slide_texts(file_path) if file_path.suffix.lower() == ".pptx" else []
         pages = self._split_pages(result.content)
@@ -361,7 +368,7 @@ class QBRProcessor:
             "detected_languages": result.detected_languages,
             "table_count": len(result.tables),
             "image_count": len(result.images) if result.images else 0,
-            "chunk_count": result.get_chunk_count(),
+            "chunk_count": len(chunks_source),
             "metadata": result.metadata,
         }
         (output_dir / "01_extraction_metadata.json").write_text(
@@ -422,7 +429,7 @@ class QBRProcessor:
 
         chunks_payload: list[dict] = []
         embedding_model = EmbeddingSettings.from_env().model_label()
-        for idx, chunk in enumerate(result.chunks or []):
+        for idx, chunk in enumerate(chunks_source):
             embedding = chunk.get("embedding")
             chunks_payload.append(
                 {
@@ -455,11 +462,250 @@ class QBRProcessor:
             encoding="utf-8",
         )
 
+        llm_manifest = self._build_llm_task_manifest(
+            document_path=str(file_path),
+            slides=slides_export,
+            metrics=metrics_export,
+            charts=charts_export,
+        )
+        (output_dir / "10_llm_task_manifest.json").write_text(
+            json.dumps(llm_manifest, indent=2, default=str),
+            encoding="utf-8",
+        )
+
         if remap:
             (output_dir / "00_slide_order_map.json").write_text(
                 json.dumps(remap, indent=2),
                 encoding="utf-8",
             )
+
+    @staticmethod
+    def _to_jsonable(value):
+        """Convert LLM outputs to JSON-serializable structures."""
+        if isinstance(value, dict):
+            return {key: QBRProcessor._to_jsonable(val) for key, val in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [QBRProcessor._to_jsonable(item) for item in value]
+        if isinstance(value, Enum):
+            return value.value
+        if hasattr(value, "model_dump"):
+            return QBRProcessor._to_jsonable(value.model_dump())
+        if hasattr(value, "dict"):
+            return QBRProcessor._to_jsonable(value.dict())
+        if hasattr(value, "__dict__"):
+            data = {
+                key: val
+                for key, val in value.__dict__.items()
+                if not key.startswith("_")
+            }
+            if data:
+                return QBRProcessor._to_jsonable(data)
+        if isinstance(value, bytes):
+            return base64.b64encode(value).decode("ascii")
+        return value
+
+    @classmethod
+    def _build_chunks_from_pages(cls, pages: list[dict]) -> list[dict]:
+        """Create chunk payloads from ordered page blocks."""
+        chunks: list[dict] = []
+        step = max(cls.CHUNK_MAX_CHARS - cls.CHUNK_OVERLAP, 1)
+        for page in pages:
+            page_num = page.get("page_number")
+            page_text = (page.get("content") or "").strip()
+            page_block = f"<!-- PAGE {page_num} -->\n{page_text}\n"
+            offset = 0
+            while offset < len(page_block):
+                end = min(len(page_block), offset + cls.CHUNK_MAX_CHARS)
+                chunk_text = page_block[offset:end]
+                chunks.append(
+                    {
+                        "content": chunk_text,
+                        "metadata": {
+                            "byte_start": offset,
+                            "byte_end": end,
+                            "page_number": page_num,
+                        },
+                        "embedding": None,
+                        "embedding_model": None,
+                    }
+                )
+                if end >= len(page_block):
+                    break
+                offset += step
+        return chunks
+
+    @staticmethod
+    def _build_llm_task_manifest(
+        *,
+        document_path: str,
+        slides: list[dict],
+        metrics: list[dict],
+        charts: list[dict],
+    ) -> dict:
+        """Generate a manifest of LLM enhancement opportunities."""
+        return {
+            "generated_at": datetime.now().isoformat(),
+            "document": document_path,
+            "total_slides": len(slides),
+            "total_metrics_found": len(metrics),
+            "total_charts_detected": len(charts),
+            "llm_tasks": {
+                "slide_analysis": {
+                    "description": "Analyze each slide to extract structured insights",
+                    "task_type": "per_slide",
+                    "count": len(slides),
+                    "expected_output": {
+                        "slide_type": "string (title, data, chart, summary, transition)",
+                        "key_message": "string",
+                        "metrics_structured": "array of {name, value, unit, trend}",
+                        "action_items": "array of strings",
+                        "confidence": "float 0-1",
+                    },
+                    "prompt_template": """Analyze this QBR slide and extract:
+1. Slide type (title/data/chart/summary/transition)
+2. Key message or insight
+3. Structured metrics with names and values
+4. Any action items or recommendations
+
+Slide content:
+{slide_content}
+
+Speaker notes (if any):
+{speaker_notes}
+""",
+                },
+                "metric_normalization": {
+                    "description": "Normalize and categorize all extracted metrics",
+                    "task_type": "batch",
+                    "count": len(metrics),
+                    "expected_output": {
+                        "metric_name": "string",
+                        "value_normalized": "float",
+                        "unit": "string",
+                        "category": "string (performance, cost, reach, engagement)",
+                        "trend": "string (up, down, stable, unknown)",
+                        "benchmark_comparison": "string",
+                    },
+                    "prompt_template": """Given these metrics extracted from a QBR presentation:
+{metrics_json}
+
+For each metric:
+1. Identify what it measures
+2. Normalize the value
+3. Categorize (performance/cost/reach/engagement)
+4. Identify if it shows a trend
+5. Compare to industry benchmarks if possible
+""",
+                },
+                "chart_reconstruction": {
+                    "description": "Reconstruct chart data from text elements",
+                    "task_type": "per_chart",
+                    "count": len(charts),
+                    "expected_output": {
+                        "chart_type": "string",
+                        "title": "string",
+                        "data_series": "array of {label, values}",
+                        "x_axis": "string",
+                        "y_axis": "string",
+                        "insights": "array of strings",
+                    },
+                    "prompt_template": """These text elements were extracted from what appears to be a chart:
+{chart_elements}
+
+Reconstruct the chart data:
+1. Determine the chart type
+2. Identify labels and values
+3. Structure as a data table
+4. Extract key insights from the visualization
+""",
+                },
+                "executive_summary": {
+                    "description": "Generate executive summary from all slides",
+                    "task_type": "aggregate",
+                    "count": 1,
+                    "expected_output": {
+                        "summary": "string (2-3 paragraphs)",
+                        "key_wins": "array of strings",
+                        "areas_for_improvement": "array of strings",
+                        "recommendations": "array of strings",
+                        "next_steps": "array of strings",
+                    },
+                    "prompt_template": """Based on this QBR presentation content, generate an executive summary:
+
+Full presentation text:
+{full_content}
+
+Include:
+1. 2-3 paragraph summary
+2. Key wins/achievements
+3. Areas needing improvement
+4. Strategic recommendations
+5. Suggested next steps
+""",
+                },
+                "image_analysis": {
+                    "description": "Analyze images for charts, text, and brand elements",
+                    "task_type": "per_image",
+                    "count": "variable (see images output)",
+                    "expected_output": {
+                        "image_type": "string (chart, photo, logo, diagram, screenshot)",
+                        "contains_text": "boolean",
+                        "extracted_text": "string (if applicable)",
+                        "chart_data": "object (if chart)",
+                        "description": "string",
+                    },
+                    "prompt_template": """Analyze this image from a QBR presentation:
+[Image attached]
+
+1. What type of image is this?
+2. Does it contain text? If so, extract it.
+3. If it's a chart, extract the data.
+4. Provide a description for accessibility.
+""",
+                },
+                "entity_extraction": {
+                    "description": "Extract named entities (companies, products, people, locations)",
+                    "task_type": "aggregate",
+                    "count": 1,
+                    "expected_output": {
+                        "companies": "array of strings",
+                        "products": "array of strings",
+                        "people": "array of strings",
+                        "locations": "array of strings",
+                        "dates": "array of strings",
+                        "campaigns": "array of strings",
+                    },
+                    "prompt_template": """Extract all named entities from this QBR presentation:
+
+{full_content}
+
+Categories:
+- Companies/Brands
+- Products/Services
+- People (speakers, stakeholders)
+- Locations/Markets
+- Dates/Time periods
+- Campaign names
+""",
+                },
+            },
+            "priority_order": [
+                "slide_analysis",
+                "metric_normalization",
+                "chart_reconstruction",
+                "executive_summary",
+                "entity_extraction",
+                "image_analysis",
+            ],
+            "estimated_llm_calls": {
+                "slide_analysis": len(slides),
+                "metric_normalization": 1,
+                "chart_reconstruction": len(charts),
+                "executive_summary": 1,
+                "entity_extraction": 1,
+                "image_analysis": "depends on image count",
+            },
+        }
 
     @staticmethod
     def _split_pages(content: str) -> list[dict]:
@@ -582,9 +828,32 @@ class QBRProcessor:
         print("=" * 60)
 
         result = self.extract_document(file_path)
+
+        pages = self._split_pages(result.content)
+        remap = None
+        remapped_pages: list[dict] | None = None
+        if file_path.suffix.lower() == ".pptx":
+            slide_texts = self._load_pptx_slide_texts(file_path)
+            if slide_texts and pages:
+                remap = self._build_page_remap(pages, slide_texts)
+        chunks_for_storage = result.chunks or []
+        if remap:
+            pages_by_num = {page["page_number"]: page for page in pages}
+            remapped_pages = []
+            for entry in remap:
+                old_num = entry["source_page_number"]
+                page = pages_by_num.get(old_num)
+                if page is None:
+                    continue
+                remapped_pages.append(
+                    {"page_number": entry["slide_number"], "content": page["content"]}
+                )
+            if remapped_pages:
+                chunks_for_storage = self._build_chunks_from_pages(remapped_pages)
+
         post_embedding_settings = PostEmbeddingSettings.from_env()
         try:
-            filled = apply_post_embeddings(result.chunks or [], post_embedding_settings)
+            filled = apply_post_embeddings(chunks_for_storage, post_embedding_settings)
             if filled:
                 print(
                     "[Embeddings] Post-extraction embeddings filled "
@@ -618,6 +887,7 @@ class QBRProcessor:
                 charts=charts,
                 business_terms=business_terms,
                 output_dir=target_dir,
+                chunks=chunks_for_storage,
             )
             print(f"  - Extraction outputs saved: {target_dir}")
 
@@ -636,7 +906,7 @@ class QBRProcessor:
                 page_count=result.get_page_count(),
                 slide_count=len(slides),
                 image_count=len(result.images) if result.images else 0,
-                chunk_count=result.get_chunk_count(),
+                chunk_count=len(chunks_for_storage),
                 extraction_metadata=result.metadata,
                 detected_languages=result.detected_languages,
                 client_name=client_name,
@@ -695,7 +965,7 @@ class QBRProcessor:
             print(f"  - Charts created: {len(charts)}")
 
             # Create chunks (bulk insert)
-            if result.chunks:
+            if chunks_for_storage:
                 embedding_model = self.embedding_settings.model_label()
                 chunks_to_add = [
                     Chunk(
@@ -713,10 +983,10 @@ class QBRProcessor:
                             else None
                         ),
                     )
-                    for idx, chunk_data in enumerate(result.chunks)
+                    for idx, chunk_data in enumerate(chunks_for_storage)
                 ]
                 session.add_all(chunks_to_add)
-                print(f"  - Chunks created: {len(result.chunks)}")
+                print(f"  - Chunks created: {len(chunks_for_storage)}")
 
             # Create images (bulk insert, skip loading image data)
             if result.images:
@@ -749,7 +1019,15 @@ class QBRProcessor:
             print("STEP 4: LLM ENHANCEMENT")
             print("=" * 60)
 
-            self.enhance_document(doc_id, result.content, slides, metrics, charts)
+            llm_results = self.enhance_document(doc_id, result.content, slides, metrics, charts)
+            if export_outputs and llm_results is not None:
+                base_dir = Path(output_dir) if output_dir else self.output_dir
+                target_dir = base_dir / file_path.stem
+                (target_dir / "10_llm_outputs.json").write_text(
+                    json.dumps(self._to_jsonable(llm_results), indent=2, default=str),
+                    encoding="utf-8",
+                )
+                print(f"  - LLM outputs saved: {target_dir / '10_llm_outputs.json'}")
 
         print("\n" + "=" * 60)
         print("PROCESSING COMPLETE")
@@ -765,7 +1043,7 @@ class QBRProcessor:
         slides: list[dict],
         metrics: list[dict],
         charts: list[dict],
-    ):
+    ) -> dict | None:
         """
         Run LLM enhancement on a document.
 
@@ -804,6 +1082,7 @@ class QBRProcessor:
             self._save_enhancements(document_id, results)
 
             print("  Enhancement complete!")
+            return results
 
         except Exception as e:
             print(f"  Enhancement failed: {e}")
@@ -813,6 +1092,7 @@ class QBRProcessor:
                 if doc:
                     doc.status = DocumentStatus.EXTRACTED.value  # Keep as extracted
                     session.commit()
+            return None
 
     def _save_enhancements(self, document_id: int, results: dict):
         """Save LLM enhancement results to database."""
