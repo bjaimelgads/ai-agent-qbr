@@ -1,428 +1,429 @@
 {
-  "source_file": "qbr_extraction/agentiv_disney.pptx",
-  "extraction_timestamp": "2026-01-19T14:23:46.482150",
+  "source_file": "decks/agentiv_disney_h1.pptx",
+  "extraction_timestamp": "2026-01-21T15:51:00.404388",
   "kreuzberg_version": "4.0.0",
   "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "page_count": 82,
   "detected_languages": [
     "eng",
     "fra",
-    "cym"
+    "cym",
+    "por"
   ],
   "table_count": 0,
-  "image_count": 325,
-  "chunk_count": 71,
+  "image_count": 326,
+  "chunk_count": 87,
   "metadata": {
     "pages": {
       "boundaries": [
         {
-          "byte_end": 873,
+          "byte_end": 630,
           "byte_start": 0,
           "page_number": 1
         },
         {
-          "byte_end": 2007,
-          "byte_start": 873,
+          "byte_end": 1728,
+          "byte_start": 630,
           "page_number": 2
         },
         {
-          "byte_end": 2128,
-          "byte_start": 2007,
+          "byte_end": 1849,
+          "byte_start": 1728,
           "page_number": 3
         },
         {
-          "byte_end": 2669,
-          "byte_start": 2128,
+          "byte_end": 2367,
+          "byte_start": 1849,
           "page_number": 4
         },
         {
-          "byte_end": 3162,
-          "byte_start": 2669,
+          "byte_end": 2860,
+          "byte_start": 2367,
           "page_number": 5
         },
         {
-          "byte_end": 4053,
-          "byte_start": 3162,
+          "byte_end": 3403,
+          "byte_start": 2860,
           "page_number": 6
         },
         {
-          "byte_end": 5805,
-          "byte_start": 4053,
+          "byte_end": 5127,
+          "byte_start": 3403,
           "page_number": 7
         },
         {
-          "byte_end": 7074,
-          "byte_start": 5805,
+          "byte_end": 5344,
+          "byte_start": 5127,
           "page_number": 8
         },
         {
-          "byte_end": 9896,
-          "byte_start": 7074,
+          "byte_end": 5580,
+          "byte_start": 5344,
           "page_number": 9
         },
         {
-          "byte_end": 10695,
-          "byte_start": 9896,
+          "byte_end": 6103,
+          "byte_start": 5580,
           "page_number": 10
         },
         {
-          "byte_end": 11712,
-          "byte_start": 10695,
+          "byte_end": 6916,
+          "byte_start": 6103,
           "page_number": 11
         },
         {
-          "byte_end": 12317,
-          "byte_start": 11712,
+          "byte_end": 7435,
+          "byte_start": 6916,
           "page_number": 12
         },
         {
-          "byte_end": 12642,
-          "byte_start": 12317,
+          "byte_end": 7760,
+          "byte_start": 7435,
           "page_number": 13
         },
         {
-          "byte_end": 13503,
-          "byte_start": 12642,
+          "byte_end": 8344,
+          "byte_start": 7760,
           "page_number": 14
         },
         {
-          "byte_end": 14198,
-          "byte_start": 13503,
+          "byte_end": 8896,
+          "byte_start": 8344,
           "page_number": 15
         },
         {
-          "byte_end": 14450,
-          "byte_start": 14198,
+          "byte_end": 9129,
+          "byte_start": 8896,
           "page_number": 16
         },
         {
-          "byte_end": 15568,
-          "byte_start": 14450,
+          "byte_end": 9996,
+          "byte_start": 9129,
           "page_number": 17
         },
         {
-          "byte_end": 16515,
-          "byte_start": 15568,
+          "byte_end": 10872,
+          "byte_start": 9996,
           "page_number": 18
         },
         {
-          "byte_end": 18067,
-          "byte_start": 16515,
+          "byte_end": 11569,
+          "byte_start": 10872,
           "page_number": 19
         },
         {
-          "byte_end": 19485,
-          "byte_start": 18067,
+          "byte_end": 12370,
+          "byte_start": 11569,
           "page_number": 20
         },
         {
-          "byte_end": 19950,
-          "byte_start": 19485,
+          "byte_end": 12835,
+          "byte_start": 12370,
           "page_number": 21
         },
         {
-          "byte_end": 21143,
-          "byte_start": 19950,
+          "byte_end": 13596,
+          "byte_start": 12835,
           "page_number": 22
         },
         {
-          "byte_end": 21847,
-          "byte_start": 21143,
+          "byte_end": 14155,
+          "byte_start": 13596,
           "page_number": 23
         },
         {
-          "byte_end": 23956,
-          "byte_start": 21847,
+          "byte_end": 16236,
+          "byte_start": 14155,
           "page_number": 24
         },
         {
-          "byte_end": 24569,
-          "byte_start": 23956,
+          "byte_end": 16697,
+          "byte_start": 16236,
           "page_number": 25
         },
         {
-          "byte_end": 26189,
-          "byte_start": 24569,
+          "byte_end": 17345,
+          "byte_start": 16697,
           "page_number": 26
         },
         {
-          "byte_end": 26997,
-          "byte_start": 26189,
+          "byte_end": 17950,
+          "byte_start": 17345,
           "page_number": 27
         },
         {
-          "byte_end": 27561,
-          "byte_start": 26997,
+          "byte_end": 18495,
+          "byte_start": 17950,
           "page_number": 28
         },
         {
-          "byte_end": 29442,
-          "byte_start": 27561,
+          "byte_end": 20357,
+          "byte_start": 18495,
           "page_number": 29
         },
         {
-          "byte_end": 29666,
-          "byte_start": 29442,
+          "byte_end": 20581,
+          "byte_start": 20357,
           "page_number": 30
         },
         {
-          "byte_end": 30277,
-          "byte_start": 29666,
+          "byte_end": 21063,
+          "byte_start": 20581,
           "page_number": 31
         },
         {
-          "byte_end": 30902,
-          "byte_start": 30277,
+          "byte_end": 21649,
+          "byte_start": 21063,
           "page_number": 32
         },
         {
-          "byte_end": 31734,
-          "byte_start": 30902,
+          "byte_end": 22455,
+          "byte_start": 21649,
           "page_number": 33
         },
         {
-          "byte_end": 32548,
-          "byte_start": 31734,
+          "byte_end": 23004,
+          "byte_start": 22455,
           "page_number": 34
         },
         {
-          "byte_end": 35026,
-          "byte_start": 32548,
+          "byte_end": 25205,
+          "byte_start": 23004,
           "page_number": 35
         },
         {
-          "byte_end": 35842,
-          "byte_start": 35026,
+          "byte_end": 25907,
+          "byte_start": 25205,
           "page_number": 36
         },
         {
-          "byte_end": 36318,
-          "byte_start": 35842,
+          "byte_end": 26340,
+          "byte_start": 25907,
           "page_number": 37
         },
         {
-          "byte_end": 36580,
-          "byte_start": 36318,
+          "byte_end": 26602,
+          "byte_start": 26340,
           "page_number": 38
         },
         {
-          "byte_end": 37068,
-          "byte_start": 36580,
+          "byte_end": 27092,
+          "byte_start": 26602,
           "page_number": 39
         },
         {
-          "byte_end": 38179,
-          "byte_start": 37068,
+          "byte_end": 27757,
+          "byte_start": 27092,
           "page_number": 40
         },
         {
-          "byte_end": 38231,
-          "byte_start": 38179,
+          "byte_end": 27809,
+          "byte_start": 27757,
           "page_number": 41
         },
         {
-          "byte_end": 40171,
-          "byte_start": 38231,
+          "byte_end": 28446,
+          "byte_start": 27809,
           "page_number": 42
         },
         {
-          "byte_end": 41784,
-          "byte_start": 40171,
+          "byte_end": 29161,
+          "byte_start": 28446,
           "page_number": 43
         },
         {
-          "byte_end": 42399,
-          "byte_start": 41784,
+          "byte_end": 29757,
+          "byte_start": 29161,
           "page_number": 44
         },
         {
-          "byte_end": 42956,
-          "byte_start": 42399,
+          "byte_end": 30286,
+          "byte_start": 29757,
           "page_number": 45
         },
         {
-          "byte_end": 43678,
-          "byte_start": 42956,
+          "byte_end": 30705,
+          "byte_start": 30286,
           "page_number": 46
         },
         {
-          "byte_end": 43923,
-          "byte_start": 43678,
+          "byte_end": 30950,
+          "byte_start": 30705,
           "page_number": 47
         },
         {
-          "byte_end": 44265,
-          "byte_start": 43923,
+          "byte_end": 31292,
+          "byte_start": 30950,
           "page_number": 48
         },
         {
-          "byte_end": 44584,
-          "byte_start": 44265,
+          "byte_end": 31577,
+          "byte_start": 31292,
           "page_number": 49
         },
         {
-          "byte_end": 45203,
-          "byte_start": 44584,
+          "byte_end": 32048,
+          "byte_start": 31577,
           "page_number": 50
         },
         {
-          "byte_end": 46146,
-          "byte_start": 45203,
+          "byte_end": 32898,
+          "byte_start": 32048,
           "page_number": 51
         },
         {
-          "byte_end": 46355,
-          "byte_start": 46146,
+          "byte_end": 33088,
+          "byte_start": 32898,
           "page_number": 52
         },
         {
-          "byte_end": 46950,
-          "byte_start": 46355,
+          "byte_end": 33665,
+          "byte_start": 33088,
           "page_number": 53
         },
         {
-          "byte_end": 47052,
-          "byte_start": 46950,
+          "byte_end": 33767,
+          "byte_start": 33665,
           "page_number": 54
         },
         {
-          "byte_end": 47520,
-          "byte_start": 47052,
+          "byte_end": 34041,
+          "byte_start": 33767,
           "page_number": 55
         },
         {
-          "byte_end": 47769,
-          "byte_start": 47520,
+          "byte_end": 34290,
+          "byte_start": 34041,
           "page_number": 56
         },
         {
-          "byte_end": 48465,
-          "byte_start": 47769,
+          "byte_end": 34985,
+          "byte_start": 34290,
           "page_number": 57
         },
         {
-          "byte_end": 48664,
-          "byte_start": 48465,
+          "byte_end": 35162,
+          "byte_start": 34985,
           "page_number": 58
         },
         {
-          "byte_end": 50901,
-          "byte_start": 48664,
+          "byte_end": 36063,
+          "byte_start": 35162,
           "page_number": 59
         },
         {
-          "byte_end": 51512,
-          "byte_start": 50901,
+          "byte_end": 36646,
+          "byte_start": 36063,
           "page_number": 60
         },
         {
-          "byte_end": 51626,
-          "byte_start": 51512,
+          "byte_end": 36760,
+          "byte_start": 36646,
           "page_number": 61
         },
         {
-          "byte_end": 52200,
-          "byte_start": 51626,
+          "byte_end": 37331,
+          "byte_start": 36760,
           "page_number": 62
         },
         {
-          "byte_end": 54725,
-          "byte_start": 52200,
+          "byte_end": 39828,
+          "byte_start": 37331,
           "page_number": 63
         },
         {
-          "byte_end": 57472,
-          "byte_start": 54725,
+          "byte_end": 40340,
+          "byte_start": 39828,
           "page_number": 64
         },
         {
-          "byte_end": 58116,
-          "byte_start": 57472,
+          "byte_end": 40756,
+          "byte_start": 40340,
           "page_number": 65
         },
         {
-          "byte_end": 58602,
-          "byte_start": 58116,
+          "byte_end": 41242,
+          "byte_start": 40756,
           "page_number": 66
         },
         {
-          "byte_end": 59446,
-          "byte_start": 58602,
+          "byte_end": 41949,
+          "byte_start": 41242,
           "page_number": 67
         },
         {
-          "byte_end": 59998,
-          "byte_start": 59446,
+          "byte_end": 42437,
+          "byte_start": 41949,
           "page_number": 68
         },
         {
-          "byte_end": 60585,
-          "byte_start": 59998,
+          "byte_end": 43024,
+          "byte_start": 42437,
           "page_number": 69
         },
         {
-          "byte_end": 62406,
-          "byte_start": 60585,
+          "byte_end": 44008,
+          "byte_start": 43024,
           "page_number": 70
         },
         {
-          "byte_end": 63115,
-          "byte_start": 62406,
+          "byte_end": 44698,
+          "byte_start": 44008,
           "page_number": 71
         },
         {
-          "byte_end": 63814,
-          "byte_start": 63115,
+          "byte_end": 45193,
+          "byte_start": 44698,
           "page_number": 72
         },
         {
-          "byte_end": 64191,
-          "byte_start": 63814,
+          "byte_end": 45542,
+          "byte_start": 45193,
           "page_number": 73
         },
         {
-          "byte_end": 64327,
-          "byte_start": 64191,
+          "byte_end": 45678,
+          "byte_start": 45542,
           "page_number": 74
         },
         {
-          "byte_end": 65100,
-          "byte_start": 64327,
+          "byte_end": 46425,
+          "byte_start": 45678,
           "page_number": 75
         },
         {
-          "byte_end": 65383,
-          "byte_start": 65100,
+          "byte_end": 46708,
+          "byte_start": 46425,
           "page_number": 76
         },
         {
-          "byte_end": 65502,
-          "byte_start": 65383,
+          "byte_end": 46827,
+          "byte_start": 46708,
           "page_number": 77
         },
         {
-          "byte_end": 66904,
-          "byte_start": 65502,
+          "byte_end": 47480,
+          "byte_start": 46827,
           "page_number": 78
         },
         {
-          "byte_end": 67028,
-          "byte_start": 66904,
+          "byte_end": 47604,
+          "byte_start": 47480,
           "page_number": 79
         },
         {
-          "byte_end": 67613,
-          "byte_start": 67028,
+          "byte_end": 48189,
+          "byte_start": 47604,
           "page_number": 80
         },
         {
-          "byte_end": 68532,
-          "byte_start": 67613,
+          "byte_end": 49080,
+          "byte_start": 48189,
           "page_number": 81
         },
         {
-          "byte_end": 68938,
-          "byte_start": 68532,
+          "byte_end": 49457,
+          "byte_start": 49080,
           "page_number": 82
         }
       ],

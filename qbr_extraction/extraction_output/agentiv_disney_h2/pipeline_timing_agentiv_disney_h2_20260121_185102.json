@@ -1,0 +1,11 @@
+{
+  "file_path": "/home/brunojaime/Documents/Projects/mcp-projects/LGAds/ai-agent-qbr/qbr_extraction/decks/agentiv_disney_h2.pptx",
+  "document_id": 4,
+  "started_at": "2026-01-21T18:51:02.442896+00:00",
+  "finished_at": "2026-01-21T18:51:20.458710+00:00",
+  "elapsed_seconds": 18.016,
+  "llm_enhancement": true,
+  "llm_model": "databricks/databricks-claude-sonnet-4-5",
+  "export_outputs": true,
+  "output_dir": "extraction_output/agentiv_disney_h2"
+}

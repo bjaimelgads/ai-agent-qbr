@@ -1,0 +1,106 @@
+{
+  "generated_at": "2026-01-21T15:51:00.725999",
+  "document": "decks/agentiv_disney_h1.pptx",
+  "total_slides": 82,
+  "total_metrics_found": 238,
+  "total_charts_detected": 43,
+  "llm_tasks": {
+    "slide_analysis": {
+      "description": "Analyze each slide to extract structured insights",
+      "task_type": "per_slide",
+      "count": 82,
+      "expected_output": {
+        "slide_type": "string (title, data, chart, summary, transition)",
+        "key_message": "string",
+        "metrics_structured": "array of {name, value, unit, trend}",
+        "action_items": "array of strings",
+        "confidence": "float 0-1"
+      },
+      "prompt_template": "Analyze this QBR slide and extract:\n1. Slide type (title/data/chart/summary/transition)\n2. Key message or insight\n3. Structured metrics with names and values\n4. Any action items or recommendations\n\nSlide content:\n{slide_content}\n\nSpeaker notes (if any):\n{speaker_notes}\n"
+    },
+    "metric_normalization": {
+      "description": "Normalize and categorize all extracted metrics",
+      "task_type": "batch",
+      "count": 238,
+      "expected_output": {
+        "metric_name": "string",
+        "value_normalized": "float",
+        "unit": "string",
+        "category": "string (performance, cost, reach, engagement)",
+        "trend": "string (up, down, stable, unknown)",
+        "benchmark_comparison": "string"
+      },
+      "prompt_template": "Given these metrics extracted from a QBR presentation:\n{metrics_json}\n\nFor each metric:\n1. Identify what it measures\n2. Normalize the value\n3. Categorize (performance/cost/reach/engagement)\n4. Identify if it shows a trend\n5. Compare to industry benchmarks if possible\n"
+    },
+    "chart_reconstruction": {
+      "description": "Reconstruct chart data from text elements",
+      "task_type": "per_chart",
+      "count": 43,
+      "expected_output": {
+        "chart_type": "string",
+        "title": "string",
+        "data_series": "array of {label, values}",
+        "x_axis": "string",
+        "y_axis": "string",
+        "insights": "array of strings"
+      },
+      "prompt_template": "These text elements were extracted from what appears to be a chart:\n{chart_elements}\n\nReconstruct the chart data:\n1. Determine the chart type\n2. Identify labels and values\n3. Structure as a data table\n4. Extract key insights from the visualization\n"
+    },
+    "executive_summary": {
+      "description": "Generate executive summary from all slides",
+      "task_type": "aggregate",
+      "count": 1,
+      "expected_output": {
+        "summary": "string (2-3 paragraphs)",
+        "key_wins": "array of strings",
+        "areas_for_improvement": "array of strings",
+        "recommendations": "array of strings",
+        "next_steps": "array of strings"
+      },
+      "prompt_template": "Based on this QBR presentation content, generate an executive summary:\n\nFull presentation text:\n{full_content}\n\nInclude:\n1. 2-3 paragraph summary\n2. Key wins/achievements\n3. Areas needing improvement\n4. Strategic recommendations\n5. Suggested next steps\n"
+    },
+    "image_analysis": {
+      "description": "Analyze images for charts, text, and brand elements",
+      "task_type": "per_image",
+      "count": "variable (see images output)",
+      "expected_output": {
+        "image_type": "string (chart, photo, logo, diagram, screenshot)",
+        "contains_text": "boolean",
+        "extracted_text": "string (if applicable)",
+        "chart_data": "object (if chart)",
+        "description": "string"
+      },
+      "prompt_template": "Analyze this image from a QBR presentation:\n[Image attached]\n\n1. What type of image is this?\n2. Does it contain text? If so, extract it.\n3. If it's a chart, extract the data.\n4. Provide a description for accessibility.\n"
+    },
+    "entity_extraction": {
+      "description": "Extract named entities (companies, products, people, locations)",
+      "task_type": "aggregate",
+      "count": 1,
+      "expected_output": {
+        "companies": "array of strings",
+        "products": "array of strings",
+        "people": "array of strings",
+        "locations": "array of strings",
+        "dates": "array of strings",
+        "campaigns": "array of strings"
+      },
+      "prompt_template": "Extract all named entities from this QBR presentation:\n\n{full_content}\n\nCategories:\n- Companies/Brands\n- Products/Services\n- People (speakers, stakeholders)\n- Locations/Markets\n- Dates/Time periods\n- Campaign names\n"
+    }
+  },
+  "priority_order": [
+    "slide_analysis",
+    "metric_normalization",
+    "chart_reconstruction",
+    "executive_summary",
+    "entity_extraction",
+    "image_analysis"
+  ],
+  "estimated_llm_calls": {
+    "slide_analysis": 82,
+    "metric_normalization": 1,
+    "chart_reconstruction": 43,
+    "executive_summary": 1,
+    "entity_extraction": 1,
+    "image_analysis": "depends on image count"
+  }
+}
