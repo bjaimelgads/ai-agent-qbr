@@ -88,6 +88,12 @@ uv run python run_pipeline.py document.pptx
 # Extraction only (no LLM, much faster)
 uv run python run_pipeline.py document.pptx --no-llm
 
+# Extraction outputs to extraction_output/<pptx-stem>/
+uv run python run_pipeline.py document.pptx --export-extraction
+
+# Process all PPTX files in a folder (top-level only)
+uv run python run_pipeline.py --folder decks --no-llm --export-extraction
+
 # Query existing data only
 uv run python run_pipeline.py --query-only
 
@@ -99,6 +105,9 @@ uv run python run_pipeline.py --query-only --document-id 1 --export ./output
 
 # Custom database
 uv run python run_pipeline.py document.pptx --db sqlite:///custom.db
+
+# Overwrite existing document rows with the same filename
+uv run python run_pipeline.py document.pptx --override
 ```
 
 ### Command Line Options
@@ -110,6 +119,10 @@ uv run python run_pipeline.py document.pptx --db sqlite:///custom.db
 | `--query-only` | Only run queries, skip processing |
 | `--document-id ID` | Specify document ID for queries |
 | `--export DIR` | Export document data to JSON files |
+| `--export-extraction` | Write extraction artifacts to extraction output directory |
+| `--extraction-output-dir DIR` | Override extraction output directory |
+| `--folder DIR` | Process all PPTX files in a folder (top-level only) |
+| `--override` | Delete existing documents with the same filename before processing |
 | `--db URL` | Custom database URL |
 
 ## Architecture
@@ -388,7 +401,7 @@ For quick extraction without the full pipeline:
 # Run the standalone extraction script
 uv run python extract_qbr.py document.pptx
 
-# Outputs to extraction_output/:
+# Outputs to extraction_output/<pptx-stem>/:
 #   - full_content.json
 #   - slides.json
 #   - metrics.json

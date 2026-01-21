@@ -13,7 +13,7 @@ from qbr_agent.application.ports import (
     VectorMatch,
 )
 from qbr_agent.application.use_cases import AnswerQuestion
-from qbr_agent.domain.entities import Chunk, Embedding
+from qbr_agent.domain.entities import Chunk, Document, Embedding
 from qbr_agent.domain.value_objects import ChunkId, DocumentId, EmbeddingVector
 
 
@@ -22,6 +22,21 @@ class FakeRepository(KnowledgeRepository):
     chunk: Chunk
 
     async def list_documents(self, *, limit=50, client_name=None, status=None):
+        return []
+
+    async def fetch_documents_by_ids(self, document_ids):
+        if any(doc_id.value == self.chunk.document_id.value for doc_id in document_ids):
+            return [
+                Document(
+                    document_id=self.chunk.document_id,
+                    filename="qbr_test.pptx",
+                    file_path="/tmp/qbr_test.pptx",
+                    client_name=None,
+                    period=None,
+                    status=None,
+                    executive_summary=None,
+                )
+            ]
         return []
 
     async def fetch_chunks_by_ids(self, chunk_ids):
@@ -72,3 +87,4 @@ async def test_answer_question_builds_context() -> None:
 
     assert "Revenue grew" in answer.context
     assert "Doc 7" in answer.context
+    assert "File: qbr_test.pptx" in answer.context

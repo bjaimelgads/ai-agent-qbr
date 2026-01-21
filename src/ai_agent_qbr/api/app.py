@@ -22,7 +22,7 @@ from ai_agent_qbr.transport.websocket.service import WebsocketChatService
 from ai_agent_qbr.transport.websocket.strategies import build_websocket_strategy
 from qbr_agent.infrastructure.faiss_builder import FaissBuildConfig, build_faiss_index
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uvicorn.error")
 
 
 def _maybe_seed_sqlite_db(database_url: str) -> None:
@@ -109,9 +109,19 @@ def create_app(
     @app.on_event("startup")
     async def _startup() -> None:
         _maybe_seed_sqlite_db(config.database_url)
+        logger.info(
+            "FAISS startup config: vector_backend=%s auto_build=%s rebuild=%s dir=%s",
+            config.vector_backend,
+            config.faiss_auto_build,
+            config.faiss_rebuild_on_startup,
+            config.faiss_dir,
+        )
+        logger.info("Database URL: %s", config.database_url)
         if config.vector_backend != "faiss":
+            logger.info("FAISS auto-build skipped: VECTOR_BACKEND=%s", config.vector_backend)
             return
         if not config.faiss_auto_build:
+            logger.info("FAISS auto-build disabled (FAISS_AUTO_BUILD=false).")
             return
         logger.info(
             "FAISS auto-build enabled (dir=%s, db=%s, rebuild=%s)",

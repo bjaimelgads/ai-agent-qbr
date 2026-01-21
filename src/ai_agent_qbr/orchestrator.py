@@ -270,6 +270,7 @@ class AiAgentQbrOrchestrator:
             text_weight=self._config.retrieval_text_weight,
             vector_weight=self._config.retrieval_vector_weight,
             candidate_multiplier=self._config.retrieval_candidate_multiplier,
+            include_document_path=self._config.retrieval_include_document_path,
         )
         answer_context = await answer_use_case.execute(
             query=query,
@@ -306,6 +307,7 @@ class AiAgentQbrOrchestrator:
             "qbr_answer_context": answer_context.context,
             "retrieval_top_k": self._config.retrieval_top_k,
             "retrieval_min_score": self._config.retrieval_min_score,
+            "retrieval_include_document_path": self._config.retrieval_include_document_path,
         }
 
         result = await self._planner.run(

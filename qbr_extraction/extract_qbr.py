@@ -613,8 +613,10 @@ def main():
     print("Using Kreuzberg 4.0")
     print("=" * 60)
 
-    # Create output directory
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    # Create output directory per input file
+    base_output_dir = OUTPUT_DIR
+    target_dir = base_output_dir / Path(INPUT_FILE).stem
+    target_dir.mkdir(parents=True, exist_ok=True)
 
     # Create extraction configuration
     config = create_extraction_config()
@@ -647,7 +649,7 @@ def main():
 
     # Process images
     print("\n[6/7] Processing images...")
-    images = process_images(result, OUTPUT_DIR)
+    images = process_images(result, target_dir)
     print(f"  - Processed {len(images)} images")
 
     # Process chunks
@@ -679,42 +681,42 @@ def main():
         "chunk_count": result.get_chunk_count(),
         "metadata": result.metadata,
     }
-    with open(OUTPUT_DIR / "01_extraction_metadata.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "01_extraction_metadata.json", "w", encoding="utf-8") as f:
         json.dump(output_metadata, f, indent=2, default=str)
     print("  - Saved: 01_extraction_metadata.json")
 
     # 2. Full raw content
-    with open(OUTPUT_DIR / "02_raw_content.txt", "w", encoding="utf-8") as f:
+    with open(target_dir / "02_raw_content.txt", "w", encoding="utf-8") as f:
         f.write(result.content)
     print("  - Saved: 02_raw_content.txt")
 
     # 3. Slides parsed
-    with open(OUTPUT_DIR / "03_slides_parsed.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "03_slides_parsed.json", "w", encoding="utf-8") as f:
         json.dump(slides, f, indent=2)
     print("  - Saved: 03_slides_parsed.json")
 
     # 4. Metrics extracted
-    with open(OUTPUT_DIR / "04_metrics_extracted.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "04_metrics_extracted.json", "w", encoding="utf-8") as f:
         json.dump(metrics, f, indent=2)
     print("  - Saved: 04_metrics_extracted.json")
 
     # 5. Charts detected
-    with open(OUTPUT_DIR / "05_charts_detected.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "05_charts_detected.json", "w", encoding="utf-8") as f:
         json.dump(charts, f, indent=2)
     print("  - Saved: 05_charts_detected.json")
 
     # 6. Keywords and topics
-    with open(OUTPUT_DIR / "06_keywords_topics.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "06_keywords_topics.json", "w", encoding="utf-8") as f:
         json.dump(keywords, f, indent=2)
     print("  - Saved: 06_keywords_topics.json")
 
     # 7. Images metadata
-    with open(OUTPUT_DIR / "07_images_metadata.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "07_images_metadata.json", "w", encoding="utf-8") as f:
         json.dump(images, f, indent=2)
     print("  - Saved: 07_images_metadata.json")
 
     # 8. Chunks for RAG
-    with open(OUTPUT_DIR / "08_chunks_rag.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "08_chunks_rag.json", "w", encoding="utf-8") as f:
         json.dump(chunks, f, indent=2)
     print("  - Saved: 08_chunks_rag.json")
 
@@ -729,12 +731,12 @@ def main():
                 "raw": str(table),
             }
         )
-    with open(OUTPUT_DIR / "09_tables_extracted.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "09_tables_extracted.json", "w", encoding="utf-8") as f:
         json.dump(tables_data, f, indent=2)
     print("  - Saved: 09_tables_extracted.json")
 
     # 10. LLM Enhancement Manifest (THE KEY FILE)
-    with open(OUTPUT_DIR / "10_llm_task_manifest.json", "w", encoding="utf-8") as f:
+    with open(target_dir / "10_llm_task_manifest.json", "w", encoding="utf-8") as f:
         json.dump(llm_manifest, f, indent=2)
     print("  - Saved: 10_llm_task_manifest.json")
 
@@ -745,7 +747,7 @@ def main():
     print("\n" + "=" * 60)
     print("EXTRACTION COMPLETE")
     print("=" * 60)
-    print(f"\nOutput directory: {OUTPUT_DIR.absolute()}")
+    print(f"\nOutput directory: {target_dir.absolute()}")
     print("\nFiles generated:")
     print("  01_extraction_metadata.json  - Document metadata and extraction info")
     print("  02_raw_content.txt           - Full extracted text content")

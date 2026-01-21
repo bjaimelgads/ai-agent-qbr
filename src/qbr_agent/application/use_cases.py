@@ -127,6 +127,7 @@ class AnswerQuestion:
     text_weight: float = 0.6
     vector_weight: float = 0.4
     candidate_multiplier: int = 4
+    include_document_path: bool = False
 
     async def execute(
         self,
@@ -163,6 +164,11 @@ class AnswerQuestion:
                 top_k=top_k,
                 min_score=min_score,
             )
+        document_ids = {result.chunk.document_id.value for result in results}
+        documents = await self.repository.fetch_documents_by_ids(
+            [DocumentId(doc_id) for doc_id in document_ids]
+        )
+        documents_by_id = {doc.document_id.value: doc for doc in documents}
         context_lines = []
         for idx, result in enumerate(results, start=1):
             chunk = result.chunk
@@ -170,6 +176,11 @@ class AnswerQuestion:
             label = f"[{idx}] Doc {chunk.document_id.value}{slide_range}"
             meta = chunk.metadata or {}
             extras = []
+            doc = documents_by_id.get(chunk.document_id.value)
+            if doc and doc.filename:
+                extras.append(f"File: {doc.filename}")
+            if self.include_document_path and doc and doc.file_path:
+                extras.append(f"Path: {doc.file_path}")
             title = meta.get("slide_title")
             if title:
                 extras.append(f"Title: {title}")

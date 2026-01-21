@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import logging
 from typing import Any
 
-from sqlalchemy import MetaData, Table, or_, select
+from sqlalchemy import MetaData, Table, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from qbr_agent.application.ports import KnowledgeRepository, TextMatch
@@ -66,11 +66,18 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             if _DOCUMENTS is None:
                 return []
             documents = _DOCUMENTS
+            file_path_col = documents.c.get("file_path")
+            if file_path_col is None:
+                file_path_col = literal(None).label("file_path")
+            period_col = documents.c.get("period") or documents.c.get("report_period")
+            if period_col is None:
+                period_col = literal(None).label("period")
             query = select(
                 documents.c.id,
                 documents.c.filename,
+                file_path_col,
                 documents.c.client_name,
-                documents.c.period,
+                period_col,
                 documents.c.status,
                 documents.c.executive_summary,
             )
@@ -86,8 +93,51 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 Document(
                     document_id=DocumentId(int(row.id)),
                     filename=row.filename,
+                    file_path=getattr(row, "file_path", None),
                     client_name=row.client_name,
-                    period=row.period,
+                    period=getattr(row, "period", None) or getattr(row, "report_period", None),
+                    status=row.status,
+                    executive_summary=row.executive_summary,
+                )
+                for row in rows
+            ]
+
+    async def fetch_documents_by_ids(
+        self,
+        document_ids: Iterable[DocumentId],
+    ) -> list[Document]:
+        ids = [document_id.value for document_id in document_ids]
+        if not ids:
+            return []
+        async with self.sessionmaker() as session:
+            await self._ensure_reflection(session)
+            if _DOCUMENTS is None:
+                return []
+            documents = _DOCUMENTS
+            file_path_col = documents.c.get("file_path")
+            if file_path_col is None:
+                file_path_col = literal(None).label("file_path")
+            period_col = documents.c.get("period") or documents.c.get("report_period")
+            if period_col is None:
+                period_col = literal(None).label("period")
+            query = select(
+                documents.c.id,
+                documents.c.filename,
+                file_path_col,
+                documents.c.client_name,
+                period_col,
+                documents.c.status,
+                documents.c.executive_summary,
+            ).where(documents.c.id.in_(ids))
+            result = await session.execute(query)
+            rows = result.fetchall()
+            return [
+                Document(
+                    document_id=DocumentId(int(row.id)),
+                    filename=row.filename,
+                    file_path=getattr(row, "file_path", None),
+                    client_name=row.client_name,
+                    period=getattr(row, "period", None) or getattr(row, "report_period", None),
                     status=row.status,
                     executive_summary=row.executive_summary,
                 )

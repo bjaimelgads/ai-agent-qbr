@@ -104,6 +104,7 @@ class Config:
     retrieval_text_weight: float = 0.6
     retrieval_vector_weight: float = 0.4
     retrieval_candidate_multiplier: int = 4
+    retrieval_include_document_path: bool = False
     faiss_dir: str = "./data/faiss"
     faiss_normalize: bool = True
     faiss_index_type: str = "Flat"
@@ -188,6 +189,10 @@ class Config:
             retrieval_text_weight=_env_float("RETRIEVAL_TEXT_WEIGHT", 0.6),
             retrieval_vector_weight=_env_float("RETRIEVAL_VECTOR_WEIGHT", 0.4),
             retrieval_candidate_multiplier=_env_int("RETRIEVAL_CANDIDATE_MULTIPLIER", 4),
+            retrieval_include_document_path=_env_flag(
+                "RETRIEVAL_INCLUDE_DOCUMENT_PATH",
+                False,
+            ),
             faiss_dir=os.getenv("FAISS_DIR", "./data/faiss"),
             faiss_normalize=_env_flag("FAISS_NORMALIZE", True),
             faiss_index_type=os.getenv("FAISS_INDEX_TYPE", "Flat"),

@@ -12,6 +12,7 @@ from .value_objects import ChunkId, DocumentId, EmbeddingVector, Score
 class Document:
     document_id: DocumentId
     filename: str | None
+    file_path: str | None
     client_name: str | None
     period: str | None
     status: str | None

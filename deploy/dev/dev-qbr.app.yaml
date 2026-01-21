@@ -19,6 +19,8 @@ env:
     value: 'sqlite+aiosqlite:////app/python/source_code/qbr_intelligence.db'
   - name: 'VECTOR_BACKEND'
     value: 'faiss'
+  - name: 'RETRIEVAL_INCLUDE_DOCUMENT_PATH'
+    value: 'false'
   - name: 'FAISS_DIR'
     value: '/app/python/source_code/data/faiss'
   - name: 'FAISS_AUTO_BUILD'

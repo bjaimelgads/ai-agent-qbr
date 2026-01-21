@@ -25,16 +25,16 @@ import argparse
 import asyncio
 import json
 import os
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from qbr_intelligence import (
-    QBRProcessor,
-    QBRQueryInterface,
-    init_db,
-)
+from qbr_intelligence import QBRProcessor, QBRQueryInterface, init_db
+from qbr_intelligence.db.models import Document
 from qbr_intelligence.pipeline.embeddings import EmbeddingSettings
 from qbr_intelligence.query.tools import (
     get_document_summary,
@@ -54,6 +54,7 @@ async def process_document(
     run_llm_enhancement: bool = True,
     export_outputs: bool = False,
     output_dir: str | None = None,
+    override_existing: bool = False,
 ) -> int:
     """
     Process a QBR document through the full pipeline.
@@ -69,6 +70,11 @@ async def process_document(
     # Convert async URL to sync URL for the processor (which uses sync SQLAlchemy)
     sync_database_url = database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
     print(f"      Database ready: {database_url}")
+
+    if override_existing:
+        removed = await _delete_existing_documents(database_url, Path(file_path).name)
+        if removed:
+            print(f"      Removed {removed} existing document(s) for override.")
 
     # Check LLM config if enhancement enabled
     llm_model = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
@@ -98,12 +104,35 @@ async def process_document(
 
     # Note: processor methods are sync (uses sync SQLAlchemy internally)
     # process_document returns the document ID
+    start_dt = datetime.now(timezone.utc)
+    start_time = time.perf_counter()
     doc_id = processor.process_document(
         file_path=file_path,
         run_llm_enhancement=run_llm_enhancement,
         export_outputs=export_outputs,
         output_dir=output_dir,
     )
+    elapsed_seconds = time.perf_counter() - start_time
+    end_dt = datetime.now(timezone.utc)
+
+    timing_base_dir = Path(output_dir) if output_dir else Path("extraction_output")
+    safe_stem = Path(file_path).stem.replace(" ", "_")
+    timing_target_dir = timing_base_dir / safe_stem
+    timing_target_dir.mkdir(parents=True, exist_ok=True)
+    timing_path = timing_target_dir / f"pipeline_timing_{safe_stem}_{start_dt:%Y%m%d_%H%M%S}.json"
+    timing_payload = {
+        "file_path": str(Path(file_path).absolute()),
+        "document_id": doc_id,
+        "started_at": start_dt.isoformat(),
+        "finished_at": end_dt.isoformat(),
+        "elapsed_seconds": round(elapsed_seconds, 3),
+        "llm_enhancement": run_llm_enhancement,
+        "llm_model": llm_model,
+        "export_outputs": export_outputs,
+        "output_dir": str(timing_target_dir),
+    }
+    timing_path.write_text(json.dumps(timing_payload, indent=2), encoding="utf-8")
+    print(f"      Timing saved: {timing_path}")
 
     print(f"\n[4/4] Processing complete. Document ID: {doc_id}")
 
@@ -236,6 +265,21 @@ async def export_data(database_url: str, document_id: int, output_dir: str):
     print(f"\nData exported to: {output_path.absolute()}")
 
 
+async def _delete_existing_documents(database_url: str, filename: str) -> int:
+    engine = await init_db(database_url)
+    removed = 0
+    async with AsyncSession(engine) as session:
+        result = await session.execute(select(Document).where(Document.filename == filename))
+        documents = result.scalars().all()
+        for document in documents:
+            await session.delete(document)
+        removed = len(documents)
+        if removed:
+            await session.commit()
+    await engine.dispose()
+    return removed
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="QBR Intelligence Pipeline - Process and query QBR documents"
@@ -244,6 +288,11 @@ def main():
         "file",
         nargs="?",
         help="Path to PPTX file to process",
+    )
+    parser.add_argument(
+        "--folder",
+        metavar="DIR",
+        help="Process all PPTX files in a folder (top-level only)",
     )
     default_db = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qbr_intelligence.db")
     parser.add_argument(
@@ -277,6 +326,11 @@ def main():
         help="Write extraction artifacts to the extraction output directory",
     )
     parser.add_argument(
+        "--override",
+        action="store_true",
+        help="Delete existing documents with the same filename before processing",
+    )
+    parser.add_argument(
         "--extraction-output-dir",
         metavar="DIR",
         help="Override the extraction output directory (default: extraction_output)",
@@ -287,14 +341,40 @@ def main():
     async def run():
         doc_id = args.document_id
 
+        if args.file and args.folder:
+            raise ValueError("Use either a single file or --folder, not both.")
+
         # Process document if provided
-        if args.file and not args.query_only:
+        if args.folder and not args.query_only:
+            folder = Path(args.folder)
+            if not folder.is_absolute() and not folder.exists():
+                candidate = Path(__file__).resolve().parent / folder
+                if candidate.exists():
+                    folder = candidate
+            if not folder.exists():
+                raise ValueError(f"Folder not found: {folder}")
+            if not folder.is_dir():
+                raise ValueError(f"Not a folder: {folder}")
+            pptx_files = sorted(folder.glob("*.pptx"))
+            if not pptx_files:
+                print(f"No PPTX files found in {folder}")
+            for pptx_path in pptx_files:
+                doc_id = await process_document(
+                    file_path=str(pptx_path),
+                    database_url=args.db,
+                    run_llm_enhancement=not args.no_llm,
+                    export_outputs=args.export_extraction,
+                    output_dir=args.extraction_output_dir,
+                    override_existing=args.override,
+                )
+        elif args.file and not args.query_only:
             doc_id = await process_document(
                 file_path=args.file,
                 database_url=args.db,
                 run_llm_enhancement=not args.no_llm,
                 export_outputs=args.export_extraction,
                 output_dir=args.extraction_output_dir,
+                override_existing=args.override,
             )
 
         # Run query demo

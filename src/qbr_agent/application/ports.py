@@ -38,6 +38,12 @@ class KnowledgeRepository(Protocol):
     ) -> list[Document]:
         ...
 
+    async def fetch_documents_by_ids(
+        self,
+        document_ids: Iterable[DocumentId],
+    ) -> list[Document]:
+        ...
+
     async def fetch_chunks_by_ids(self, chunk_ids: Iterable[ChunkId]) -> list[Chunk]:
         ...
 
