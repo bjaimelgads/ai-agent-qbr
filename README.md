@@ -31,6 +31,11 @@ Key settings:
 - `EMBEDDINGS_BACKEND=sentence_transformers|hash`
 - `EMBEDDINGS_MODEL=all-MiniLM-L6-v2`
 - `RETRIEVAL_TOP_K=5`
+- `RERANK_BACKEND=cross_encoder|none`
+- `RERANK_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2`
+- `RERANK_TOP_N=20`
+- `RETRIEVAL_MMR_LAMBDA=0.5`
+- `RETRIEVAL_MAX_CHUNKS_PER_DOC=3`
 
 ## Architecture
 
@@ -43,6 +48,22 @@ See:
 2. `VectorIndex` ranks stored chunk embeddings (SQLite or FAISS).
 3. `KnowledgeRepository` returns chunk payloads and text matches.
 4. Retrieved context is injected into the planner (`qbr_context`).
+
+## Retrieval Improvements (Phase 1)
+- Optional cross-encoder reranking for top-N candidates.
+- MMR diversification to reduce redundancy.
+- Per-document caps to avoid over-indexing a single QBR.
+
+Docs:
+- `docs/retrieval.md`
+- `docs/retrieval_phase1.md`
+
+Key settings:
+- `RERANK_BACKEND=cross_encoder|none`
+- `RERANK_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2`
+- `RERANK_TOP_N=20`
+- `RETRIEVAL_MMR_LAMBDA=0.5`
+- `RETRIEVAL_MAX_CHUNKS_PER_DOC=3`
 
 ## Data Source (Using Existing QBR Data)
 The agent reads QBR content from a SQLite database. You can point it at an existing
@@ -70,6 +91,31 @@ python -m pip install -e .[dev]
 # Run tests
 pytest
 ```
+
+## WebSocket Contract Validation (Legacy Protocol)
+Contract details: `docs/websocket-protocol.md`
+
+Legacy WebSocket e2e test:
+```bash
+RUN_E2E=1 .venv/bin/python -m pytest tests/test_websocket_legacy_e2e.py
+```
+
+End-to-end runner (writes artifacts in `data/`):
+```bash
+.venv/bin/python scripts/run_legacy_websocket_e2e.py
+```
+
+## MLflow Tracing (Optional)
+Enable per-interaction tracing with nested runs for retrieval and planner output.
+
+Env:
+- `MLFLOW_ENABLED=true`
+- `MLFLOW_TRACKING_URI=...`
+- `MLFLOW_EXPERIMENT=...`
+- `MLFLOW_TRACING_ENABLED=true`
+
+Docs:
+- `docs/mlflow_tracing.md`
 
 ## Playground (Dev)
 

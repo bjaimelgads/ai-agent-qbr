@@ -40,6 +40,13 @@ htmlcov/
 build/
 dist/
 
+# MLflow
+mlruns/
+mlartifacts/
+mlflow.db
+mlflow.db-shm
+mlflow.db-wal
+mlflow.db-journal
+
 # Kreuzberg cache
 .kreuzberg/
-

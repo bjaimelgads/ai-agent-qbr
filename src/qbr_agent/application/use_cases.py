@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 from qbr_agent.application.ports import (
     EmbeddingsProvider,
     KnowledgeRepository,
+    Reranker,
     TextMatch,
     VectorIndex,
     VectorMatch,
 )
-from qbr_agent.domain.entities import Answer, RetrievalResult
-from qbr_agent.domain.value_objects import ChunkId, DocumentId, Score
+from qbr_agent.domain.entities import Answer, Chunk, RetrievalResult
+from qbr_agent.domain.value_objects import ChunkId, DocumentId, EmbeddingVector, Score
 
 
 @dataclass
@@ -65,9 +67,14 @@ class HybridSearchKnowledge:
     repository: KnowledgeRepository
     vector_index: VectorIndex
     embeddings: EmbeddingsProvider
+    reranker: Reranker | None = None
     text_weight: float = 0.6
     vector_weight: float = 0.4
     candidate_multiplier: int = 4
+    rerank_top_n: int = 20
+    mmr_lambda: float = 0.5
+    max_chunks_per_doc: int = 3
+    last_debug: dict | None = None
 
     async def execute(
         self,
@@ -99,22 +106,59 @@ class HybridSearchKnowledge:
         )
         if min_score is not None:
             combined = [item for item in combined if item.score >= min_score]
-        combined = combined[:top_k]
         if not combined:
             return []
 
+        combined = combined[:candidate_limit]
         chunk_map = {
             chunk.chunk_id.value: chunk
             for chunk in await self.repository.fetch_chunks_by_ids(
                 [match.chunk_id for match in combined]
             )
         }
+        ordered_chunks = [
+            chunk_map[match.chunk_id.value]
+            for match in combined
+            if match.chunk_id.value in chunk_map
+        ]
+        if not ordered_chunks:
+            return []
+
+        combined_scores = {match.chunk_id.value: match.score for match in combined}
+        reranked_chunks, rerank_scores = await _apply_rerank(
+            query=query,
+            chunks=ordered_chunks,
+            reranker=self.reranker,
+            rerank_top_n=self.rerank_top_n,
+            scores=combined_scores,
+        )
+        selected_chunks, mmr_selected = _apply_mmr(
+            query_vector=embedding_result.vector,
+            chunks=reranked_chunks,
+            top_k=top_k,
+            mmr_lambda=self.mmr_lambda,
+        )
+        final_chunks = _apply_doc_cap(
+            selected_chunks=selected_chunks,
+            candidate_chunks=reranked_chunks,
+            max_chunks_per_doc=self.max_chunks_per_doc,
+            top_k=top_k,
+        )
+        self.last_debug = _build_retrieval_debug(
+            query=query,
+            vector_matches=vector_matches,
+            text_matches=text_matches,
+            combined=combined,
+            reranked_chunks=reranked_chunks,
+            rerank_scores=rerank_scores,
+            mmr_selected=mmr_selected,
+            final_chunks=final_chunks,
+        )
+
         results: list[RetrievalResult] = []
-        for match in combined:
-            chunk = chunk_map.get(match.chunk_id.value)
-            if chunk is None:
-                continue
-            results.append(RetrievalResult(chunk=chunk, score=Score(match.score)))
+        for chunk in final_chunks:
+            score_value = combined_scores.get(chunk.chunk_id.value, 0.0)
+            results.append(RetrievalResult(chunk=chunk, score=Score(score_value)))
         return results
 
 
@@ -123,11 +167,16 @@ class AnswerQuestion:
     repository: KnowledgeRepository
     vector_index: VectorIndex
     embeddings: EmbeddingsProvider
+    reranker: Reranker | None = None
     use_hybrid: bool = True
     text_weight: float = 0.6
     vector_weight: float = 0.4
     candidate_multiplier: int = 4
     include_document_path: bool = False
+    rerank_top_n: int = 20
+    mmr_lambda: float = 0.5
+    max_chunks_per_doc: int = 3
+    last_debug: dict | None = None
 
     async def execute(
         self,
@@ -142,9 +191,13 @@ class AnswerQuestion:
                 repository=self.repository,
                 vector_index=self.vector_index,
                 embeddings=self.embeddings,
+                reranker=self.reranker,
                 text_weight=self.text_weight,
                 vector_weight=self.vector_weight,
                 candidate_multiplier=self.candidate_multiplier,
+                rerank_top_n=self.rerank_top_n,
+                mmr_lambda=self.mmr_lambda,
+                max_chunks_per_doc=self.max_chunks_per_doc,
             )
             results = await search.execute(
                 query=query,
@@ -152,6 +205,8 @@ class AnswerQuestion:
                 top_k=top_k,
                 min_score=min_score,
             )
+            if isinstance(search, HybridSearchKnowledge):
+                self.last_debug = search.last_debug
         else:
             search = SearchKnowledge(
                 repository=self.repository,
@@ -251,3 +306,149 @@ def _combine_hybrid_scores(
         combined.append(VectorMatch(chunk_id=ChunkId(chunk_id), score=hybrid_score))
     combined.sort(key=lambda match: match.score, reverse=True)
     return combined
+
+
+async def _apply_rerank(
+    *,
+    query: str,
+    chunks: list[Chunk],
+    reranker: Reranker | None,
+    rerank_top_n: int,
+    scores: dict[int, float],
+) -> tuple[list[Chunk], dict[int, float]]:
+    if reranker is None or rerank_top_n <= 0:
+        return chunks, {}
+    top_n = min(rerank_top_n, len(chunks))
+    top_chunks = chunks[:top_n]
+    rerank_scores = await reranker.score(query=query, chunks=top_chunks)
+    if len(rerank_scores) != top_n:
+        return chunks, {}
+    reranked = sorted(
+        zip(top_chunks, rerank_scores, strict=False),
+        key=lambda item: item[1],
+        reverse=True,
+    )
+    rerank_map: dict[int, float] = {}
+    for chunk, score in reranked:
+        scores[chunk.chunk_id.value] = score
+        rerank_map[chunk.chunk_id.value] = float(score)
+    return [chunk for chunk, _score in reranked] + chunks[top_n:], rerank_map
+
+
+def _apply_mmr(
+    *,
+    query_vector: EmbeddingVector,
+    chunks: list[Chunk],
+    top_k: int,
+    mmr_lambda: float,
+) -> tuple[list[Chunk], list[int]]:
+    if top_k <= 0 or len(chunks) <= 1:
+        return chunks[:top_k], list(range(min(top_k, len(chunks))))
+    if not query_vector.values:
+        return chunks[:top_k], list(range(min(top_k, len(chunks))))
+    embeddings: list[EmbeddingVector] = []
+    for chunk in chunks:
+        embedding = chunk.embedding.vector if chunk.embedding else None
+        if embedding is None or not embedding.values:
+            return chunks[:top_k], list(range(min(top_k, len(chunks))))
+        embeddings.append(embedding)
+
+    selected_indices: list[int] = []
+    candidate_indices = list(range(len(chunks)))
+    while candidate_indices and len(selected_indices) < top_k:
+        best_idx = None
+        best_score = None
+        for idx in candidate_indices:
+            query_sim = _cosine_similarity(query_vector, embeddings[idx])
+            if selected_indices:
+                max_sim = max(
+                    _cosine_similarity(embeddings[idx], embeddings[sel_idx])
+                    for sel_idx in selected_indices
+                )
+            else:
+                max_sim = 0.0
+            score = (mmr_lambda * query_sim) - ((1 - mmr_lambda) * max_sim)
+            if best_score is None or score > best_score:
+                best_score = score
+                best_idx = idx
+        if best_idx is None:
+            break
+        selected_indices.append(best_idx)
+        candidate_indices.remove(best_idx)
+    return [chunks[idx] for idx in selected_indices], selected_indices
+
+
+def _apply_doc_cap(
+    *,
+    selected_chunks: list[Chunk],
+    candidate_chunks: list[Chunk],
+    max_chunks_per_doc: int,
+    top_k: int,
+) -> list[Chunk]:
+    if max_chunks_per_doc <= 0:
+        return selected_chunks[:top_k]
+    counts: dict[int, int] = {}
+    selected_ids = {chunk.chunk_id.value for chunk in selected_chunks}
+    ordered_candidates = selected_chunks + [
+        chunk for chunk in candidate_chunks if chunk.chunk_id.value not in selected_ids
+    ]
+    final: list[Chunk] = []
+    for chunk in ordered_candidates:
+        if len(final) >= top_k:
+            break
+        doc_id = chunk.document_id.value
+        if counts.get(doc_id, 0) >= max_chunks_per_doc:
+            continue
+        counts[doc_id] = counts.get(doc_id, 0) + 1
+        final.append(chunk)
+    return final
+
+
+def _cosine_similarity(vec_a: EmbeddingVector, vec_b: EmbeddingVector) -> float:
+    if len(vec_a.values) != len(vec_b.values):
+        return 0.0
+    dot = 0.0
+    norm_a = 0.0
+    norm_b = 0.0
+    for a, b in zip(vec_a.values, vec_b.values, strict=False):
+        dot += a * b
+        norm_a += a * a
+        norm_b += b * b
+    if norm_a <= 0.0 or norm_b <= 0.0:
+        return 0.0
+    return dot / math.sqrt(norm_a * norm_b)
+
+
+def _build_retrieval_debug(
+    *,
+    query: str,
+    vector_matches: list[VectorMatch],
+    text_matches: list[TextMatch],
+    combined: list[VectorMatch],
+    reranked_chunks: list[Chunk],
+    rerank_scores: dict[int, float],
+    mmr_selected: list[int],
+    final_chunks: list[Chunk],
+) -> dict:
+    return {
+        "query": query,
+        "vector_matches": [
+            {"chunk_id": match.chunk_id.value, "score": match.score}
+            for match in vector_matches
+        ],
+        "text_matches": [
+            {"chunk_id": match.chunk_id.value, "score": match.score}
+            for match in text_matches
+        ],
+        "hybrid_combined": [
+            {"chunk_id": match.chunk_id.value, "score": match.score}
+            for match in combined
+        ],
+        "rerank_scores": rerank_scores,
+        "mmr_selected_chunk_ids": [
+            reranked_chunks[idx].chunk_id.value
+            for idx in mmr_selected
+            if idx < len(reranked_chunks)
+        ],
+        "final_chunk_ids": [chunk.chunk_id.value for chunk in final_chunks],
+    }

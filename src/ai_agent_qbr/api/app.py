@@ -110,6 +110,13 @@ def create_app(
     async def _startup() -> None:
         _maybe_seed_sqlite_db(config.database_url)
         logger.info(
+            "MLflow tracing: enabled=%s trace=%s uri=%s experiment=%s",
+            config.mlflow_enabled,
+            config.mlflow_tracing_enabled,
+            config.mlflow_tracking_uri or "(default)",
+            config.mlflow_experiment or "(default)",
+        )
+        logger.info(
             "FAISS startup config: vector_backend=%s auto_build=%s rebuild=%s dir=%s",
             config.vector_backend,
             config.faiss_auto_build,

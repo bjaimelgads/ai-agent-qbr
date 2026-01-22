@@ -1,0 +1,5 @@
+{"type": "OutputReady", "payload": {"status": "ready", "session_id": "e2e-session"}}
+{"type": "OutputThinking", "payload": {"status": "thinking", "message": "Planning response", "step": null}}
+{"type": "OutputUserMessage", "payload": {"status": "user_message", "data": {"content": "Hi, can you show me difference in added value regarding h1 and h2", "session_id": "e2e-session"}}}
+{"type": "OutputThinking", "payload": {"status": "thinking", "message": "Searching QBR materials for relevant details.", "step": "Searching"}}
+{"type": "OutputFinal", "payload": {"status": "final", "data": {"content": "user: H1 added value increased by 12% vs baseline.; H2 added value was flat with softer incremental gains.\n\nContext:\n[1] Doc 1 (slide 2): File: qbr_h1.pptx\nH1 added value increased by 12% vs baseline.\n\n[2] Doc 2 (slide 5): File: qbr_h2.pptx\nH2 added value was flat with softer incremental gains."}, "citations": []}}

@@ -6,6 +6,8 @@ The agent uses a hybrid retrieval strategy inspired by `pengui_iceberg`:
 - Retrieve vector matches (ANN).
 - Retrieve text matches (chunk content).
 - Normalize scores and combine (`text_weight`, `vector_weight`).
+- Rerank top candidates with a cross-encoder (optional).
+- Diversify with MMR and apply per-document caps.
 - Return the top-k chunks for prompting.
 
 ## Data Source (No Extraction Required)
@@ -64,3 +66,23 @@ hybrid = (text_norm * RETRIEVAL_TEXT_WEIGHT) + (vector_norm * RETRIEVAL_VECTOR_W
 ```
 
 Tune these weights via environment variables.
+
+## Reranking and Diversity
+
+Optional reranking via sentence-transformers cross-encoder:
+
+```
+RERANK_BACKEND=cross_encoder
+RERANK_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+RERANK_TOP_N=20
+RERANK_MAX_LENGTH=
+```
+
+After reranking, MMR and per-document caps shape the final top-k:
+
+```
+RETRIEVAL_MMR_LAMBDA=0.5
+RETRIEVAL_MAX_CHUNKS_PER_DOC=3
+```
+
+Set `RERANK_BACKEND=none` to disable reranking.

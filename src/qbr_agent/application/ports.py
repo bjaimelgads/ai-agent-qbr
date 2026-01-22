@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -80,4 +80,9 @@ class VectorIndex(Protocol):
 
 class EmbeddingsProvider(Protocol):
     async def embed_query(self, text: str) -> EmbeddingResult:
+        ...
+
+
+class Reranker(Protocol):
+    async def score(self, *, query: str, chunks: Sequence[Chunk]) -> list[float]:
         ...

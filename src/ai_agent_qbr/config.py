@@ -41,6 +41,12 @@ def _parse_optional_float(raw: str | None) -> float | None:
     return float(raw)
 
 
+def _parse_optional_int(raw: str | None) -> int | None:
+    if raw is None or raw.strip() == "":
+        return None
+    return int(raw)
+
+
 @dataclass
 class Config:
     """Environment-driven configuration."""
@@ -92,6 +98,12 @@ class Config:
     # Flag to use stub LLM (for testing)
     use_stub_llm: bool = True
 
+    # MLflow tracing
+    mlflow_enabled: bool = False
+    mlflow_tracking_uri: str | None = None
+    mlflow_experiment: str | None = None
+    mlflow_tracing_enabled: bool = False
+
     # QBR knowledge retrieval configuration
     database_url: str = "sqlite+aiosqlite:///qbr_intelligence.db"
     storage_backend: str = "sqlite"
@@ -105,6 +117,12 @@ class Config:
     retrieval_vector_weight: float = 0.4
     retrieval_candidate_multiplier: int = 4
     retrieval_include_document_path: bool = False
+    retrieval_max_chunks_per_doc: int = 3
+    retrieval_mmr_lambda: float = 0.5
+    rerank_backend: str = "cross_encoder"
+    rerank_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    rerank_max_length: int | None = None
+    rerank_top_n: int = 20
     faiss_dir: str = "./data/faiss"
     faiss_normalize: bool = True
     faiss_index_type: str = "Flat"
@@ -178,6 +196,10 @@ class Config:
             llm_max_tokens=_env_int("LLM_MAX_TOKENS", 4000),
             llm_cache_enabled=_env_flag("LLM_CACHE_ENABLED", True),
             use_stub_llm=_env_flag("USE_STUB_LLM", True),
+            mlflow_enabled=_env_flag("MLFLOW_ENABLED", False),
+            mlflow_tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),
+            mlflow_experiment=os.getenv("MLFLOW_EXPERIMENT"),
+            mlflow_tracing_enabled=_env_flag("MLFLOW_TRACING_ENABLED", False),
             database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qbr_intelligence.db"),
             storage_backend=os.getenv("STORAGE_BACKEND", "sqlite"),
             vector_backend=os.getenv("VECTOR_BACKEND", "sqlite_embeddings"),
@@ -193,6 +215,15 @@ class Config:
                 "RETRIEVAL_INCLUDE_DOCUMENT_PATH",
                 False,
             ),
+            retrieval_max_chunks_per_doc=_env_int("RETRIEVAL_MAX_CHUNKS_PER_DOC", 3),
+            retrieval_mmr_lambda=_env_float("RETRIEVAL_MMR_LAMBDA", 0.5),
+            rerank_backend=os.getenv("RERANK_BACKEND", "cross_encoder"),
+            rerank_model=os.getenv(
+                "RERANK_MODEL",
+                "cross-encoder/ms-marco-MiniLM-L-6-v2",
+            ),
+            rerank_max_length=_parse_optional_int(os.getenv("RERANK_MAX_LENGTH")),
+            rerank_top_n=_env_int("RERANK_TOP_N", 20),
             faiss_dir=os.getenv("FAISS_DIR", "./data/faiss"),
             faiss_normalize=_env_flag("FAISS_NORMALIZE", True),
             faiss_index_type=os.getenv("FAISS_INDEX_TYPE", "Flat"),
@@ -209,3 +240,5 @@ class Config:
             raise ValueError("STORAGE_BACKEND must be one of: sqlite")
         if self.vector_backend not in {"sqlite_embeddings", "faiss"}:
             raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss")
+        if self.rerank_backend not in {"none", "cross_encoder"}:
+            raise ValueError("RERANK_BACKEND must be one of: none, cross_encoder")

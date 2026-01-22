@@ -20,6 +20,7 @@ from qbr_agent.application.ports import (
 from qbr_agent.domain.entities import Chunk, Document, Embedding
 from qbr_agent.domain.value_objects import ChunkId, DocumentId, EmbeddingVector
 from qbr_agent.infrastructure.factory import InfrastructureBundle
+from qbr_agent.infrastructure.reranker import NoopReranker
 
 
 @dataclass
@@ -90,6 +91,7 @@ async def test_execute_returns_agent_response() -> None:
         repository=FakeRepository(chunk),
         vector_index=FakeVectorIndex(),
         embeddings=FakeEmbeddingsProvider(),
+        reranker=NoopReranker(),
     )
     orchestrator = AiAgentQbrOrchestrator(
         config,

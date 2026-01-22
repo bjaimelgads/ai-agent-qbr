@@ -69,7 +69,9 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             file_path_col = documents.c.get("file_path")
             if file_path_col is None:
                 file_path_col = literal(None).label("file_path")
-            period_col = documents.c.get("period") or documents.c.get("report_period")
+            period_col = documents.c.get("period")
+            if period_col is None:
+                period_col = documents.c.get("report_period")
             if period_col is None:
                 period_col = literal(None).label("period")
             query = select(
@@ -117,7 +119,9 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             file_path_col = documents.c.get("file_path")
             if file_path_col is None:
                 file_path_col = literal(None).label("file_path")
-            period_col = documents.c.get("period") or documents.c.get("report_period")
+            period_col = documents.c.get("period")
+            if period_col is None:
+                period_col = documents.c.get("report_period")
             if period_col is None:
                 period_col = literal(None).label("period")
             query = select(
