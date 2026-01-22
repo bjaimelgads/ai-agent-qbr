@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 import math
 
 from qbr_agent.application.ports import (
@@ -323,6 +324,10 @@ async def _apply_rerank(
     rerank_scores = await reranker.score(query=query, chunks=top_chunks)
     if len(rerank_scores) != top_n:
         return chunks, {}
+    if rerank_scores:
+        logger = logging.getLogger(__name__)
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Reranker applied to %d chunks; top score=%s", top_n, rerank_scores[0])
     reranked = sorted(
         zip(top_chunks, rerank_scores, strict=False),
         key=lambda item: item[1],

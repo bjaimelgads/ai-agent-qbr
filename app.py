@@ -1,5 +1,6 @@
 """Databricks app entrypoint for ai-agent-qbr."""
 
+import logging
 import os
 import sys
 
@@ -19,6 +20,8 @@ import uvicorn
 def main() -> None:
     port = int(os.environ.get("PORT", "8000"))
     log_level = os.environ.get("LOG_LEVEL", "info").lower()
+    level = getattr(logging, log_level.upper(), logging.INFO)
+    logging.basicConfig(level=level)
     uvicorn.run(
         "ai_agent_qbr.api.app:app",
         host="0.0.0.0",

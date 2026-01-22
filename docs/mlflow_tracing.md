@@ -32,7 +32,7 @@ MLFLOW_TRACING_ENABLED=true
 
 The `retrieval_debug.json` artifact includes:
 - Vector match scores
-- Text match scores
+- Text match scores (BM25 via FTS5, when enabled)
 - Hybrid combined scores
 - Rerank scores (if enabled)
 - MMR-selected chunk IDs

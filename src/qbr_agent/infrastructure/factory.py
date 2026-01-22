@@ -29,6 +29,7 @@ async def build_infrastructure(
     embeddings_backend: str,
     embeddings_model: str,
     embeddings_normalize: bool,
+    text_search_backend: str,
     rerank_backend: str,
     rerank_model: str,
     rerank_max_length: int | None,
@@ -41,7 +42,10 @@ async def build_infrastructure(
     if storage_backend != "sqlite":
         raise ValueError(f"Unsupported STORAGE_BACKEND: {storage_backend}")
     gateway = DatabaseGateway(database_url=database_url)
-    repository = SqlAlchemyKnowledgeRepository(sessionmaker=gateway.sessionmaker())
+    repository = SqlAlchemyKnowledgeRepository(
+        sessionmaker=gateway.sessionmaker(),
+        text_search_backend=text_search_backend,
+    )
 
     if vector_backend == "sqlite_embeddings":
         vector_index = SqliteEmbeddingVectorIndex(repository=repository)

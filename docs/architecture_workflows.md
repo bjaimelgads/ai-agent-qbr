@@ -2,7 +2,7 @@
 
 ## How This System Works
 
-- Ingest a QBR deck, extract and chunk content, and store it in a SQL database with embeddings.
+- Ingest a QBR deck, extract and chunk content, and store it in a SQL database with embeddings and FTS5 text index.
 - At runtime, retrieve the most relevant chunks and use them as context to answer questions.
 - Answers are grounded in retrieved QBR content.
 
@@ -21,16 +21,17 @@ flowchart LR
     A1["PPTX files"]:::source --> A2["Extraction pipeline<br/>text + images + slide structure"]:::process
     A2 --> A3["Chunking + embeddings"]:::process
     A2 --> A4["Heuristics<br/>metrics + charts + keywords"]:::process
-    A4 --> A5["Post-processing (optional)<br/>classification + summaries"]:::process
+    A4 --> A5["Post-processing<br/>classification + summaries"]:::process
     A5 --> A6["Post-embeddings"]:::process
     A6 --> A7["SQLAlchemy writer"]:::process
-    A7 --> A8[(SQL database: qbr_intelligence)]:::store
+    A7 --> A8[(SQL database: qbr_intelligence + FTS5)]:::store
   end
 
   subgraph B["Indexing & Retrieval Infrastructure"]
-    B1[("SQL database: documents + chunks + metadata")]:::store
+    B1[("SQL database: documents + chunks + metadata + FTS5")]:::store
     B2["Vector index<br/>SQL embeddings or FAISS"]:::process
     B3["Embeddings provider<br/>SentenceTransformers or hash"]:::process
+    B4["BM25 text search<br/>FTS5 chunks_fts"]:::process
   end
 
   subgraph C["Runtime Agent (ai_agent_qbr)"]
@@ -48,9 +49,11 @@ flowchart LR
   A8 --> B1
   B1 --> B2
   B3 --> B2
+  B1 --> B4
 
   D1 --> C1
   C1 --> C2 --> C4 --> B2
+  C4 --> B4
   C4 --> C3
   C3 --> C1 --> D1
   C2 --> C5
@@ -67,9 +70,9 @@ flowchart TD
   E1["PPTX file uploaded"]:::source --> E2["Kreuzberg extraction<br/>text + images + slide structure"]:::process
   E2 --> E3["Chunking + embedding generation"]:::process
   E2 --> E4["Detect metrics + charts + keywords"]:::process
-  E4 --> E5["LLM enhancement (optional)<br/>classify + summarize + normalize"]:::process
+  E4 --> E5["LLM enhancement<br/>classify + summarize + normalize"]:::process
   E5 --> E6["Post-embeddings"]:::process
-  E6 --> E7["Write to SQL database<br/>documents, slides, chunks"]:::process
+  E6 --> E7["Write to SQL database + FTS5 index<br/>documents, slides, chunks"]:::process
   E7 --> E8[("qbr_intelligence ready for retrieval")]:::store
 ```
 
@@ -88,8 +91,9 @@ sequenceDiagram
   participant IF as Client Interface
   participant OR as Orchestrator
   participant UC as Retrieval Use Cases
-  participant DB as SQL database (qbr_intelligence)
+  participant DB as SQL database (qbr_intelligence + FTS5)
   participant VI as Vector Index (SQL/FAISS)
+  participant TS as Text Search (FTS5 BM25)
   participant PL as Planner/LLM
 
   Note over DB: Filled earlier by extraction pipeline
@@ -99,7 +103,9 @@ sequenceDiagram
   IF->>OR: SendMessageUseCase
   OR->>UC: AnswerQuestion (hybrid)
   UC->>VI: Vector search on embeddings
-  UC->>DB: Text search + fetch chunks
+  UC->>TS: BM25 text search on chunks
+  UC->>DB: Fetch chunks by ID
+  UC->>UC: Rerank top candidates
   UC-->>OR: Ranked chunks + context
   OR->>PL: Run planner with qbr_context
   PL-->>OR: Final answer + metadata
@@ -109,8 +115,8 @@ sequenceDiagram
 ```
 
 ### Plain-English Summary
-- Extraction builds a searchable knowledge base from PowerPoint slides.
-- When a user asks a question, the agent searches both text and embeddings, then gives the LLM the most relevant slides as context.
+- Extraction builds a searchable knowledge base (SQL + FTS5) from PowerPoint slides.
+- When a user asks a question, the agent searches both BM25 text and embeddings, reranks candidates, and then gives the LLM the most relevant slides as context.
 - The client interface returns the response back to the user.
 
 ## Where This Lives in the Repo

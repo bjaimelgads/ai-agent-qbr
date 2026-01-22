@@ -212,6 +212,7 @@ class AiAgentQbrOrchestrator:
                     embeddings_backend=self._config.embeddings_backend,
                     embeddings_model=self._config.embeddings_model,
                     embeddings_normalize=self._config.embeddings_normalize,
+                    text_search_backend=self._config.text_search_backend,
                     rerank_backend=self._config.rerank_backend,
                     rerank_model=self._config.rerank_model,
                     rerank_max_length=self._config.rerank_max_length,
@@ -265,6 +266,7 @@ class AiAgentQbrOrchestrator:
             if mlflow_run:
                 mlflow_run.log_param("query", query)
                 mlflow_run.log_param("retrieval_top_k", self._config.retrieval_top_k)
+                mlflow_run.log_param("text_search_backend", self._config.text_search_backend)
                 mlflow_run.log_param("retrieval_text_weight", self._config.retrieval_text_weight)
                 mlflow_run.log_param("retrieval_vector_weight", self._config.retrieval_vector_weight)
                 mlflow_run.log_param(
@@ -353,6 +355,7 @@ class AiAgentQbrOrchestrator:
                 attributes={
                     "top_k": self._config.retrieval_top_k,
                     "min_score": self._config.retrieval_min_score,
+                    "text_search_backend": self._config.text_search_backend,
                     "text_weight": self._config.retrieval_text_weight,
                     "vector_weight": self._config.retrieval_vector_weight,
                     "rerank_top_n": self._config.rerank_top_n,

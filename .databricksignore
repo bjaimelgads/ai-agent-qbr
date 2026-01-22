@@ -1,6 +1,5 @@
-# Allow packaging the deployment bundle DB and FAISS index.
-!deployment_files/qbr_intelligence.db
-!deployment_files/data/
-!deployment_files/data/faiss/
-!deployment_files/data/faiss/**
-!deployment_files/qbr_extraction/qbr_intelligence.db
+# Allow packaging DB + FAISS data from repo paths.
+!qbr_intelligence.db
+!qbr_extraction/qbr_intelligence.db
+!data/
+!data/**

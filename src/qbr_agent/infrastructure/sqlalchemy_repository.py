@@ -8,7 +8,8 @@ from dataclasses import dataclass
 import logging
 from typing import Any
 
-from sqlalchemy import MetaData, Table, literal, or_, select
+from sqlalchemy import MetaData, Table, literal, or_, select, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from qbr_agent.application.ports import KnowledgeRepository, TextMatch
@@ -20,7 +21,9 @@ _METADATA = MetaData()
 _DOCUMENTS: Table | None = None
 _CHUNKS: Table | None = None
 _SLIDES: Table | None = None
+_CHUNKS_FTS: Table | None = None
 _WARNED_MISSING_TABLES = False
+_WARNED_MISSING_FTS = False
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,10 +31,17 @@ _LOGGER = logging.getLogger(__name__)
 @dataclass
 class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
     sessionmaker: async_sessionmaker[AsyncSession]
+    text_search_backend: str = "fts5"
+    fts_table: str = "chunks_fts"
 
     async def _ensure_reflection(self, session: AsyncSession) -> None:
-        global _DOCUMENTS, _CHUNKS, _SLIDES, _WARNED_MISSING_TABLES
-        if _DOCUMENTS is not None and _CHUNKS is not None and _SLIDES is not None:
+        global _DOCUMENTS, _CHUNKS, _SLIDES, _CHUNKS_FTS, _WARNED_MISSING_TABLES
+        if (
+            _DOCUMENTS is not None
+            and _CHUNKS is not None
+            and _SLIDES is not None
+            and (_CHUNKS_FTS is not None or self.text_search_backend == "like")
+        ):
             return
 
         conn = await session.connection()
@@ -39,6 +49,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
         _DOCUMENTS = _METADATA.tables.get("documents")
         _CHUNKS = _METADATA.tables.get("chunks")
         _SLIDES = _METADATA.tables.get("slides")
+        _CHUNKS_FTS = _METADATA.tables.get(self.fts_table)
         if not _WARNED_MISSING_TABLES and (
             _DOCUMENTS is None or _CHUNKS is None or _SLIDES is None
         ):
@@ -223,19 +234,106 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             await self._ensure_reflection(session)
             if _CHUNKS is None:
                 return []
-            chunks = _CHUNKS
-            conditions = [chunks.c.content.ilike(f"%{term}%") for term in terms]
-            stmt = select(chunks.c.id, chunks.c.content).where(or_(*conditions)).limit(limit)
-            if document_id is not None:
-                stmt = stmt.where(chunks.c.document_id == document_id.value)
-            result = await session.execute(stmt)
-            rows = result.fetchall()
-            matches: list[TextMatch] = []
-            for row in rows:
-                content = str(row.content).lower()
-                score = sum(1.0 for term in terms if term in content)
-                matches.append(TextMatch(chunk_id=ChunkId(int(row.id)), score=score))
-            return matches
+            backend = self.text_search_backend.lower()
+            if backend in {"fts5", "auto"}:
+                matches = await self._search_chunks_fts5(
+                    session=session,
+                    terms=terms,
+                    query=query,
+                    limit=limit,
+                    document_id=document_id,
+                )
+                if matches is not None:
+                    if _LOGGER.isEnabledFor(logging.DEBUG):
+                        _LOGGER.debug(
+                            "FTS5 text search returned %d matches (limit=%d).",
+                            len(matches),
+                            limit,
+                        )
+                    return matches
+            return await self._search_chunks_like(
+                session=session,
+                terms=terms,
+                limit=limit,
+                document_id=document_id,
+            )
+
+    async def _search_chunks_fts5(
+        self,
+        *,
+        session: AsyncSession,
+        terms: list[str],
+        query: str,
+        limit: int,
+        document_id: DocumentId | None,
+    ) -> list[TextMatch] | None:
+        global _WARNED_MISSING_FTS
+        if _CHUNKS is None or _CHUNKS_FTS is None:
+            if not _WARNED_MISSING_FTS:
+                _LOGGER.warning(
+                    "FTS table %s missing; falling back to LIKE search.",
+                    self.fts_table,
+                )
+                _WARNED_MISSING_FTS = True
+            return None
+        fts_query = " ".join(terms)
+        doc_clause = ""
+        params: dict[str, Any] = {"query": fts_query, "limit": limit}
+        if document_id is not None:
+            doc_clause = " AND chunks.document_id = :document_id"
+            params["document_id"] = document_id.value
+        stmt = text(
+            f"""
+            SELECT chunks.id AS id, bm25({_CHUNKS_FTS.name}) AS bm25_score
+            FROM {_CHUNKS_FTS.name}
+            JOIN chunks ON {_CHUNKS_FTS.name}.rowid = chunks.id
+            WHERE {_CHUNKS_FTS.name} MATCH :query{doc_clause}
+            ORDER BY bm25_score ASC
+            LIMIT :limit
+            """
+        )
+        try:
+            result = await session.execute(stmt, params)
+        except OperationalError as exc:
+            if not _WARNED_MISSING_FTS:
+                _LOGGER.warning("FTS query failed; falling back to LIKE. %s", exc)
+                _WARNED_MISSING_FTS = True
+            return None
+        rows = result.fetchall()
+        matches: list[TextMatch] = []
+        for row in rows:
+            bm25_score = float(row.bm25_score) if row.bm25_score is not None else 0.0
+            score = 1.0 / (1.0 + bm25_score)
+            matches.append(TextMatch(chunk_id=ChunkId(int(row.id)), score=score))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            top_score = matches[0].score if matches else None
+            _LOGGER.debug("FTS5 BM25 top score: %s", top_score)
+        return matches
+
+    async def _search_chunks_like(
+        self,
+        *,
+        session: AsyncSession,
+        terms: list[str],
+        limit: int,
+        document_id: DocumentId | None,
+    ) -> list[TextMatch]:
+        chunks = _CHUNKS
+        conditions = [chunks.c.content.ilike(f"%{term}%") for term in terms]
+        stmt = select(chunks.c.id, chunks.c.content).where(or_(*conditions)).limit(limit)
+        if document_id is not None:
+            stmt = stmt.where(chunks.c.document_id == document_id.value)
+        result = await session.execute(stmt)
+        rows = result.fetchall()
+        matches: list[TextMatch] = []
+        for row in rows:
+            content = str(row.content).lower()
+            score = sum(1.0 for term in terms if term in content)
+            matches.append(TextMatch(chunk_id=ChunkId(int(row.id)), score=score))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            top_score = matches[0].score if matches else None
+            _LOGGER.debug("LIKE text search returned %d matches, top score=%s.", len(matches), top_score)
+        return matches
 
     def _row_to_chunk(self, row: Any) -> Chunk:
         embedding = None

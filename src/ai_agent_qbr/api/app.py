@@ -109,6 +109,8 @@ def create_app(
     @app.on_event("startup")
     async def _startup() -> None:
         _maybe_seed_sqlite_db(config.database_url)
+        _log_database_status(config.database_url)
+        _log_faiss_status(Path(config.faiss_dir))
         logger.info(
             "MLflow tracing: enabled=%s trace=%s uri=%s experiment=%s",
             config.mlflow_enabled,
@@ -158,6 +160,55 @@ def create_app(
         await chat_service.handle_session(websocket, session_id)
 
     return app
+
+
+def _log_database_status(database_url: str) -> None:
+    if not database_url:
+        logger.info("Database URL: (empty)")
+        return
+    if not database_url.startswith("sqlite"):
+        logger.info("Database URL: %s (non-sqlite)", database_url)
+        return
+    db_path = _sqlite_path_from_url(database_url)
+    if not db_path:
+        logger.info("Database URL: %s (path not resolved)", database_url)
+        return
+    if db_path.exists():
+        size = db_path.stat().st_size
+        logger.info("SQLite DB resolved: %s (%d bytes)", db_path, size)
+    else:
+        logger.warning("SQLite DB missing at resolved path: %s", db_path)
+
+
+def _sqlite_path_from_url(database_url: str) -> Path | None:
+    try:
+        parsed = urlparse(database_url)
+    except Exception:
+        return None
+    if parsed.scheme not in {"sqlite", "sqlite+aiosqlite"}:
+        return None
+    if not parsed.path:
+        return None
+    path = parsed.path
+    if path.startswith("//"):
+        path = path[1:]
+    return Path(path)
+
+
+def _log_faiss_status(base_dir: Path) -> None:
+    index_path = base_dir / "index.faiss"
+    ids_path = base_dir / "index_ids.json"
+    if not base_dir.exists():
+        logger.warning("FAISS dir missing: %s", base_dir)
+        return
+    if index_path.exists():
+        logger.info("FAISS index found: %s (%d bytes)", index_path, index_path.stat().st_size)
+    else:
+        logger.warning("FAISS index missing: %s", index_path)
+    if ids_path.exists():
+        logger.info("FAISS ids found: %s (%d bytes)", ids_path, ids_path.stat().st_size)
+    else:
+        logger.warning("FAISS ids missing: %s", ids_path)
 
 
 app = create_app()

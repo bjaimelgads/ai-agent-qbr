@@ -43,7 +43,7 @@ hybrid retrieval and optional reranking to assemble grounded responses.
 ### 3.1 Hybrid Retrieval
 Two sources contribute scores:
 - **Vector search**: cosine similarity of embeddings (SQLite or FAISS).
-- **Text search**: term match scoring against chunk content.
+- **Text search**: FTS5 BM25 ranking over chunk content (LIKE fallback).
 
 Scores are normalized and combined:
 ```
@@ -147,6 +147,7 @@ Retrieval:
 - `RETRIEVAL_MMR_LAMBDA`
 - `RETRIEVAL_MAX_CHUNKS_PER_DOC`
 - `RETRIEVAL_CANDIDATE_MULTIPLIER`
+- `TEXT_SEARCH_BACKEND` (fts5/auto/like)
 
 Rerank:
 - `RERANK_BACKEND=cross_encoder|none`

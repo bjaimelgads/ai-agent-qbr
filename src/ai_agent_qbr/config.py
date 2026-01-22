@@ -113,6 +113,7 @@ class Config:
     embeddings_normalize: bool = True
     retrieval_top_k: int = 5
     retrieval_min_score: float | None = None
+    text_search_backend: str = "fts5"
     retrieval_text_weight: float = 0.6
     retrieval_vector_weight: float = 0.4
     retrieval_candidate_multiplier: int = 4
@@ -208,6 +209,7 @@ class Config:
             embeddings_normalize=_env_flag("EMBEDDINGS_NORMALIZE", True),
             retrieval_top_k=_env_int("RETRIEVAL_TOP_K", 5),
             retrieval_min_score=_parse_optional_float(os.getenv("RETRIEVAL_MIN_SCORE")),
+            text_search_backend=os.getenv("TEXT_SEARCH_BACKEND", "fts5"),
             retrieval_text_weight=_env_float("RETRIEVAL_TEXT_WEIGHT", 0.6),
             retrieval_vector_weight=_env_float("RETRIEVAL_VECTOR_WEIGHT", 0.4),
             retrieval_candidate_multiplier=_env_int("RETRIEVAL_CANDIDATE_MULTIPLIER", 4),
@@ -242,3 +244,5 @@ class Config:
             raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss")
         if self.rerank_backend not in {"none", "cross_encoder"}:
             raise ValueError("RERANK_BACKEND must be one of: none, cross_encoder")
+        if self.text_search_backend not in {"fts5", "auto", "like"}:
+            raise ValueError("TEXT_SEARCH_BACKEND must be one of: fts5, auto, like")

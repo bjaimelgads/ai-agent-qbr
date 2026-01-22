@@ -10,7 +10,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 from penguiflow.planner import PlannerFinish
-from sqlalchemy import JSON, Column, Float, Integer, MetaData, String, Table, Text
+from sqlalchemy import JSON, Column, Float, Integer, MetaData, String, Table, Text, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ai_agent_qbr.api.app import create_app
@@ -123,6 +123,15 @@ def _setup_db(db_url: str) -> None:
 
         async with engine.begin() as conn:
             await conn.run_sync(metadata.create_all)
+            try:
+                await conn.execute(
+                    text(
+                        "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts "
+                        "USING fts5(content, content='chunks', content_rowid='id')"
+                    )
+                )
+            except Exception:
+                pass
 
             provider = HashEmbeddingsProvider()
             chunks = [
@@ -169,6 +178,10 @@ def _setup_db(db_url: str) -> None:
                         embedding_model=embedding.model,
                     )
                 )
+            try:
+                await conn.execute(text("INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild')"))
+            except Exception:
+                pass
 
         await engine.dispose()
 
