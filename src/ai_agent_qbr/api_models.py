@@ -40,6 +40,11 @@ class OutputFinal(BaseModel):
     citations: list[str] = Field(default_factory=list)
 
 
+class OutputPartial(BaseModel):
+    status: Literal["partial"] = "partial"
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
 class OutputError(BaseModel):
     status: Literal["error"] = "error"
     message: str
@@ -57,6 +62,7 @@ ServerMessage = (
     OutputReady
     | OutputThinking
     | OutputUserMessage
+    | OutputPartial
     | OutputFinal
     | OutputError
     | OutputPing

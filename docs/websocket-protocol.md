@@ -40,6 +40,12 @@ Final:
 { "status": "final", "data": { "content": "..." }, "citations": [] }
 ```
 
+Partial (streaming enabled):
+
+```json
+{ "status": "partial", "data": { "content": "..." } }
+```
+
 Error:
 
 ```json
@@ -57,3 +63,4 @@ Keepalive:
 
 - The server sends periodic `ping` messages. Clients should reply with `pong`.
 - Planner events are mapped into `thinking` updates; final output is always `final`.
+- When partial streaming is enabled, `partial` messages carry the cumulative response content.
