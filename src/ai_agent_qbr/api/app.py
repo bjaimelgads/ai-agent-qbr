@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import shutil
+import sqlite3
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -176,6 +177,7 @@ def _log_database_status(database_url: str) -> None:
     if db_path.exists():
         size = db_path.stat().st_size
         logger.info("SQLite DB resolved: %s (%d bytes)", db_path, size)
+        _log_sqlite_counts(db_path)
     else:
         logger.warning("SQLite DB missing at resolved path: %s", db_path)
 
@@ -193,6 +195,38 @@ def _sqlite_path_from_url(database_url: str) -> Path | None:
     if path.startswith("//"):
         path = path[1:]
     return Path(path)
+
+
+def _log_sqlite_counts(db_path: Path) -> None:
+    try:
+        conn = sqlite3.connect(db_path)
+    except sqlite3.Error as exc:
+        logger.warning("SQLite DB open failed for %s: %s", db_path, exc)
+        return
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM documents")
+        doc_count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM chunks")
+        chunk_count = cur.fetchone()[0]
+        cur.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='chunks_fts'"
+        )
+        fts_exists = bool(cur.fetchone()[0])
+        fts_count = None
+        if fts_exists:
+            cur.execute("SELECT COUNT(*) FROM chunks_fts")
+            fts_count = cur.fetchone()[0]
+        logger.info(
+            "SQLite counts: documents=%s chunks=%s chunks_fts=%s",
+            doc_count,
+            chunk_count,
+            fts_count if fts_exists else "missing",
+        )
+    except sqlite3.Error as exc:
+        logger.warning("SQLite count query failed for %s: %s", db_path, exc)
+    finally:
+        conn.close()
 
 
 def _log_faiss_status(base_dir: Path) -> None:

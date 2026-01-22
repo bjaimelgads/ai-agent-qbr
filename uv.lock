@@ -78,7 +78,7 @@ requires-dist = [
     { name = "mlflow", marker = "extra == 'observability'", specifier = ">=2.13.0" },
     { name = "numpy", marker = "extra == 'retrieval'", specifier = ">=1.26.0" },
     { name = "onnxruntime", marker = "extra == 'extraction'", specifier = ">=1.22.0" },
-    { name = "penguiflow", extras = ["planner"] },
+    { name = "penguiflow", extras = ["planner"], specifier = ">=2.11.2" },
     { name = "pydantic", specifier = ">=2.6" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23" },
@@ -726,6 +726,40 @@ wheels = [
 ]
 
 [[package]]
+name = "databricks-ai-bridge"
+version = "0.12.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "databricks-sdk" },
+    { name = "databricks-vectorsearch" },
+    { name = "mlflow-skinny" },
+    { name = "pandas" },
+    { name = "pydantic" },
+    { name = "tabulate" },
+    { name = "tiktoken" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f9/d8/0b289b7bda4003bbc5791dcd87aa024243e8f5c1a7effa558387b6100a86/databricks_ai_bridge-0.12.0.tar.gz", hash = "sha256:d0b162f608989706e32bd5c46d46ecc1c49482db0205fa53f660689014da9d15", size = 19944, upload-time = "2026-01-16T00:50:28.891Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/82/94/c0ccb7c91635d6b65aa87fa302391c94f8eb6a81bceec45b3394a72cadb8/databricks_ai_bridge-0.12.0-py3-none-any.whl", hash = "sha256:c47c1a2d0acb03232c40b6b4a4f631dc76db2dc02ef35c2182efcc8d59cdac12", size = 24715, upload-time = "2026-01-16T00:50:27.423Z" },
+]
+
+[[package]]
+name = "databricks-mcp"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "databricks-ai-bridge" },
+    { name = "databricks-sdk" },
+    { name = "mcp" },
+    { name = "mlflow" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/72/15/b8f574db127b576e6457a4db25938d34f535a9d1e38a2642927dab5acc35/databricks_mcp-0.6.0.tar.gz", hash = "sha256:5d6b9deac313dd1e1c7560dec48f78100c14e1d0ee665ff118e5c259eca1a5b7", size = 10771, upload-time = "2026-01-16T00:53:35.271Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/ce/58c4f1ba26022d730860c817cf84d27f19531d07eb6e71ea5159d884c757/databricks_mcp-0.6.0-py3-none-any.whl", hash = "sha256:ba9bb9fa64534341e5ae0b4c7bc36096957a5c1c2129ebcf6798c6a3538bab8a", size = 12371, upload-time = "2026-01-16T00:53:33.971Z" },
+]
+
+[[package]]
 name = "databricks-sdk"
 version = "0.78.0"
 source = { registry = "https://pypi.org/simple" }
@@ -737,6 +771,32 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f8/7a/79097b58067a40fe254b5f6751b74fbae89156d29f92d26c33a090562a53/databricks_sdk-0.78.0.tar.gz", hash = "sha256:79d941459e7d31ebd89dc841ab2b5e1d8ec1bf05ac3ea26f6af26c815eaa8073", size = 829243, upload-time = "2026-01-15T07:48:43.376Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/65/9a/4240ac7d8249bc294ace26c6b90686dfe30120ea6f635ec7160a06e4b505/databricks_sdk-0.78.0-py3-none-any.whl", hash = "sha256:aa63085a03580d217324081f27ac25921be70859884eff97e6fd536884d55e65", size = 780542, upload-time = "2026-01-15T07:48:41.586Z" },
+]
+
+[[package]]
+name = "databricks-vectorsearch"
+version = "0.64"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "deprecation" },
+    { name = "mlflow-skinny" },
+    { name = "protobuf" },
+    { name = "requests" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/42/f7/e4bb15a871fd6bf76869993d437b5da8e0306fb4153b84cfb18d8729082f/databricks_vectorsearch-0.64-py3-none-any.whl", hash = "sha256:a1133fd67bed800613720898c3b3a4bea2ff90fa8fd11f7e3cb413a77a494e3c", size = 21030, upload-time = "2026-01-22T00:29:50.528Z" },
+]
+
+[[package]]
+name = "deprecation"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/d3/8ae2869247df154b64c1884d7346d412fed0c49df84db635aab2d1c40e62/deprecation-2.1.0.tar.gz", hash = "sha256:72b3bde64e5d778694b0cf68178aed03d15e15477116add3fb773e581f9518ff", size = 173788, upload-time = "2020-04-20T14:23:38.738Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl", hash = "sha256:a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a", size = 11178, upload-time = "2020-04-20T14:23:36.581Z" },
 ]
 
 [[package]]
@@ -3000,18 +3060,19 @@ wheels = [
 
 [[package]]
 name = "penguiflow"
-version = "2.9.0"
+version = "2.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
+    { name = "databricks-mcp" },
     { name = "fastapi" },
     { name = "pydantic" },
     { name = "pyyaml" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/58/047acfd790ef73999c0ad2625bc931d6c9c7a609bb1ff65a20ec4e4260ae/penguiflow-2.9.0.tar.gz", hash = "sha256:321c603a2b5db0bcfb3c8c8bda27351d2c7ac16b7a7154034cd18c386e7b78f5", size = 4050730, upload-time = "2026-01-02T19:17:31.974Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7b/8c/12b51b43b78dfe54341b6844d4b3ce0b764b2588ee022b12ba2e18d0b17e/penguiflow-2.11.2.tar.gz", hash = "sha256:4f124323eb68b5581e30459c2be83a3f2fb2aed15365db47be50a248b2ae01ca", size = 4351402, upload-time = "2026-01-22T00:51:21.585Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5f/46/c206feb7b0777f63fbe90988ef4e0a17eaeb18fd25e91a908428ab59b4d4/penguiflow-2.9.0-py3-none-any.whl", hash = "sha256:ed6aa6a1695d9b4b8304b1efbb0667b4d645e03abc44a3b0036bc757b42abf52", size = 4123033, upload-time = "2026-01-02T19:17:30.135Z" },
+    { url = "https://files.pythonhosted.org/packages/48/45/cbb1258dd8a7afd7d7bf82673f56d668aa22db8b7f8ae983807b8a2b74a3/penguiflow-2.11.2-py3-none-any.whl", hash = "sha256:9fd46e2cf759d096884efe105a5091d50c566c49af8d4f4aba35210af62069bf", size = 4382974, upload-time = "2026-01-22T00:51:19.616Z" },
 ]
 
 [package.optional-dependencies]
@@ -4348,6 +4409,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl", hash = "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5", size = 6299353, upload-time = "2025-04-27T18:04:59.103Z" },
+]
+
+[[package]]
+name = "tabulate"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797b8f7902564ab6ea0d60ff8ca23952079064155d1ae1/tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c", size = 81090, upload-time = "2022-10-06T17:21:48.54Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
 ]
 
 [[package]]

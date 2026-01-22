@@ -99,6 +99,17 @@ class HybridSearchKnowledge:
             limit=candidate_limit,
             document_id=DocumentId(document_id) if document_id is not None else None,
         )
+        logger = logging.getLogger(__name__)
+        if logger.isEnabledFor(logging.DEBUG):
+            vector_top = vector_matches[0].score if vector_matches else None
+            text_top = text_matches[0].score if text_matches else None
+            logger.debug(
+                "Hybrid retrieval: vector_matches=%d (top=%s) text_matches=%d (top=%s)",
+                len(vector_matches),
+                vector_top,
+                len(text_matches),
+                text_top,
+            )
         combined = _combine_hybrid_scores(
             vector_matches=vector_matches,
             text_matches=text_matches,
