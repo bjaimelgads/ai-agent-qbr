@@ -1,0 +1,1918 @@
+{
+  "slides": [
+    {
+      "slide_number": 1,
+      "analysis": {
+        "slide_type": "title",
+        "title": "FY24 H2 Business Review",
+        "key_message": "This presentation covers the business review for the second half of Fiscal Year 2024.",
+        "metrics": [],
+        "insights": [],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 2,
+      "analysis": {
+        "slide_type": "title",
+        "title": "Introducing Ourselves",
+        "key_message": "Introduction of the eight-member team responsible for the account, including leadership from VP M&E Sales and Managing Director levels, plus specialists in sales, tech solutions, account management, and advanced reporting.",
+        "metrics": [],
+        "insights": [
+          "The account has a dedicated team of 8 professionals spanning sales leadership, technical solutions, account management, and reporting analytics",
+          "Three team members are focused on Advanced Reporting, indicating significant emphasis on data and analytics capabilities"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 3,
+      "analysis": {
+        "slide_type": "agenda",
+        "title": "Disney+ FY24 H2 Domestic Business Review Agenda",
+        "key_message": "This presentation will cover LG updates, US performance metrics for FY24 H2, partnership scorecard results, app profile analysis, and forward-looking recommendations.",
+        "metrics": [],
+        "insights": [
+          "Presentation focuses on domestic (US) Disney+ performance for second half of fiscal year 2024",
+          "Review includes both retrospective performance analysis and forward-looking recommendations",
+          "Partnership relationships are a key component being evaluated via scorecard",
+          "LG (likely a partner or platform) receives dedicated attention in the agenda"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 4,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Disney+ FY24 Partnership Highlights",
+        "key_message": "Disney Streaming Global invested $9.4M with LG Ads in FY24, with domestic investment of $3.8M up 13% YoY, while successfully launching multiple products and pioneering innovative advertising formats. FY25 partnership approved at $17M.",
+        "metrics": [
+          {
+            "name": "FY25 XLOB Partnership Budget",
+            "value": "$17M",
+            "normalized_value": 17000000.0,
+            "unit": "$",
+            "trend": null,
+            "context": "Endeavor partnership approved for FY25"
+          },
+          {
+            "name": "Disney Streaming Global Investment",
+            "value": "$9.4M",
+            "normalized_value": 9400000.0,
+            "unit": "$",
+            "trend": null,
+            "context": "Total investment with LG Ads in FY24"
+          },
+          {
+            "name": "Domestic Investment",
+            "value": "$3.8M",
+            "normalized_value": 3800000.0,
+            "unit": "$",
+            "trend": "up",
+            "context": "US portion of LG Ads investment in FY24"
+          },
+          {
+            "name": "YoY Growth",
+            "value": "13%",
+            "normalized_value": 13.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Domestic investment growth year-over-year"
+          },
+          {
+            "name": "FY24 Total Investment",
+            "value": "$10,545,432",
+            "normalized_value": 10545432.0,
+            "unit": "$",
+            "trend": null,
+            "context": "Total Megan investment FY24"
+          },
+          {
+            "name": "FY24 US Investment",
+            "value": "$3,786,364",
+            "normalized_value": 3786364.0,
+            "unit": "$",
+            "trend": null,
+            "context": "US Megan investment FY24"
+          },
+          {
+            "name": "FY23 Total Investment",
+            "value": "$8,504,741",
+            "normalized_value": 8504741.0,
+            "unit": "$",
+            "trend": null,
+            "context": "Total Megan investment FY23"
+          },
+          {
+            "name": "FY23 US Investment",
+            "value": "$3,345,483",
+            "normalized_value": 3345483.0,
+            "unit": "$",
+            "trend": null,
+            "context": "US Megan investment FY23"
+          }
+        ],
+        "insights": [
+          "Domestic investment with LG Ads grew 13% year-over-year, indicating strengthening partnership",
+          "Successfully launched multiple major products including ESPN App, Hulu on Disney+, and various bundle offerings",
+          "Pioneered first-to-market advertising innovations including Screensaver Ads, Content Store Roadblock, and 3D Animated Carousel",
+          "Executed targeted audience strategy for Disney+ Not Installed and Lapsed users",
+          "FY25 partnership budget of $17M represents significant commitment to continued collaboration"
+        ],
+        "action_items": [
+          "Continue execution of FY25 $17M partnership with Endeavor",
+          "Scale successful beta advertising formats (Screensaver Ads, Multi-Card Roadblock, 3D Animated Carousel)",
+          "Expand audience targeting strategies beyond Not Installed and Lapsed users",
+          "Monitor and optimize domestic investment growth trajectory"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 5,
+      "analysis": {
+        "slide_type": "transition",
+        "title": "LG Updates",
+        "key_message": "This slide marks the beginning of Section 01, which covers LG Updates to be presented by Laura.",
+        "metrics": [],
+        "insights": [
+          "The presentation is organized into numbered sections",
+          "Laura is the designated presenter for the LG Updates section"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 6,
+      "analysis": {
+        "slide_type": "data",
+        "title": "A Winning Combination of Global Scale & Unique Reach",
+        "key_message": "LG Ad Solutions offers significant scale with 42M US LG Smart TVs, 176M global LG Smart TVs, and 300M US secondary devices, while maintaining 90%+ deduplicated reach against other TV OEMs, demonstrating both breadth and unique audience access.",
+        "metrics": [
+          {
+            "name": "US LG Smart TVs",
+            "value": "42M",
+            "normalized_value": 42000000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "US market device count"
+          },
+          {
+            "name": "US Secondary Devices",
+            "value": "300M",
+            "normalized_value": 300000000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "US market secondary device reach"
+          },
+          {
+            "name": "Global LG Smart TVs",
+            "value": "176M",
+            "normalized_value": 176000000.0,
+            "unit": "devices",
+            "trend": null,
+            "context": "Global market device count"
+          },
+          {
+            "name": "Deduplicated Reach Against Other TV OEMs",
+            "value": "90%+",
+            "normalized_value": 90.0,
+            "unit": "%",
+            "trend": "up",
+            "context": "Unique reach compared to competitors"
+          }
+        ],
+        "insights": [
+          "LG has substantial scale in the US market with 42M smart TVs and access to 300M secondary devices",
+          "Global footprint extends to 176M LG Smart TVs worldwide",
+          "Over 90% deduplicated reach indicates LG provides access to audiences not available through other TV OEMs, representing a unique competitive advantage",
+          "The combination of large scale and high deduplication rate positions LG as a valuable partner for reaching incremental TV audiences"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 7,
+      "analysis": {
+        "slide_type": "data",
+        "title": "LG and Samsung TVs Make Up the Majority of the US Market",
+        "key_message": "LG and Samsung dominate the US TV market with less than 5% audience duplication against other OEMs, providing the scale and reach needed to fulfill media buys effectively.",
+        "metrics": [
+          {
+            "name": "Deduplicated Reach",
+            "value": "94%",
+            "normalized_value": 94.0,
+            "unit": "%",
+            "trend": null,
+            "context": "First comparison group (likely LG or Samsung)"
+          },
+          {
+            "name": "Deduplicated Reach",
+            "value": "97%",
+            "normalized_value": 97.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Second comparison group (likely Samsung or LG)"
+          },
+          {
+            "name": "Duplication Rate",
+            "value": "<5%",
+            "normalized_value": 5.0,
+            "unit": "%",
+            "trend": "down",
+            "context": "Duplication against other OEMs"
+          }
+        ],
+        "insights": [
+          "LG and Samsung collectively dominate the US household TV market",
+          "Less than 5% audience duplication between these platforms and other OEMs provides unique reach opportunities",
+          "High deduplicated reach (94-97%) enables effective media buy fulfillment",
+          "Multiple TVs per household contribute to market penetration figures"
+        ],
+        "action_items": [
+          "Leverage the scale and reach of LG and Samsung platforms for media strategy",
+          "Incorporate additional smart TV data into overall smart TV advertising strategy"
+        ],
+        "has_chart": true,
+        "has_comparison": true,
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 8,
+      "analysis": {
+        "slide_type": "data",
+        "title": "LG Home Screen Upgrades",
+        "key_message": "LG Home Screen offers enhanced advertising formats including video, 3D animation, and multi-card carousels that drive up to 2x higher CTR compared to static ads, enabling immersive experiences that drive viewers into the Disney+ app.",
+        "metrics": [
+          {
+            "name": "CTR",
+            "value": "2x higher",
+            "normalized_value": 2.0,
+            "unit": "x",
+            "trend": "up",
+            "context": "Video ads vs. static ads"
+          },
+          {
+            "name": "Video Duration",
+            "value": "up to :30",
+            "normalized_value": 30.0,
+            "unit": "seconds",
+            "trend": null,
+            "context": "Video Enabled format for Roadblocks and ROS"
+          },
+          {
+            "name": "Creative Cards",
+            "value": "up to 5x",
+            "normalized_value": 5.0,
+            "unit": "cards",
+            "trend": null,
+            "context": "Multi-Card Carousel Roadblock"
+          }
+        ],
+        "insights": [
+          "Video-enabled ads drive CTR up to 2x higher compared to static ads on LG home screens",
+          "New 3D Animated Carousel feature allows brands to 'break the glass' and bring content to life",
+          "Multiple ad format options available including video, 3D animation, multi-card carousels, and countdown clocks",
+          "Strategy focuses on immersive and animated experiences to capture attention and drive app engagement"
+        ],
+        "action_items": [
+          "Leverage video-enabled formats (up to 30 seconds) for both Roadblocks and ROS placements",
+          "Consider using the new 3D Animated Carousel for high-impact campaigns",
+          "Utilize Custom Countdown Clock for content launches or sports events to build anticipation",
+          "Continue investing in immersive and animated ad experiences on LG home screens"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 9,
+      "analysis": {
+        "slide_type": "data",
+        "title": "3D Animation Carousel - Home Entertainment Feature",
+        "key_message": "A 3D Animation Carousel for DVD Rent/Buy home entertainment content is available on the carousel home screen for TV models from 2019 and newer.",
+        "metrics": [],
+        "insights": [
+          "The 3D Animation Carousel feature is specifically designed for home entertainment content (DVD Rent/Buy)",
+          "Feature availability is limited to TV models from 2019 and newer, indicating a focus on modern hardware",
+          "The carousel is positioned on the home screen, suggesting it's a prominent user-facing feature"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 10,
+      "analysis": {
+        "slide_type": "data",
+        "title": "3D Animation Carousel - AU",
+        "key_message": "Implementation of 3D Animation Carousel feature for Australian market, deployed on Carousel Home Screen for TV models from 2019 and newer.",
+        "metrics": [
+          {
+            "name": "TV Model Compatibility",
+            "value": "2019 & Newer",
+            "normalized_value": 2019.0,
+            "unit": "year",
+            "trend": null,
+            "context": "Carousel Home Screen feature availability"
+          }
+        ],
+        "insights": [
+          "3D Animation Carousel feature has been implemented for the Australian market",
+          "Feature is available on TV models from 2019 onwards, indicating focus on newer device ecosystem",
+          "Carousel appears on the home screen, suggesting it's a prominent user-facing feature"
+        ],
+        "action_items": [
+          "Monitor adoption and usage metrics for the 3D Animation Carousel in AU market",
+          "Consider expansion to other markets if AU performance is positive",
+          "Evaluate potential for backward compatibility with pre-2019 TV models"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 11,
+      "analysis": {
+        "slide_type": "data",
+        "title": "3D Animation Carousel - KR",
+        "key_message": "Implementation of 3D Animation Carousel feature on Samsung TV home screens for 2019 and newer models in the Korea region.",
+        "metrics": [
+          {
+            "name": "TV Model Coverage",
+            "value": "2019 & Newer",
+            "normalized_value": 2019.0,
+            "unit": "year",
+            "trend": null,
+            "context": "Carousel Home Screen compatibility"
+          }
+        ],
+        "insights": [
+          "3D Animation Carousel feature has been deployed for Korean market",
+          "Feature is available on TV models from 2019 onwards, indicating backward compatibility for recent models",
+          "Visual implementation shown through multiple screen examples"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.75
+      }
+    },
+    {
+      "slide_number": 12,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Custom Creative Deliverables",
+        "key_message": "Multiple custom UI components were developed including an animated home screen unit and carousel implementations, with a specialized 3D animation carousel for DBT Group.",
+        "metrics": [],
+        "insights": [
+          "Custom home screen unit with animation capabilities was delivered",
+          "Multiple carousel implementations were created including a standard custom carousel",
+          "A specialized 3D animation carousel was developed specifically for DBT Group"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 13,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Creative Deliverables - Custom UI Components",
+        "key_message": "Three custom animated components were developed: a Home Screen Unit with Animation, a Custom Carousel, and a 3D Animation Carousel.",
+        "metrics": [],
+        "insights": [
+          "Multiple custom animated UI components were created for enhanced user experience",
+          "Focus on interactive and visually engaging elements including 3D animations",
+          "Deliverables include both standard carousel and advanced 3D carousel implementations"
+        ],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.75
+      }
+    },
+    {
+      "slide_number": 14,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Native Content Store Roadblock - Available Now",
+        "key_message": "LG Ad Solutions is offering a Native Content Store Roadblock product that provides 100% share of voice for advertisers targeting viewers seeking new content and apps, available across multiple markets with flexible creative formats including new video-enabled options.",
+        "metrics": [
+          {
+            "name": "Share of Voice",
+            "value": "100%",
+            "normalized_value": 100.0,
+            "unit": "%",
+            "trend": null,
+            "context": "Native Content Store Roadblock campaign"
+          },
+          {
+            "name": "Campaign Duration",
+            "value": "two weeks",
+            "normalized_value": null,
+            "unit": null,
+            "trend": null,
+            "context": "Time-frame options"
+          },
+          {
+            "name": "Creative Cards Minimum",
+            "value": "4x",
+            "normalized_value": 4.0,
+            "unit": null,
+            "trend": null,
+            "context": "Required creative assets"
+          }
+        ],
+        "insights": [
+          "New video-enabled format now available in addition to static ads",
+          "Product available across 5 major markets: US, UK, ES, DE, and BR",
+          "Supports TV models from 2017 onwards, providing broad reach",
+          "First-IO in model with specific campaign windows in Q2 FY25",
+          "Standard metrics plus Kochava tracking included in reporting"
+        ],
+        "action_items": [
+          "Consider booking one of the available time-frames: 1/1-1/15 or 2/15-2/28",
+          "Prepare minimum 4 creative cards in 970x250 format",
+          "Evaluate video-enabled format for enhanced engagement",
+          "Review Kochava reporting capabilities for campaign measurement"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 15,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Native InLine Banner - Ad Format & Availability",
+        "key_message": "LG is launching a new Native InLine Banner ad format available now across 6 markets, reaching 9 million monthly avails in the US with 3-4% scroll rate on newer webOS versions, rolling out to 63% of LG's footprint by end of year.",
+        "metrics": [
+          {
+            "name": "Monthly Avails",
+            "value": "9 Million",
+            "normalized_value": 9000000.0,
+            "unit": "avails",
+            "trend": null,
+            "context": "US market once fully rolled out"
+          },
+          {
+            "name": "Scroll Rate",
+            "value": "3-4%",
+            "normalized_value": 3.5,
+            "unit": "%",
+            "trend": null,
+            "context": "Newer webOS Versions"
+          },
+          {
+            "name": "LG Footprint Coverage",
+            "value": "63%",
+            "normalized_value": 63.0,
+            "unit": "%",
+            "trend": null,
+            "context": "By EOY, 2020+ TV models"
+          },
+          {
+            "name": "Banner Dimensions",
+            "value": "1770x221",
+            "normalized_value": null,
+            "unit": "pixels",
+            "trend": null,
+            "context": "Ad format specifications"
+          }
+        ],
+        "insights": [
+          "New Native InLine Banner format enriches content discovery for Media & Entertainment partners below the fold on LG Home Screen",
+          "Product is available now in 6 major markets (US, UK, ES, DE, IT, AU)",
+          "Supports multiple ad interactions: Click to App, Click to Deeplink, and Click to Video",
+          "Rolling out on LG TV models from 2020 onward, representing 63% of total LG footprint by end of year",
+          "Reporting includes standard metrics plus Lift and MMP (Mobile Measurement Partner) data",
+          "Available across ROS (Run of Site) and RBs (Rate Bases), optional for DS (Direct Sales)"
+        ],
+        "action_items": [
+          "Consider adoption of Native InLine Banner format for Media & Entertainment campaigns",
+          "Plan for minimum two creative swaps as required",
+          "Evaluate opportunity across the 9 million monthly US avails"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 16,
+      "analysis": {
+        "slide_type": "data",
+        "title": "CTV Video Branded Player - Available Now",
+        "key_message": "LG Ad Solutions is launching a CTV Video Branded Player that enables advertisers to create customizable branded experiences on Smart TVs, allowing viewers to subscribe to services like Disney+ Bundle directly from their screens with customizable messaging around :15/:30 second ads.",
+        "metrics": [],
+        "insights": [
+          "New CTV advertising format now available for advertisers",
+          "Offers customizable real estate surrounding the video ad window",
+          "Supports direct subscription functionality from the TV screen",
+          "Flexible messaging options including promotional offers, annual subscriptions, and bundle messaging",
+          "Supports standard :15 and :30 second ad formats"
+        ],
+        "action_items": [
+          "Consider implementing CTV Video Branded Player for Disney+ Bundle campaigns",
+          "Explore customization options for branded real estate around video ads",
+          "Evaluate messaging strategies for promotional offers within the player"
+        ],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 17,
+      "analysis": {
+        "slide_type": "transition",
+        "title": "Section 02 - Partnership Scorecard",
+        "key_message": "This slide introduces Section 02 of the presentation, which will focus on Partnership Scorecard metrics and performance.",
+        "metrics": [],
+        "insights": [],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    },
+    {
+      "slide_number": 18,
+      "analysis": {
+        "slide_type": "summary",
+        "title": "FY25 Partnership Scorecard",
+        "key_message": "Partnership scorecard showing significant progress across reporting, media planning, and Kochava integration, with key accomplishments including integrated weekly reporting, high-impact date tracking, and major asset scalability improvements (reduced from 10 to 3 assets).",
+        "metrics": [],
+        "insights": [
+          "Kochava has been successfully integrated into weekly reporting with updated lookback windows (7 day view-through, 1 day click)",
+          "High Impact Key Dates/Hold Tracker launched across US SAL & Bundle and expanded globally for Q2",
+          "Major asset scalability achievement: number of assets needed reduced from 10 to 3",
+          "Bundle category showing growth with all SKUs now offered on-device",
+          "Automated daily delivery reporting to AWS S3 bucket or SFTP is underway to replace email delivery",
+          "Privacy audience capability questionnaire sent 3/29 with LG completion deadline of 4/17",
+          "Placebo testing feasibility confirmed for measurement validation"
+        ],
+        "action_items": [
+          "Complete automated daily delivery reporting to AWS S3 bucket or SFTP",
+          "Finalize ADID deterministic matching once contract is signed",
+          "Complete Kochava User Journey Test validation",
+          "Align on incrementality measurement go-forward approach",
+          "LG to complete privacy audience capability questionnaire by 4/17",
+          "Continue targeting innovation and testing for Native ROS",
+          "Diversify paid products including CTV Video",
+          "Improve Bundle data analysis to view campaigns both holistically and separately"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 19,
+      "analysis": {
+        "slide_type": "data",
+        "title": "Progress Update: Measurement, Intelligence, Assets & Automation",
+        "key_message": "Significant progress achieved across measurement sophistication (12-market incrementality launch), business intelligence (QBRs and dashboards), and asset scalability (requirements reduced from 10 to 3 assets), with ongoing work in testing, creative optimization, and data analysis.",
+        "metrics": [
+          {
+            "name": "Incrementality Measurement Markets",
+            "value": "12 markets",
+            "normalized_value": 12.0,
+            "unit": "markets",
+            "trend": null,
+            "context": "LG1P Incrementality 'Mediaboost' Measurement live"
+          },
+          {
+            "name": "Asset Requirements Reduction",
+            "value": "10 to 3",
+            "normalized_value": 3.0,
+            "unit": "ad sizes",
+            "trend": "down",
+            "context": "Streamlined asset requirements - reduced from 10 to 3"
+          }
+        ],
+        "insights": [
+          "Incrementality measurement successfully launched across 12 global markets (US, UK, DE, AU, KR, JP, IT, ES, FR, GR, PL, SE)",
+          "Major asset scalability improvement: requirements reduced from 10 to 3 ad sizes, with ability to exclude InLine Banner",
+          "CPI reporting now integrated into weekly reports through Data Share Agreement",
+          "Bundle category showing growth with all SKUs now offered on-device, though data analysis needs improvement",
+          "Privacy and audience capability assessment in progress with questionnaire deadline of 4/17",
+          "Weekly Native ROS creative optimizations being performed based on CPA and CPE performance globally"
+        ],
+        "action_items": [
+          "Launch additional Kochava incrementality testing when ADID becomes available",
+          "Scope On-Device Search Data Monthly Output",
+          "Schedule EMEA Creative Summit",
+          "Test Content Store Roadblock in DE and IT markets",
+          "Prioritize video assets to increase Native Carousel performance",
+          "Complete audience capability questionnaire by 4/17",
+          "Align on go-forward approach for incrementality measurement solutions",
+          "Execute placebo testing for measurement validation",
+          "Develop holistic and separate analysis approach for Bundle and Standalone campaigns"
+        ],
+        "has_chart": false,
+        "has_comparison": true,
+        "confidence": 0.92
+      }
+    },
+    {
+      "slide_number": 20,
+      "analysis": {
+        "slide_type": "transition",
+        "title": "Disney+ on LG TVs",
+        "key_message": "This slide introduces Section 03, which will cover Disney+ performance and strategy on LG TV platforms, to be presented by Adam and Laura.",
+        "metrics": [],
+        "insights": [],
+        "action_items": [],
+        "has_chart": false,
+        "has_comparison": false,
+        "confidence": 0.95
+      }
+    }
+  ],
+  "metrics": {
+    "metrics": [
+      {
+        "original_value": "51%",
+        "metric_name": "Platform Activity Rate",
+        "normalized_value": 51.0,
+        "unit": "percentage",
+        "category": "reach",
+        "trend": "unknown",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Disney+ maintained active presence on the platform for over half of H2, indicating consistent market visibility",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "-22%",
+        "metric_name": "Cost Per Acquisition Change",
+        "normalized_value": -22.0,
+        "unit": "percentage",
+        "category": "efficiency",
+        "trend": "down",
+        "is_positive": true,
+        "comparison_baseline": "H1",
+        "change_percentage": -22.0,
+        "significance": "Significant 22% reduction in user acquisition costs compared to H1, demonstrating improved campaign efficiency",
+        "benchmark_notes": "Strong improvement driven by Content Store Roadblock strategy"
+      },
+      {
+        "original_value": "$45.44",
+        "metric_name": "Cost Per Acquisition",
+        "normalized_value": 45.44,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "down",
+        "is_positive": true,
+        "comparison_baseline": "H1 ($58.44)",
+        "change_percentage": -22.0,
+        "significance": "Current CPA for acquiring new users, representing a $13 improvement from H1's higher rate",
+        "benchmark_notes": "22% more efficient than previous half"
+      },
+      {
+        "original_value": "$1.8M",
+        "metric_name": "Total Acquisition Investment",
+        "normalized_value": 1800000.0,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "unknown",
+        "is_positive": null,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Total spend on acquisition campaigns in H2, yielding 40K new users",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "40K",
+        "metric_name": "New Users Acquired",
+        "normalized_value": 40000.0,
+        "unit": "users",
+        "category": "performance",
+        "trend": "unknown",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Total new user acquisitions in H2, achieved at improved efficiency compared to H1",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "0.36%",
+        "metric_name": "Click-Through Rate",
+        "normalized_value": 0.36,
+        "unit": "percentage",
+        "category": "engagement",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "benchmark (0.12%)",
+        "change_percentage": 200.0,
+        "significance": "Content Store Roadblock achieved CTR 3x higher than benchmark, indicating strong creative performance",
+        "benchmark_notes": "3x industry benchmark"
+      },
+      {
+        "original_value": "19%",
+        "metric_name": "Install-to-Acquisition Ratio",
+        "normalized_value": 19.0,
+        "unit": "percentage",
+        "category": "efficiency",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "other campaigns (15%)",
+        "change_percentage": null,
+        "significance": "Content Store Roadblock shows highest conversion rate from installs to acquired users",
+        "benchmark_notes": "Highest among all campaign types"
+      },
+      {
+        "original_value": "0.54%",
+        "metric_name": "Install Rate",
+        "normalized_value": 0.54,
+        "unit": "percentage",
+        "category": "performance",
+        "trend": "unknown",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Strong install rate for Content Store Roadblock campaigns",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "$220K",
+        "metric_name": "Lapsed User Re-engagement Investment",
+        "normalized_value": 220000.0,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "unknown",
+        "is_positive": null,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "First-time investment in lapsed audience targeting, yielding efficient re-engagement results",
+        "benchmark_notes": "New initiative in H2"
+      },
+      {
+        "original_value": "$4.82",
+        "metric_name": "Cost Per Engagement",
+        "normalized_value": 4.82,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "up",
+        "is_positive": false,
+        "comparison_baseline": "H1 ($2.03)",
+        "change_percentage": 137.4,
+        "significance": "Cost to re-engage lapsed users, bringing back 46.6K users at this rate",
+        "benchmark_notes": "Higher than H1 but still efficient for lapsed user targeting"
+      },
+      {
+        "original_value": "46.6K",
+        "metric_name": "Lapsed Users Re-engaged",
+        "normalized_value": 46600.0,
+        "unit": "users",
+        "category": "performance",
+        "trend": "unknown",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Successfully brought back nearly 47K previously lapsed users through targeted campaigns",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "$1.03M",
+        "metric_name": "Standalone Product Investment",
+        "normalized_value": 1030000.0,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "unknown",
+        "is_positive": null,
+        "comparison_baseline": "Bundle ($912K)",
+        "change_percentage": null,
+        "significance": "Investment in standalone Disney+ offering, $118K more than bundle campaigns",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "$912K",
+        "metric_name": "Bundle Product Investment",
+        "normalized_value": 912000.0,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "unknown",
+        "is_positive": null,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Combined investment in Duo and Trio bundle offerings",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "$113.25K",
+        "metric_name": "Added Value Received",
+        "normalized_value": 113250.0,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "unknown",
+        "is_positive": true,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Additional promotional value received (over 9M impressions) beyond paid investment",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "8%",
+        "metric_name": "Content Store Roadblock Investment Share",
+        "normalized_value": 8.0,
+        "unit": "percentage",
+        "category": "efficiency",
+        "trend": "unknown",
+        "is_positive": true,
+        "comparison_baseline": "16% of results",
+        "change_percentage": null,
+        "significance": "Content Store Roadblock represented only 8% of investment but drove 16% of new users, showing 2x efficiency",
+        "benchmark_notes": "2x return on investment share"
+      },
+      {
+        "original_value": "1.10%",
+        "metric_name": "Native ROS Install Rate",
+        "normalized_value": 1.1,
+        "unit": "percentage",
+        "category": "performance",
+        "trend": "up",
+        "is_positive": true,
+        "comparison_baseline": "other formats (0.22%-0.72%)",
+        "change_percentage": null,
+        "significance": "Highest install rate achieved by Native ROS targeting non-installers, indicating strong targeting effectiveness",
+        "benchmark_notes": "Highest install rate across all ad formats"
+      },
+      {
+        "original_value": "$5.01",
+        "metric_name": "Native ROS Cost Per Acquisition",
+        "normalized_value": 5.01,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "down",
+        "is_positive": true,
+        "comparison_baseline": "overall CPA ($45.44)",
+        "change_percentage": -89.0,
+        "significance": "Most efficient CPA achieved through Native ROS campaigns, significantly lower than other formats",
+        "benchmark_notes": "Most efficient acquisition channel"
+      },
+      {
+        "original_value": "$88.66",
+        "metric_name": "Content Store Roadblock CPA",
+        "normalized_value": 88.66,
+        "unit": "USD",
+        "category": "cost",
+        "trend": "unknown",
+        "is_positive": false,
+        "comparison_baseline": "overall CPA ($45.44)",
+        "change_percentage": 95.1,
+        "significance": "Higher CPA for premium Content Store placements, but delivers highest engagement and brand visibility",
+        "benchmark_notes": "Premium placement with highest CTR and install-to-acquisition ratio"
+      },
+      {
+        "original_value": "143M",
+        "metric_name": "Total Impressions",
+        "normalized_value": 143000000.0,
+        "unit": "impressions",
+        "category": "reach",
+        "trend": "unknown",
+        "is_positive": null,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Total ad impressions delivered across all campaigns in H2",
+        "benchmark_notes": null
+      },
+      {
+        "original_value": "10.5M",
+        "metric_name": "Unique Reach",
+        "normalized_value": 10500000.0,
+        "unit": "users",
+        "category": "reach",
+        "trend": "unknown",
+        "is_positive": null,
+        "comparison_baseline": null,
+        "change_percentage": null,
+        "significance": "Total unique users reached through acquisition campaigns",
+        "benchmark_notes": null
+      }
+    ],
+    "summary": "Disney+ demonstrated strong performance in H2 with a 22% improvement in acquisition efficiency (CPA down to $45.44 from $58.44 in H1). The $1.8M investment acquired 40K new users while the Content Store Roadblock strategy proved highly effective, delivering 3x benchmark CTR and the highest install-to-acquisition ratio at 19%. The lapsed user re-engagement initiative successfully brought back 46.6K users. Native ROS emerged as the most cost-efficient channel at $5.01 CPA. Overall, the campaign showed improved efficiency and strong performance across engagement metrics.",
+    "top_performers": [
+      "Cost Per Acquisition improvement (-22% vs H1)",
+      "Content Store Roadblock CTR (0.36%, 3x benchmark)",
+      "Native ROS efficiency ($5.01 CPA, most efficient channel)",
+      "Install-to-Acquisition Ratio (19% for Content Store Roadblock)",
+      "Lapsed user re-engagement (46.6K users brought back)"
+    ],
+    "areas_of_concern": [
+      "Cost Per Engagement for lapsed users increased 137% vs H1 ($4.82 vs $2.03)",
+      "Content Store Roadblock CPA ($88.66) significantly higher than overall average, though justified by premium placement",
+      "Standalone investment ($1.03M) outpaced Bundle ($912K) but ROI comparison needed"
+    ]
+  },
+  "charts": [
+    {
+      "slide_number": 31,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 31,
+      "reconstruction": {
+        "chart_type": "kpi_card",
+        "title": "Cost per Acquired User (CPA) Performance",
+        "x_axis_label": null,
+        "y_axis_label": null,
+        "data_series": [
+          {
+            "label": "Previous Half CPA (Roadblocks + AV Not Installed)",
+            "values": [
+              58.52
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "Current Half CPA (with Content Store)",
+            "values": [
+              45.59
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "YTTV Q3'24 CPA",
+            "values": [
+              25.42
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "YTTV Q3'24 Spend",
+            "values": [
+              1750000.0
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "YTTV Q3'24 Acquired Users",
+            "values": [
+              69000.0
+            ],
+            "unit": "users"
+          },
+          {
+            "label": "Intenders Rate",
+            "values": [
+              85.0
+            ],
+            "unit": "%"
+          }
+        ],
+        "data_table": [
+          [
+            "Metric",
+            "Value",
+            "Unit"
+          ],
+          [
+            "Previous Half CPA",
+            "58.52",
+            "$"
+          ],
+          [
+            "Current Half CPA",
+            "45.59",
+            "$"
+          ],
+          [
+            "CPA Reduction vs Previous Half",
+            "22",
+            "%"
+          ],
+          [
+            "YTTV Q3'24 CPA",
+            "25.42",
+            "$"
+          ],
+          [
+            "YTTV CPA Reduction",
+            "54",
+            "%"
+          ],
+          [
+            "YTTV Q3'24 Spend",
+            "1,750,000",
+            "$"
+          ],
+          [
+            "YTTV Acquired Users",
+            "69,000",
+            "users"
+          ],
+          [
+            "Intenders Rate",
+            "85",
+            "%"
+          ]
+        ],
+        "insights": [
+          "Cost per Acquired User decreased by 22% in current half compared to previous half",
+          "Content Store Roadblocks significantly improved CPA efficiency",
+          "YTTV achieved $25.42 CPA in Q3'24, representing a 54% decrease",
+          "YTTV spent $1.75M to acquire 69,000 net new users in Q3'24",
+          "85% of installers became intenders (did NOT become acquired users)",
+          "Previous half CPA was $58.52 for roadblocks + AV Not Installed campaigns"
+        ],
+        "trends": [
+          "Significant downward trend in CPA costs (-22% half-over-half)",
+          "Content Store Roadblocks driving substantial cost efficiency improvements (-54% for YTTV)",
+          "Strong performance in user acquisition metrics during Disney FY H2'24"
+        ],
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 33,
+      "reconstruction": {
+        "chart_type": "kpi_card",
+        "title": "Cost per Engaged User (CPE) - Disney+ FY24-H2",
+        "x_axis_label": null,
+        "y_axis_label": null,
+        "data_series": [
+          {
+            "label": "All Targeted (H1)",
+            "values": [
+              2.03
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "Lapsed Targeting",
+            "values": [
+              0.66
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "Q1 Lapsed",
+            "values": [
+              0.59
+            ],
+            "unit": "$"
+          },
+          {
+            "label": "Q2 Lapsed",
+            "values": [
+              0.66
+            ],
+            "unit": "$"
+          }
+        ],
+        "data_table": [
+          [
+            "Metric",
+            "CPE Value"
+          ],
+          [
+            "All Targeted (H1)",
+            "$2.03"
+          ],
+          [
+            "Lapsed Targeting",
+            "$0.66"
+          ],
+          [
+            "Q1 Lapsed",
+            "$0.59"
+          ],
+          [
+            "Q2 Lapsed",
+            "$0.66"
+          ]
+        ],
+        "insights": [
+          "Lapsed user targeting achieved 67% lower CPE ($0.66) compared to All Targeted approach ($2.03)",
+          "Engaged User defined as launching Disney+ for 2+ sessions of 30+ minutes within 7-day window",
+          "Q1 and Q2 Lapsed targeting showed consistent performance around $0.60-$0.66 CPE",
+          "First time campaign focused specifically on Lapsed opportunity audience"
+        ],
+        "trends": [
+          "Lapsed audience targeting demonstrates significantly better cost efficiency",
+          "Consistent CPE performance across Q1 and Q2 for Lapsed targeting",
+          "Strategic shift from broad targeting to focused Lapsed user acquisition"
+        ],
+        "confidence": 0.85
+      }
+    },
+    {
+      "slide_number": 32,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 34,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 34,
+      "reconstruction": {
+        "chart_type": "comparison",
+        "title": "Carousel Unit Performance Comparison",
+        "x_axis_label": "Ad Format Type",
+        "y_axis_label": "Performance Multiplier",
+        "data_series": [
+          {
+            "label": "Performance Multiplier",
+            "values": [
+              32.0,
+              14.0,
+              1.0
+            ],
+            "unit": "x"
+          }
+        ],
+        "data_table": [
+          [
+            "Ad Format",
+            "Performance Multiplier"
+          ],
+          [
+            "Static",
+            "32x"
+          ],
+          [
+            "Companion Video",
+            "14x"
+          ],
+          [
+            "3D",
+            "1x"
+          ]
+        ],
+        "insights": [
+          "Static carousel units significantly outperform other formats with 32x performance",
+          "Companion Video shows moderate performance at 14x",
+          "3D format serves as the baseline at 1x performance",
+          "Data is based on Disney FY H2'24 (April-September 2024) campaigns",
+          "Analysis excludes multicard carousel units"
+        ],
+        "trends": [
+          "Static format demonstrates the highest engagement or conversion rate",
+          "Clear performance hierarchy: Static > Companion Video > 3D",
+          "Significant performance gap between Static and other formats suggests strong user preference for static carousel content"
+        ],
+        "confidence": 0.9
+      }
+    },
+    {
+      "slide_number": 37,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 38,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 24,
+      "error": "'NoneType' object is not subscriptable"
+    },
+    {
+      "slide_number": 24,
+      "reconstruction": {
+        "chart_type": "comparison",
+        "title": "US: Paid Media Improves App Engagement",
+        "x_axis_label": "User Group",
+        "y_axis_label": "Engagement Score",
+        "data_series": [
+          {
+            "label": "Engagement Score",
+            "values": [
+              94.0,
+              95.0
+            ],
+            "unit": "score"
+          }
+        ],
+        "data_table": [
+          [
+            "User Group",
+            "Engagement Score"
+          ],
+          [
+            "Exposed",
+            "94"
+          ],
+          [
+            "Last Exposed",
+            "95"
+          ]
+        ],
+        "insights": [
+          "Paid media campaigns show positive impact on app engagement",
+          "Last exposed users show slightly higher engagement (95) compared to exposed users (94)",
+          "Data based on Disney+ app usage during H2 FY'24 (April-September 2024)",
+          "Analysis includes content from The Acolyte series (31-41 minute episodes)"
+        ],
+        "trends": [
+          "Minimal difference between exposed and last exposed groups suggests sustained engagement effect",
+          "App engagement remains high across both user segments"
+        ],
+        "confidence": 0.6
+      }
+    }
+  ],
+  "entities": {
+    "entities": [
+      {
+        "name": "Disney+",
+        "entity_type": "brand",
+        "normalized_name": "Disney Plus",
+        "description": "Streaming service and primary client in this QBR",
+        "mentions": 150,
+        "related_entities": [
+          "LG Ad Solutions",
+          "Hulu",
+          "ESPN",
+          "Disney+ Bundle"
+        ]
+      },
+      {
+        "name": "LG Ad Solutions",
+        "entity_type": "company",
+        "normalized_name": "LG Ad Solutions",
+        "description": "Advertising platform provider and presenter of this QBR",
+        "mentions": 80,
+        "related_entities": [
+          "Disney+",
+          "Samsung",
+          "LG Smart TVs"
+        ]
+      },
+      {
+        "name": "Hulu",
+        "entity_type": "brand",
+        "normalized_name": "Hulu",
+        "description": "Streaming service integrated with Disney+",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+",
+          "Disney+ Bundle"
+        ]
+      },
+      {
+        "name": "ESPN",
+        "entity_type": "brand",
+        "normalized_name": "ESPN",
+        "description": "Sports streaming app launched on LG platform",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Samsung",
+        "entity_type": "company",
+        "normalized_name": "Samsung",
+        "description": "Competitor TV manufacturer",
+        "mentions": 3,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Kochava",
+        "entity_type": "company",
+        "normalized_name": "Kochava",
+        "description": "Mobile measurement partner for attribution and analytics",
+        "mentions": 8,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Adam Fishman",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "VP M&E Sales at LG Ad Solutions",
+        "mentions": 3,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Megan Kovacs",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Managing Director at LG Ad Solutions",
+        "mentions": 4,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Laura Schneider",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Sales Director at LG Ad Solutions",
+        "mentions": 5,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Andrew Jensen",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Tech Solutions at LG Ad Solutions",
+        "mentions": 2,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Julia Tomich",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Account Management at LG Ad Solutions",
+        "mentions": 2,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Nicole Curry",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Advanced Reporting at LG Ad Solutions",
+        "mentions": 2,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Widya Musgrove",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Advanced Reporting at LG Ad Solutions",
+        "mentions": 2,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Ross Gilman",
+        "entity_type": "person",
+        "normalized_name": null,
+        "description": "Advanced Reporting at LG Ad Solutions",
+        "mentions": 1,
+        "related_entities": [
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Content Store Roadblock",
+        "entity_type": "campaign",
+        "normalized_name": null,
+        "description": "High-performing advertising placement in LG Content Store with 100% SOV",
+        "mentions": 25,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Native Roadblocks",
+        "entity_type": "campaign",
+        "normalized_name": null,
+        "description": "Home screen advertising takeovers on LG TVs",
+        "mentions": 30,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Disney+ Bundle",
+        "entity_type": "product",
+        "normalized_name": "Disney Plus Bundle",
+        "description": "Bundled subscription offering including Disney+, Hulu, and ESPN",
+        "mentions": 20,
+        "related_entities": [
+          "Disney+",
+          "Hulu",
+          "ESPN"
+        ]
+      },
+      {
+        "name": "Disney+ Standalone",
+        "entity_type": "product",
+        "normalized_name": "Disney Plus Standalone",
+        "description": "Standalone Disney+ subscription",
+        "mentions": 15,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Wish",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Disney content title promoted in campaigns",
+        "mentions": 3,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Taylor Swift: The Era's Tour",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Concert film available on Disney+",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Vanderpump Villa",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Reality show on Disney+",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "Shogun",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Drama series on Disney+",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "The Marvels",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Marvel film on Disney+",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "The Acolyte",
+        "entity_type": "product",
+        "normalized_name": null,
+        "description": "Star Wars series on Disney+ with 31-41 minute episodes",
+        "mentions": 1,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "United States",
+        "entity_type": "location",
+        "normalized_name": "US",
+        "description": "Primary market for this QBR analysis",
+        "mentions": 100,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "United Kingdom",
+        "entity_type": "location",
+        "normalized_name": "UK",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 8,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Germany",
+        "entity_type": "location",
+        "normalized_name": "DE",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 6,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Australia",
+        "entity_type": "location",
+        "normalized_name": "AU",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 6,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "South Korea",
+        "entity_type": "location",
+        "normalized_name": "KR",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 6,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Italy",
+        "entity_type": "location",
+        "normalized_name": "IT",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Spain",
+        "entity_type": "location",
+        "normalized_name": "ES",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Japan",
+        "entity_type": "location",
+        "normalized_name": "JP",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "France",
+        "entity_type": "location",
+        "normalized_name": "FR",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "Brazil",
+        "entity_type": "location",
+        "normalized_name": "BR",
+        "description": "International market for Disney+ campaigns",
+        "mentions": 2,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "FY24 H2",
+        "entity_type": "date",
+        "normalized_name": "April-September 2024",
+        "description": "Fiscal year 2024 second half reporting period",
+        "mentions": 80,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "July 2024",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Month within reporting period",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "August 2024",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Month within reporting period",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "September 2024",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Month within reporting period",
+        "mentions": 5,
+        "related_entities": [
+          "Disney+"
+        ]
+      },
+      {
+        "name": "April 2024",
+        "entity_type": "date",
+        "normalized_name": null,
+        "description": "Month within reporting period, Content Store Roadblock launch",
+        "mentions": 8,
+        "related_entities": [
+          "Disney+",
+          "Content Store Roadblock"
+        ]
+      },
+      {
+        "name": "CPA",
+        "entity_type": "metric_name",
+        "normalized_name": "Cost Per Acquisition",
+        "description": "Cost to acquire a net new user",
+        "mentions": 40,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "CPE",
+        "entity_type": "metric_name",
+        "normalized_name": "Cost Per Engagement",
+        "description": "Cost to engage a user",
+        "mentions": 25,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "CTR",
+        "entity_type": "metric_name",
+        "normalized_name": "Click-Through Rate",
+        "description": "Rate of clicks on advertisements",
+        "mentions": 15,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      },
+      {
+        "name": "MAU",
+        "entity_type": "metric_name",
+        "normalized_name": "Monthly Active Users",
+        "description": "Monthly active users metric",
+        "mentions": 8,
+        "related_entities": [
+          "Disney+",
+          "LG Ad Solutions"
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "source": "Disney+",
+        "target": "LG Ad Solutions",
+        "relation_type": "advertises_with",
+        "description": "Disney+ is a client of LG Ad Solutions, investing $3.8M in H2 FY24"
+      },
+      {
+        "source": "Disney+",
+        "target": "Hulu",
+        "relation_type": "bundles_with",
+        "description": "Disney+ offers bundled subscriptions with Hulu"
+      },
+      {
+        "source": "Disney+",
+        "target": "ESPN",
+        "relation_type": "bundles_with",
+        "description": "Disney+ offers bundled subscriptions with ESPN"
+      },
+      {
+        "source": "LG Ad Solutions",
+        "target": "Kochava",
+        "relation_type": "partners_with",
+        "description": "LG uses Kochava for mobile measurement and attribution"
+      },
+      {
+        "source": "Content Store Roadblock",
+        "target": "Disney+",
+        "relation_type": "campaign_for",
+        "description": "High-performing advertising campaign delivering $25.50 CPA"
+      },
+      {
+        "source": "Adam Fishman",
+        "target": "LG Ad Solutions",
+        "relation_type": "works_for",
+        "description": "VP M&E Sales"
+      },
+      {
+        "source": "Megan Kovacs",
+        "target": "LG Ad Solutions",
+        "relation_type": "works_for",
+        "description": "Managing Director"
+      },
+      {
+        "source": "Laura Schneider",
+        "target": "LG Ad Solutions",
+        "relation_type": "works_for",
+        "description": "Sales Director"
+      },
+      {
+        "source": "LG Ad Solutions",
+        "target": "Samsung",
+        "relation_type": "competes_with",
+        "description": "Both are TV manufacturers competing in the smart TV market"
+      },
+      {
+        "source": "Disney+",
+        "target": "United States",
+        "relation_type": "markets_in",
+        "description": "Primary market with $3.8M investment in H2 FY24"
+      },
+      {
+        "source": "Wish",
+        "target": "Disney+",
+        "relation_type": "content_on",
+        "description": "Disney film promoted in campaigns"
+      },
+      {
+        "source": "Shogun",
+        "target": "Disney+",
+        "relation_type": "content_on",
+        "description": "Drama series promoted in campaigns"
+      }
+    ],
+    "companies": [
+      "LG Ad Solutions",
+      "Samsung",
+      "Kochava"
+    ],
+    "products": [
+      "Disney+ Bundle",
+      "Disney+ Standalone",
+      "Wish",
+      "Taylor Swift: The Era's Tour",
+      "Vanderpump Villa",
+      "Shogun",
+      "The Marvels",
+      "The Acolyte",
+      "ESPN App",
+      "Hulu on Disney+"
+    ],
+    "people": [
+      "Adam Fishman",
+      "Megan Kovacs",
+      "Laura Schneider",
+      "Andrew Jensen",
+      "Julia Tomich",
+      "Nicole Curry",
+      "Widya Musgrove",
+      "Ross Gilman"
+    ],
+    "markets": [
+      "United States",
+      "United Kingdom",
+      "Germany",
+      "Australia",
+      "South Korea",
+      "Italy",
+      "Spain",
+      "Japan",
+      "France",
+      "Brazil"
+    ],
+    "campaigns": [
+      "Content Store Roadblock",
+      "Native Roadblocks"
+    ],
+    "dates": [
+      "FY24 H2",
+      "April 2024",
+      "July 2024",
+      "August 2024",
+      "September 2024"
+    ]
+  },
+  "executive_summary": {
+    "summary": "Disney+ demonstrated strong performance on LG Ads during FY24 H2 (April-September 2024), investing $1.8M in acquisition campaigns that delivered 40K new users at a highly efficient $45.44 CPA\u2014representing a 22% improvement versus H1. The standout innovation was the Content Store Roadblock, which despite representing only 8% of budget, drove 16% of new user acquisitions at a $25.50 CPA, 71% more efficient than traditional roadblocks. The partnership expanded significantly with Disney+ active 51% of H2 through 8 home screen takeovers and added value support totaling $113K.\n\nHowever, competitive analysis reveals concerning trends. Disney+ ranks #8 among M&E partners with an 88 index versus top competitors, allowing rivals to achieve greater share of voice. The platform's MAU growth on LG TVs significantly lags the overall LG universe growth, with Disney+ reaching only 4.5M (24%) of the addressable audience monthly. With 78% of LG users having the app installed but 63% classified as lapsed, there's substantial opportunity to improve retention and re-engagement through more consistent rotational presence beyond premiere-focused roadblocks.",
+    "key_wins": [
+      "Achieved $45.44 CPA for new user acquisition, 22% more efficient than H1 ($58.52)",
+      "Content Store Roadblock delivered exceptional performance: $25.50 CPA with 19% install-to-acquisition ratio and 0.54% install rate",
+      "First-time Lapsed audience targeting achieved efficient $4.82 CPE, re-engaging 46.6K users",
+      "Secured FY25 XLOB Partnership approval at $17M, demonstrating strong commitment",
+      "Exposed audience showed +26% increase in average viewing time (94 mins vs 74 mins)"
+    ],
+    "areas_for_improvement": [
+      "Competitive positioning: Disney+ ranks #8 with 88 index versus top 20 M&E accounts, allowing competitors greater share of voice",
+      "Platform growth disparity: Disney+ MAU growth significantly lags LG universe expansion",
+      "High lapsed user rate: 63% of installed base classified as lapsed (not used in 60 days)",
+      "Limited sustained presence: Only reaching 24% (4.5M) of LG universe monthly on average, primarily through roadblocks rather than consistent rotational campaigns"
+    ],
+    "recommendations": [
+      "Increase investment in rotational ROS campaigns targeting Not Installed (22% of universe) and Lapsed (63% of installed base) audiences to improve sustained presence and retention",
+      "Expand Content Store Roadblock usage given its 71% CPA efficiency advantage and strong performance metrics",
+      "Shift creative strategy: reduce static carousel usage (68% of H2, lowest performing) in favor of companion video and 3D animation formats that drive 2-3x better engagement",
+      "Implement more consistent always-on presence to close the competitive gap and improve MAU growth trajectory on LG platform",
+      "Leverage new product innovations including InLine Banner, CTV Video Branded Player, and video-enabled Content Store to diversify media mix"
+    ],
+    "next_steps": [
+      "Finalize ADID integration with Kochava for deterministic matching and enhanced measurement capabilities",
+      "Launch automated daily delivery reporting to AWS S3 bucket to improve data accessibility",
+      "Execute Content Store Roadblock tests in Germany and Italy markets (Q2 FY25)",
+      "Implement targeting innovation testing for Native ROS to optimize audience strategies",
+      "Schedule EMEA Creative Summit to scale successful US creative approaches globally"
+    ],
+    "overall_sentiment": "mixed",
+    "key_metrics_highlighted": [
+      "$45.44 CPA (22% improvement vs H1)",
+      "40.2K qualified acquisitions from $1.8M investment",
+      "263.5K total installs with 11.8M unique reach",
+      "$4.82 CPE for lapsed user re-engagement",
+      "94 minutes average viewing duration for exposed audience (+26% vs baseline)"
+    ],
+    "time_period_covered": "FY24 H2: April - September 2024"
+  },
+  "sections": [
+    {
+      "name": "Introduction & Overview",
+      "description": "Opening slides covering the presentation title, team introductions, agenda overview, and high-level partnership highlights for FY24",
+      "start_slide": 1,
+      "end_slide": 4,
+      "subsections": []
+    },
+    {
+      "name": "LG Updates",
+      "description": "Comprehensive overview of LG Ad Solutions platform capabilities, market position, new advertising formats, home screen upgrades, 3D animation features, and custom creative deliverables",
+      "start_slide": 5,
+      "end_slide": 16,
+      "subsections": [
+        {
+          "name": "Platform Scale & Market Position",
+          "description": "LG's global and US market reach, competitive positioning against Samsung and other OEMs",
+          "start_slide": 6,
+          "end_slide": 7
+        },
+        {
+          "name": "Home Screen & Creative Innovations",
+          "description": "Home screen advertising upgrades, 3D animation carousel implementations across markets (US, AU, KR), and custom UI components",
+          "start_slide": 8,
+          "end_slide": 13
+        },
+        {
+          "name": "New Ad Products & Formats",
+          "description": "Launch of new advertising products including Native Content Store Roadblock, Native InLine Banner, and CTV Video Branded Player",
+          "start_slide": 14,
+          "end_slide": 16
+        }
+      ]
+    },
+    {
+      "name": "Partnership Scorecard",
+      "description": "Review of partnership performance metrics, progress updates on measurement capabilities, business intelligence, and automation initiatives",
+      "start_slide": 17,
+      "end_slide": 19,
+      "subsections": []
+    },
+    {
+      "name": "Disney+ on LG TVs",
+      "description": "Section focusing on Disney+ performance and strategy on LG TV platform (section header only in provided data)",
+      "start_slide": 20,
+      "end_slide": 20,
+      "subsections": []
+    }
+  ]
+}

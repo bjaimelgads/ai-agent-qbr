@@ -9,6 +9,7 @@ class Query(BaseModel):
     """User query."""
 
     question: str
+    comparison_intent: bool | None = None
 
 
 class SearchResult(BaseModel):
@@ -45,3 +46,16 @@ class AgentCapabilitiesResult(BaseModel):
 
     capabilities_text: str
     sample_queries: list[str]
+
+
+class ComparisonIntentArgs(BaseModel):
+    """Arguments for comparison intent detection."""
+
+    question: str
+
+
+class ComparisonIntentResult(BaseModel):
+    """Comparison intent detection result."""
+
+    comparison_intent: bool
+    reason: str | None = None

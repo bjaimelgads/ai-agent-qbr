@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-01-21T15:51:00.725999",
-  "document": "decks/agentiv_disney_h1.pptx",
-  "total_slides": 82,
-  "total_metrics_found": 238,
-  "total_charts_detected": 43,
+  "generated_at": "2026-01-23T09:06:27.840259",
+  "document": "/home/brunojaime/Documents/Projects/mcp-projects/LGAds/ai-agent-qbr/qbr_extraction/decks/Disney+ US FY24 H2.pptx",
+  "total_slides": 69,
+  "total_metrics_found": 301,
+  "total_charts_detected": 42,
   "llm_tasks": {
     "slide_analysis": {
       "description": "Analyze each slide to extract structured insights",
       "task_type": "per_slide",
-      "count": 82,
+      "count": 69,
       "expected_output": {
         "slide_type": "string (title, data, chart, summary, transition)",
         "key_message": "string",
@@ -21,7 +21,7 @@
     "metric_normalization": {
       "description": "Normalize and categorize all extracted metrics",
       "task_type": "batch",
-      "count": 238,
+      "count": 301,
       "expected_output": {
         "metric_name": "string",
         "value_normalized": "float",
@@ -35,7 +35,7 @@
     "chart_reconstruction": {
       "description": "Reconstruct chart data from text elements",
       "task_type": "per_chart",
-      "count": 43,
+      "count": 42,
       "expected_output": {
         "chart_type": "string",
         "title": "string",
@@ -96,9 +96,9 @@
     "image_analysis"
   ],
   "estimated_llm_calls": {
-    "slide_analysis": 82,
+    "slide_analysis": 69,
     "metric_normalization": 1,
-    "chart_reconstruction": 43,
+    "chart_reconstruction": 42,
     "executive_summary": 1,
     "entity_extraction": 1,
     "image_analysis": "depends on image count"

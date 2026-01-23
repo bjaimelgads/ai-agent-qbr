@@ -28,6 +28,7 @@ dependencies = [
     { name = "aiosqlite" },
     { name = "databricks-sdk" },
     { name = "dspy" },
+    { name = "faiss-cpu" },
     { name = "fastapi" },
     { name = "penguiflow", extra = ["planner"] },
     { name = "pydantic" },
@@ -59,7 +60,6 @@ observability = [
     { name = "mlflow" },
 ]
 retrieval = [
-    { name = "faiss-cpu" },
     { name = "numpy" },
     { name = "sentence-transformers" },
 ]
@@ -71,7 +71,7 @@ requires-dist = [
     { name = "databricks-sdk", specifier = ">=0.57.0" },
     { name = "dspy", specifier = ">=3.1" },
     { name = "dspy", marker = "extra == 'extraction'", specifier = ">=3.1" },
-    { name = "faiss-cpu", marker = "extra == 'retrieval'", specifier = ">=1.8.0" },
+    { name = "faiss-cpu", specifier = ">=1.8.0" },
     { name = "fastapi", specifier = ">=0.115.2" },
     { name = "greenlet", marker = "extra == 'extraction'", specifier = ">=3.3.0" },
     { name = "kreuzberg", marker = "extra == 'extraction'", specifier = "==4.0.0" },

@@ -454,7 +454,11 @@ class AiAgentQbrOrchestrator:
                 "retrieval_top_k": self._config.retrieval_top_k,
                 "retrieval_min_score": self._config.retrieval_min_score,
                 "retrieval_include_document_path": self._config.retrieval_include_document_path,
+                "comparison_top_docs": self._config.comparison_top_docs,
+                "comparison_per_doc_k": self._config.comparison_per_doc_k,
             }
+            if self._config.comparison_stage1_top_k is not None:
+                tool_context["comparison_stage1_top_k"] = self._config.comparison_stage1_top_k
 
             with self._mlflow_trace.span(
                 name="planner",

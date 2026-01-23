@@ -1,0 +1,526 @@
+[
+  {
+    "slide_number": 31,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "-22%",
+      "22%",
+      "15%",
+      "-22%",
+      "85%",
+      "54%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 31,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Cost per Acquired User (CPA): Cost to acquire a net new user",
+      "- Intenders = Installers who did NOT become an acquired user Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u201924 (April - September 2024); CPA Based on ROS Not Installed, Roadblocks and Content Store RB | Inclusive of Paid + AV",
+      "### Notes:\n-22% cost-per-acquired user this half vs last!! Last half = 58.52 with rb + AV Not Installed so content store really helped drive down **85% Intenders - Audience  recommendation   Example: \u201cYTTV spent $1.75M to acquire 69k net new YTTV acquired users in Q3\u201924, delivering CPA of $25.42  This represents a decrease of 54% due to the Content Store Roadblocks\u201d  58.52 CPA for roadblocks only last half"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 33,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Engaged User: any user that launches Disney+ for 2 or more +30 minute session within 7 day attribution window",
+      "- Cost per Engaged User (CPE): Cost to engage a Lapsed user",
+      "- Source: LG Ad Solutions TV Campaigns Data Disney+ FY24-H2 2024. | CPE Based on ROS Lapsed Targeting.",
+      "### Notes:\nFirst time focused in on Lapsed opportunity audience for Rotational H1 CPE: $2.03 All Targeted, breakout Lapsed last time \u2014  0.66 Q1 had 59 cent and Q2 had 66 cent in appendix only H"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 32,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "19%",
+      "0.36%",
+      "0.54%",
+      "1.10%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 34,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "0.16%",
+      "0.20%",
+      "0.36%",
+      "17.92%",
+      "17.19%",
+      "25.09%",
+      "0.22%",
+      "0.72%",
+      "0.12%",
+      "68%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 34,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Static: 32x",
+      "- Companion Video: 14x",
+      "- 3D: 1x",
+      "- Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u201924 (April - September 2024): Carousel Units only. Excludes multicard.",
+      "### Notes:\nFLAGGING MULTI-CARD CPA"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 37,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "8%",
+      "16%",
+      "100%",
+      "100%",
+      "8%",
+      "12.6%",
+      "15.9%",
+      "71%",
+      "185%",
+      "8%",
+      "12.6%",
+      "15.9%",
+      "71%",
+      "185%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 38,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "37%",
+      "8%",
+      "12.6%",
+      "15.9%",
+      "71%",
+      "185%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 24,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+26%",
+      "+26%",
+      "+30%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 24,
+    "chart_type": "table",
+    "raw_elements": [
+      "- US: Paid Media Improves App Engagement",
+      "- Source: LG Ads 1P App Usage x Campaign data during Disney FY H2\u201924 (April - September 2024)",
+      "### Notes:\nAdam, Laura, Megan 1 more minute for exposed vs last  exposed  (94 vs 95) How long was most of the content The Acylote (31 to 41 mins)?  Source [INTERNAL USE]: https://docs.google.com/spreadsheets/d/16MTqRfO1MDezo3zsvD0oaAizHDXerLNyhInRRp1sjYo/edit#gid=1055808154"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 23,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "22%",
+      "63%",
+      "78%",
+      "37%",
+      "76%",
+      "24%",
+      "40%",
+      "60%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 23,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Installed: All active LG TV users who had the app installed at some point. Not Installed: All active LG TV users who do not have the app installed.",
+      "- Lapsed: All active LG TV users who did not use the app within the last 60 days. Active: All active LG TV users who used the app within the last 60 days.",
+      "- Source: LG Ads\u2019 1PD during Disney FY Q4\u201924 (July - September 2024). Q3\u201924 data: Installed = 76%, Not Installed = 24%, Active = 40%, Lapsed = 60%.",
+      "### Notes:\nLAPSED ROS - $220k Not Installed ROS: $80k 300k over the course of 6 months Adam, Laura, Megan Lapsed Audiences  Comparing end of June to end of September H2 Spend: CSRB: $163KLapsed ROS: $220K Not Installed ROS: $80K RB: $1.59M"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 26,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "18%",
+      "14%",
+      "31%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 26,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Investment:\n- $2.05M",
+      "- Total Installs:\n- 263.5K",
+      "- Total Launches:\n- 32.5M",
+      "- Source: LG Ads 1P Campaign Data during Disney FY H2\u201924 (April - September 2024)",
+      "- Source: LG Ad Solutions TV Campaigns Data.",
+      "### Notes:\nUnique reach deduped  ** $13 CPA Decrease from H1 - confirm Last H2 stats: *** METHODOLOGY CHANGED!  Total installs: 179K Launches: 40M CPA: $27.29 CPE: $0.59 Average Duration: 94.4M Unique Reach: 13M Avg Monthly Freq: 4.4x 2H24: Frequency Overall frequency = 12X Apr: 3.4x May: 3.9x Jun:8.2x July: 1.6x Aug: 5.0x Sept:6.5x 2H24: Unique device reach Total UDs: 11.75M Apr: 1.78M May: 4.13M Jun:6.79M July: 496.8K Aug: 6.56M Sept:7.49M Vs H1 H2 had 18% more investment, a 14% more efficient CPA, and 31% more installs"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 28,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+12%",
+      "+29%",
+      "+36%",
+      "+12%",
+      "+31%",
+      "-22%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 27,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "1.10%",
+      "0.09%",
+      "0.54%",
+      "8%",
+      "11%",
+      "4%",
+      "77%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 15,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Banner: 1770x221",
+      "- Markets: US, UK, ES, DE, IT, & AU",
+      "- Note: The LG Ad Solutions Product Roadmap is subject to change and is not a guarantee."
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 14,
+    "chart_type": "table",
+    "raw_elements": [
+      "- TV Models: 2017+",
+      "- Markets: US, UK, ES, DE & BR",
+      "- Ad Format: 970x250 (static)",
+      "- Static: 970\u00d7250 Static JPG or PNG. No animated GIFs.",
+      "  - Open: 1/1-1/15 & 2/15-2/28",
+      "- Note: The LG Ad Solutions Product Roadmap is subject to change and is not a guarantee."
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 7,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "94%",
+      "97%",
+      "100%",
+      "5%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 69,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+148%",
+      "+166%",
+      "+179%",
+      "+167%",
+      "+94%",
+      "+102%",
+      "+153%",
+      "+142%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 69,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Roadblock Install Lift: Creative Type",
+      "- Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u201924 (April - September 2024)",
+      "### Notes:\nNeed to build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9  -This data shows install lift for each March roadblock.  -The 3/16 roadblock was Taylor Swift which saw insane performance across all markets, whereas the March 31 was the 12 hour bundle creative. - We have our control and exposed audiences for each roadblock and you can see that these roadblocks did generated triple digit lifts!  - The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift.  Overall, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI. -"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 62,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "0.21%",
+      "0.21%",
+      "0.12%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 61,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Cost per Acquired User (CPA): Cost to acquire a net new user",
+      "- Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u201924 (April - September 2024); CPA Based on ROS Not Installed, Roadblocks and Content Store RB | Inclusive of Paid Media + AV",
+      "### Notes:\nLast half = 58.52 with rb + AV Not Installed so content store really helped drive down"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 66,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "0.16%",
+      "0.20%",
+      "0.36%",
+      "0.14%",
+      "17.92%",
+      "17.19%",
+      "25.09%",
+      "16.55%",
+      "0.22%",
+      "0.72%",
+      "0.12%",
+      "0.07%",
+      "23%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 68,
+    "chart_type": "table",
+    "raw_elements": [
+      "- CPA: $2.96",
+      "- CPE : $0.70",
+      "- CPA: $3.23",
+      "- CPE: $0.64",
+      "- CPA: $9.86",
+      "- CPE: $6.72",
+      "- CPA: $4.58",
+      "- CPE: $0.62",
+      "- Source: LG Ad Solutions Campaigns Data H1\u201924, Carousel Units only. CPA based on Not Installed, CPE based on Lapsed."
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 67,
+    "chart_type": "table",
+    "raw_elements": [
+      "- CPA: $44.34CPE: $0.39",
+      "- CPA: $65.66",
+      "- CPE: $0.70",
+      "- CPA: $78.11",
+      "- CPE: $0.70",
+      "- CPA: $70.29",
+      "- CPE: $0.62",
+      "- Source: LG Ad Solutions Campaigns Data H1\u201924, Carousel Units only, Roadblocks only."
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 59,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "0.15%",
+      "0.11%",
+      "0.09%",
+      "0.10%",
+      "0.08%",
+      "0.08%",
+      "24%",
+      "23%",
+      "20%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 55,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "3.84%",
+      "1.10%",
+      "1.55%",
+      "0.11%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 55,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Widya: Updated",
+      "- Source: LG Ad Solutions Campaigns Data H1\u201924",
+      "### Notes:\nInstall rate ROS AV not installed only = 1.55% Install rate RB = 0.11% AV creatives:  Haunted  Mansion & Bundle Duo"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 54,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "20.9%",
+      "21.9%",
+      "17.5%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 54,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Widya: updated",
+      "- Engagement: H2\u201924 Roadblock Creative Analysis",
+      "- Source: LG Ad Solutions Campaigns Data H1\u201924; All creative units considered"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 57,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Widya: Updated",
+      "- Native Roadblocks : $1.59M",
+      "- Content Store RB: $162.92K",
+      "- Cost per Acquired User (CPA) Saving: Cost to acquire a net new user",
+      "- Cost per Acquired User (CPA): Cost to acquire a net new user",
+      "- Source: LG Ads TV Campaign data during Disney FY H2\u201924 (April - September 2024)",
+      "### Notes:\nSo here we have our two CPA funnels\u2026 The left shows paid media and just those roadblocks, whereas the right is just added value ROS lines. The way this works is we start with impressions. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1 30 minutes or more session. We back that acquisition number into your TOTAL spend to get the CPA. This does inflate the CPA since the roadblocks are untargeted. We are reaching those with Disney+, lapsed, active.. Everyone!  With enhanced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous. We also have  TLAMP  now which helps us get a bit closer to the most accurate cost here. Otherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given subscription fees and your customer lifetime value.  There is DEFINITELY opportunity to leverage ROS in the future. CPA prior was $27.29 with the 5 minute window instead of the 30 minutes Roadblocks this half alone generated more than 21,000 installs vs last half.  -what is your goal CPA?"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 56,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Widya: Updated",
+      "- ROS : $80K",
+      "- Cost per Acquired User (CPA): Cost to acquire a net new user",
+      "- Source: LG Ad Solutions Campaigns Data H1\u201924; ROS Not Installed | Inclusive of Paid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS based on CPM cost savings.",
+      "### Notes:\nSo here we have our two CPA funnels\u2026 The left shows paid media and just those roadblocks, whereas the right is just added value ROS lines. The way this works is we start with impressions. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs  occurred . Of those who installed, 30K launched Disney+ for at least 1 30 minutes or more session. We back that acquisition number into your TOTAL spend to get the CPA. This does inflate the CPA since the roadblocks are untargeted. We are reaching those with Disney+, lapsed,  active .. Everyone!  With enhanced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous. We also have  TLAMP  now which helps us get a bit closer to the most accurate cost here. Otherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given  subscription  fees and your customer  lifetime  value.  There is DEFINITELY opportunity to leverage ROS in the future. CPA prior was $27.29 with the 5 minute window instead of the 30 minutes Roadblocks this half alone generated more than 21,000 installs vs last half.  -what is your goal CPA?"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 58,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Widya: Updated",
+      "- ROS - Not Installed : $80K",
+      "- Cost per Acquired User (CPA): Cost to acquire a net new user",
+      "- Source: LG Ad Solutions Campaigns Data H2\u201924; ROS Not Installed | Inclusive of Paid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS based on CPM cost savings.",
+      "### Notes:\nSo here we have our two CPA funnels\u2026 The left shows paid media and just those roadblocks, whereas the right is just added value ROS lines. The way this works is we start with impressions. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1 30 minutes or more session. We back that acquisition number into your TOTAL spend to get the CPA. This does inflate the CPA since the roadblocks are untargeted. We are reaching those with Disney+, lapsed, active.. Everyone!  With enhanced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous. We also have  TLAMP  now which helps us get a bit closer to the most accurate cost here. Otherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given subscription fees and your customer lifetime value.  There is DEFINITELY opportunity to leverage ROS in the future. CPA prior was $27.29 with the 5 minute window instead of the 30 minutes Roadblocks this half alone generated more than 21,000 installs vs last half.  -what is your goal CPA?"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 39,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "8%",
+      "13%",
+      "16%",
+      "71%",
+      "185%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 42,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "100%",
+      "+200%",
+      "+188%",
+      "+79%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 44,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+148%",
+      "+167%",
+      "+153%",
+      "+179%",
+      "+143%",
+      "+94%",
+      "+102%",
+      "+166%",
+      "+148%",
+      "+167%",
+      "+94%",
+      "+102%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 44,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Roadblock Install Lift: Bundle",
+      "- Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u201924 (April - September 2024)",
+      "### Notes:\nNeed to build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9  -This data shows install lift for each March roadblock.  -The 3/16 roadblock was Taylor Swift which saw insane performance across all markets, whereas the March 31 was the 12 hour bundle creative. - We have our control and exposed audiences for each roadblock and you can see that these roadblocks did generated triple digit lifts!  - The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift.  Overall, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI. -"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 43,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+143%",
+      "+153%",
+      "+179%",
+      "+166%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 43,
+    "chart_type": "table",
+    "raw_elements": [
+      "- Roadblock Install Lift: Standalone",
+      "- Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u201924 (April - September 2024)",
+      "### Notes:\nNeed to build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9  -This data shows install lift for each March roadblock.  -The 3/16 roadblock was Taylor Swift which saw insane performance across all markets, whereas the March 31 was the 12 hour bundle creative. - We have our control and exposed audiences for each roadblock and you can see that these roadblocks did generated triple digit lifts!  - The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift.  Overall, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI. -"
+    ],
+    "confidence": "high"
+  },
+  {
+    "slide_number": 46,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+88%",
+      "+39%",
+      "+36%",
+      "+86%"
+    ],
+    "confidence": "medium"
+  },
+  {
+    "slide_number": 48,
+    "chart_type": "comparison",
+    "raw_elements": [
+      "+71%",
+      "70%",
+      "71%",
+      "185%"
+    ],
+    "confidence": "medium"
+  }
+]

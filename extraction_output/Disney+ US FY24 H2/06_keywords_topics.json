@@ -2,7 +2,7 @@
   "business_terms_detected": [
     "AD",
     "Banner",
-    "CPPC",
+    "CPM",
     "CTR",
     "Campaign",
     "Carousel",
@@ -17,6 +17,7 @@
     "FR",
     "IT",
     "Impressions",
+    "ROI",
     "Reach",
     "Roadblock",
     "UK"

@@ -1,0 +1,347 @@
+[
+  {
+    "slide_number": 1,
+    "source_page_number": 32,
+    "token_overlap": 3
+  },
+  {
+    "slide_number": 2,
+    "source_page_number": 31,
+    "token_overlap": 27
+  },
+  {
+    "slide_number": 3,
+    "source_page_number": 34,
+    "token_overlap": 15
+  },
+  {
+    "slide_number": 4,
+    "source_page_number": 33,
+    "token_overlap": 57
+  },
+  {
+    "slide_number": 5,
+    "source_page_number": 36,
+    "token_overlap": 2
+  },
+  {
+    "slide_number": 6,
+    "source_page_number": 35,
+    "token_overlap": 22
+  },
+  {
+    "slide_number": 7,
+    "source_page_number": 38,
+    "token_overlap": 33
+  },
+  {
+    "slide_number": 8,
+    "source_page_number": 37,
+    "token_overlap": 60
+  },
+  {
+    "slide_number": 9,
+    "source_page_number": 21,
+    "token_overlap": 10
+  },
+  {
+    "slide_number": 10,
+    "source_page_number": 22,
+    "token_overlap": 6
+  },
+  {
+    "slide_number": 11,
+    "source_page_number": 23,
+    "token_overlap": 6
+  },
+  {
+    "slide_number": 12,
+    "source_page_number": 25,
+    "token_overlap": 9
+  },
+  {
+    "slide_number": 13,
+    "source_page_number": 24,
+    "token_overlap": 7
+  },
+  {
+    "slide_number": 14,
+    "source_page_number": 27,
+    "token_overlap": 61
+  },
+  {
+    "slide_number": 15,
+    "source_page_number": 26,
+    "token_overlap": 73
+  },
+  {
+    "slide_number": 16,
+    "source_page_number": 29,
+    "token_overlap": 49
+  },
+  {
+    "slide_number": 17,
+    "source_page_number": 28,
+    "token_overlap": 3
+  },
+  {
+    "slide_number": 18,
+    "source_page_number": 30,
+    "token_overlap": 98
+  },
+  {
+    "slide_number": 19,
+    "source_page_number": 12,
+    "token_overlap": 73
+  },
+  {
+    "slide_number": 20,
+    "source_page_number": 11,
+    "token_overlap": 3
+  },
+  {
+    "slide_number": 21,
+    "source_page_number": 14,
+    "token_overlap": 25
+  },
+  {
+    "slide_number": 22,
+    "source_page_number": 13,
+    "token_overlap": 23
+  },
+  {
+    "slide_number": 23,
+    "source_page_number": 16,
+    "token_overlap": 50
+  },
+  {
+    "slide_number": 24,
+    "source_page_number": 15,
+    "token_overlap": 41
+  },
+  {
+    "slide_number": 25,
+    "source_page_number": 18,
+    "token_overlap": 3
+  },
+  {
+    "slide_number": 26,
+    "source_page_number": 17,
+    "token_overlap": 36
+  },
+  {
+    "slide_number": 27,
+    "source_page_number": 20,
+    "token_overlap": 46
+  },
+  {
+    "slide_number": 28,
+    "source_page_number": 19,
+    "token_overlap": 29
+  },
+  {
+    "slide_number": 29,
+    "source_page_number": 1,
+    "token_overlap": 29
+  },
+  {
+    "slide_number": 30,
+    "source_page_number": 3,
+    "token_overlap": 26
+  },
+  {
+    "slide_number": 31,
+    "source_page_number": 2,
+    "token_overlap": 69
+  },
+  {
+    "slide_number": 32,
+    "source_page_number": 5,
+    "token_overlap": 68
+  },
+  {
+    "slide_number": 33,
+    "source_page_number": 4,
+    "token_overlap": 49
+  },
+  {
+    "slide_number": 34,
+    "source_page_number": 7,
+    "token_overlap": 46
+  },
+  {
+    "slide_number": 35,
+    "source_page_number": 6,
+    "token_overlap": 34
+  },
+  {
+    "slide_number": 36,
+    "source_page_number": 9,
+    "token_overlap": 5
+  },
+  {
+    "slide_number": 37,
+    "source_page_number": 8,
+    "token_overlap": 47
+  },
+  {
+    "slide_number": 38,
+    "source_page_number": 10,
+    "token_overlap": 39
+  },
+  {
+    "slide_number": 39,
+    "source_page_number": 61,
+    "token_overlap": 38
+  },
+  {
+    "slide_number": 40,
+    "source_page_number": 60,
+    "token_overlap": 3
+  },
+  {
+    "slide_number": 41,
+    "source_page_number": 63,
+    "token_overlap": 32
+  },
+  {
+    "slide_number": 42,
+    "source_page_number": 62,
+    "token_overlap": 35
+  },
+  {
+    "slide_number": 43,
+    "source_page_number": 65,
+    "token_overlap": 40
+  },
+  {
+    "slide_number": 44,
+    "source_page_number": 64,
+    "token_overlap": 48
+  },
+  {
+    "slide_number": 45,
+    "source_page_number": 67,
+    "token_overlap": 42
+  },
+  {
+    "slide_number": 46,
+    "source_page_number": 66,
+    "token_overlap": 38
+  },
+  {
+    "slide_number": 47,
+    "source_page_number": 69,
+    "token_overlap": 4
+  },
+  {
+    "slide_number": 48,
+    "source_page_number": 68,
+    "token_overlap": 60
+  },
+  {
+    "slide_number": 49,
+    "source_page_number": 58,
+    "token_overlap": 64
+  },
+  {
+    "slide_number": 50,
+    "source_page_number": 51,
+    "token_overlap": 30
+  },
+  {
+    "slide_number": 51,
+    "source_page_number": 50,
+    "token_overlap": 101
+  },
+  {
+    "slide_number": 52,
+    "source_page_number": 53,
+    "token_overlap": 79
+  },
+  {
+    "slide_number": 53,
+    "source_page_number": 52,
+    "token_overlap": 37
+  },
+  {
+    "slide_number": 54,
+    "source_page_number": 55,
+    "token_overlap": 41
+  },
+  {
+    "slide_number": 55,
+    "source_page_number": 54,
+    "token_overlap": 37
+  },
+  {
+    "slide_number": 56,
+    "source_page_number": 57,
+    "token_overlap": 48
+  },
+  {
+    "slide_number": 57,
+    "source_page_number": 56,
+    "token_overlap": 63
+  },
+  {
+    "slide_number": 58,
+    "source_page_number": 59,
+    "token_overlap": 57
+  },
+  {
+    "slide_number": 59,
+    "source_page_number": 49,
+    "token_overlap": 36
+  },
+  {
+    "slide_number": 60,
+    "source_page_number": 48,
+    "token_overlap": 38
+  },
+  {
+    "slide_number": 61,
+    "source_page_number": 41,
+    "token_overlap": 54
+  },
+  {
+    "slide_number": 62,
+    "source_page_number": 40,
+    "token_overlap": 44
+  },
+  {
+    "slide_number": 63,
+    "source_page_number": 43,
+    "token_overlap": 30
+  },
+  {
+    "slide_number": 64,
+    "source_page_number": 42,
+    "token_overlap": 50
+  },
+  {
+    "slide_number": 65,
+    "source_page_number": 45,
+    "token_overlap": 16
+  },
+  {
+    "slide_number": 66,
+    "source_page_number": 44,
+    "token_overlap": 40
+  },
+  {
+    "slide_number": 67,
+    "source_page_number": 47,
+    "token_overlap": 41
+  },
+  {
+    "slide_number": 68,
+    "source_page_number": 46,
+    "token_overlap": 24
+  },
+  {
+    "slide_number": 69,
+    "source_page_number": 39,
+    "token_overlap": 39
+  }
+]

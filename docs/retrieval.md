@@ -108,3 +108,33 @@ RETRIEVAL_MAX_CHUNKS_PER_DOC=3
 ```
 
 Set `RERANK_BACKEND=none` to disable reranking.
+
+## Cross-Deck Comparison Retrieval
+
+When a question requires comparing multiple decks, the planner can call a
+dedicated intent tool and pass the signal into retrieval.
+
+Tool:
+- `detect_comparison_intent` (`src/ai_agent_qbr/tools/comparison_intent.py`)
+  - Returns `comparison_intent=true` when the question indicates a cross-deck
+    comparison (e.g., "compare", "vs", "between decks").
+
+Behavior:
+1. Stage 1 runs the normal hybrid search across all chunks to identify top
+   candidate documents.
+2. Stage 2 runs per-document retrieval for the top documents in parallel and
+   merges the results.
+
+Parallelism:
+- Stage 2 executes per-document retrieval concurrently via `asyncio.gather` in
+  `src/ai_agent_qbr/tools/search.py`.
+
+Configuration (env):
+- `COMPARISON_TOP_DOCS` (default `3`): number of documents to compare.
+- `COMPARISON_PER_DOC_K` (default `3`): chunks per document in stage 2.
+- `COMPARISON_STAGE1_TOP_K` (optional): override stage-1 top-k selection.
+
+Planner integration:
+- The planner calls `detect_comparison_intent` and, when true, passes
+  `comparison_intent=true` into `search_documents` (see
+  `src/ai_agent_qbr/tools/search.py`).

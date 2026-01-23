@@ -120,6 +120,9 @@ class Config:
     retrieval_include_document_path: bool = False
     retrieval_max_chunks_per_doc: int = 3
     retrieval_mmr_lambda: float = 0.5
+    comparison_top_docs: int = 3
+    comparison_per_doc_k: int = 3
+    comparison_stage1_top_k: int | None = None
     rerank_backend: str = "cross_encoder"
     rerank_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
     rerank_max_length: int | None = None
@@ -199,7 +202,8 @@ class Config:
             use_stub_llm=_env_flag("USE_STUB_LLM", True),
             mlflow_enabled=_env_flag("MLFLOW_ENABLED", False),
             mlflow_tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),
-            mlflow_experiment=os.getenv("MLFLOW_EXPERIMENT"),
+            mlflow_experiment=os.getenv("MLFLOW_EXPERIMENT")
+            or os.getenv("MLFLOW_EXPERIMENT_NAME"),
             mlflow_tracing_enabled=_env_flag("MLFLOW_TRACING_ENABLED", False),
             database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qbr_intelligence.db"),
             storage_backend=os.getenv("STORAGE_BACKEND", "sqlite"),
@@ -219,6 +223,9 @@ class Config:
             ),
             retrieval_max_chunks_per_doc=_env_int("RETRIEVAL_MAX_CHUNKS_PER_DOC", 3),
             retrieval_mmr_lambda=_env_float("RETRIEVAL_MMR_LAMBDA", 0.5),
+            comparison_top_docs=_env_int("COMPARISON_TOP_DOCS", 3),
+            comparison_per_doc_k=_env_int("COMPARISON_PER_DOC_K", 3),
+            comparison_stage1_top_k=_parse_optional_int(os.getenv("COMPARISON_STAGE1_TOP_K")),
             rerank_backend=os.getenv("RERANK_BACKEND", "cross_encoder"),
             rerank_model=os.getenv(
                 "RERANK_MODEL",
