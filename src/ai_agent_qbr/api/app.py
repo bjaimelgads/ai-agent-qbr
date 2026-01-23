@@ -26,7 +26,7 @@ from qbr_agent.infrastructure.faiss_builder import FaissBuildConfig, build_faiss
 logger = logging.getLogger("uvicorn.error")
 
 
-def _maybe_seed_sqlite_db(database_url: str) -> None:
+def _maybe_seed_sqlite_db(database_url: str, *, log_enabled: bool = True) -> None:
     if not database_url.startswith("sqlite"):
         return
     parsed = urlparse(database_url.replace("sqlite+aiosqlite", "sqlite"))
@@ -34,7 +34,8 @@ def _maybe_seed_sqlite_db(database_url: str) -> None:
         return
     db_path = Path(parsed.path)
     if db_path.exists():
-        logger.info("SQLite database already exists at %s", db_path)
+        if log_enabled:
+            logger.info("SQLite database already exists at %s", db_path)
         return
     source_root = Path(__file__).resolve().parents[3]
     seed_candidates = [
@@ -44,11 +45,13 @@ def _maybe_seed_sqlite_db(database_url: str) -> None:
     ]
     seed_path = next((path for path in seed_candidates if path.exists()), None)
     if seed_path is None:
-        logger.warning("Seed database not found. Checked: %s", seed_candidates)
+        if log_enabled:
+            logger.warning("Seed database not found. Checked: %s", seed_candidates)
         return
     db_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(seed_path, db_path)
-    logger.info("Seeded SQLite database at %s", db_path)
+    if log_enabled:
+        logger.info("Seeded SQLite database at %s", db_path)
 
 
 def create_app(
@@ -109,8 +112,9 @@ def create_app(
 
     @app.on_event("startup")
     async def _startup() -> None:
-        _maybe_seed_sqlite_db(config.database_url)
-        _log_database_status(config.database_url)
+        _maybe_seed_sqlite_db(config.database_url, log_enabled=config.log_sqlite_status)
+        if config.log_sqlite_status:
+            _log_database_status(config.database_url)
         _log_faiss_status(Path(config.faiss_dir))
         logger.info(
             "MLflow tracing: enabled=%s trace=%s uri=%s experiment=%s",

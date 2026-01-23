@@ -5,6 +5,25 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 
+_DEFAULT_RICH_OUTPUT_ALLOWLIST = [
+    "markdown",
+    "json",
+    "echarts",
+    "mermaid",
+    "plotly",
+    "datagrid",
+    "metric",
+    "report",
+    "grid",
+    "tabs",
+    "accordion",
+    "code",
+    "latex",
+    "callout",
+    "image",
+    "video",
+]
+
 
 def _env_flag(name: str, default: bool) -> bool:
     """Parse boolean from environment variable."""
@@ -73,7 +92,9 @@ class Config:
     keepalive_interval_seconds: float = 20.0
     receive_timeout_seconds: float = 60.0
     rich_output_enabled: bool = False
-    rich_output_allowlist: list[str] = field(default_factory=lambda: [])
+    rich_output_allowlist: list[str] = field(
+        default_factory=lambda: list(_DEFAULT_RICH_OUTPUT_ALLOWLIST)
+    )
     rich_output_include_prompt_catalog: bool = True
     rich_output_include_prompt_examples: bool = False
     rich_output_max_payload_bytes: int = 250000
@@ -121,6 +142,7 @@ class Config:
 
     # QBR knowledge retrieval configuration
     database_url: str = "sqlite+aiosqlite:///qbr_intelligence.db"
+    log_sqlite_status: bool = True
     storage_backend: str = "sqlite"
     vector_backend: str = "sqlite_embeddings"
     embeddings_backend: str = "sentence_transformers"
@@ -172,13 +194,19 @@ class Config:
             memory_base_url=os.getenv("MEMORY_BASE_URL", "http://localhost:8000"),
             llm_model=os.getenv("LLM_MODEL", "stub-llm"),
             output_protocol=os.getenv("OUTPUT_PROTOCOL", "websocket").lower(),
-            planner_stream_final_response=_env_flag("PLANNER_STREAM_FINAL_RESPONSE", False),
+            planner_stream_final_response=_env_flag(
+                "PLANNER_STREAM_FINAL_RESPONSE",
+                os.getenv("OUTPUT_PROTOCOL", "websocket").lower() == "agui",
+            ),
             keepalive_interval_seconds=_env_float("WS_KEEPALIVE_SECONDS", 20.0),
             receive_timeout_seconds=_env_float("WS_RECEIVE_TIMEOUT_SECONDS", 60.0),
-            rich_output_enabled=_env_flag("RICH_OUTPUT_ENABLED", False),
+            rich_output_enabled=_env_flag(
+                "RICH_OUTPUT_ENABLED",
+                os.getenv("OUTPUT_PROTOCOL", "websocket").lower() == "agui",
+            ),
             rich_output_allowlist=_env_csv(
                 "RICH_OUTPUT_ALLOWLIST",
-                [],
+                _DEFAULT_RICH_OUTPUT_ALLOWLIST,
             ),
             rich_output_include_prompt_catalog=_env_flag("RICH_OUTPUT_INCLUDE_PROMPT_CATALOG", True),
             rich_output_include_prompt_examples=_env_flag("RICH_OUTPUT_INCLUDE_PROMPT_EXAMPLES", False),
@@ -237,6 +265,7 @@ class Config:
             or os.getenv("MLFLOW_EXPERIMENT_NAME"),
             mlflow_tracing_enabled=_env_flag("MLFLOW_TRACING_ENABLED", False),
             database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qbr_intelligence.db"),
+            log_sqlite_status=_env_flag("LOG_SQLITE_STATUS", True),
             storage_backend=os.getenv("STORAGE_BACKEND", "sqlite"),
             vector_backend=os.getenv("VECTOR_BACKEND", "sqlite_embeddings"),
             embeddings_backend=os.getenv("EMBEDDINGS_BACKEND", "sentence_transformers"),

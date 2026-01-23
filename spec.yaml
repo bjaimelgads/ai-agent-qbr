@@ -33,6 +33,28 @@ planner:
   max_iters: 20
   hop_budget: 10
   absolute_max_parallel: 3
+  stream_final_response: true
+  rich_output:
+    enabled: true
+    allowlist:
+      - markdown
+      - json
+      - echarts
+      - mermaid
+      - plotly
+      - datagrid
+      - metric
+      - report
+      - grid
+      - tabs
+      - accordion
+      - code
+      - latex
+      - callout
+      - image
+      - video
+    include_prompt_catalog: true
+    include_prompt_examples: false
   system_prompt_extra: |
     You are the QBR agent. Answer questions using retrieved QBR context.
 

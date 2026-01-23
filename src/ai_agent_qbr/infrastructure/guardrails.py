@@ -52,6 +52,96 @@ ROUTE_CONFIG = [
         ),
     },
     {
+        "name": "insight_discovery",
+        "description": (
+            "Requests for key insights, highlights, top drivers, anomalies, or important takeaways "
+            "from a specific timeframe (e.g., FY25, Q2) or advertiser."
+        ),
+    },
+    {
+        "name": "comparative_analysis",
+        "description": (
+            "Comparisons across time periods, advertisers, regions, channels, or KPIs. "
+            "Includes YoY/QoQ, pre/post, and benchmarking questions."
+        ),
+    },
+    {
+        "name": "metric_detail",
+        "description": (
+            "Requests for specific metrics, figures, or detailed breakdowns drawn from QBRs, "
+            "including lists or structured summaries."
+        ),
+    },
+    {
+        "name": "partnership_updates",
+        "description": (
+            "Partnership highlights, investment summaries, added value, joint initiatives, "
+            "and collaboration updates between LG Ads and advertisers."
+        ),
+    },
+    {
+        "name": "product_innovation",
+        "description": (
+            "LG product or inventory updates relevant to QBRs, including home screen formats, "
+            "CTV video/branded player, content store features, and product beta launches."
+        ),
+    },
+    {
+        "name": "creative_performance",
+        "description": (
+            "Creative analysis and format performance (carousel, video, companion, static, 3D), "
+            "including best-performing creatives and CTR/CPA/CPE comparisons."
+        ),
+    },
+    {
+        "name": "audience_segments",
+        "description": (
+            "Audience segment performance (installed, not installed, lapsed, active), "
+            "targeting strategy impact, and suppression tactics."
+        ),
+    },
+    {
+        "name": "experiment_results",
+        "description": (
+            "Split tests, promo analyses, incrementality, lift studies, and "
+            "experiment outcomes by market or format."
+        ),
+    },
+    {
+        "name": "market_footprint",
+        "description": (
+            "Market-level reach, penetration, footprint, MAU growth, and "
+            "regional performance across EU5/EMEA/US or other markets."
+        ),
+    },
+    {
+        "name": "campaign_flighting",
+        "description": (
+            "Campaign flighting plans, schedules, and pacing across quarters or markets."
+        ),
+    },
+    {
+        "name": "roadblock_performance",
+        "description": (
+            "Content store or home screen roadblock performance, lift studies, and "
+            "spotlight recaps by market."
+        ),
+    },
+    {
+        "name": "promo_activation",
+        "description": (
+            "Promo or market activation readouts, including June/September promos "
+            "and regional activation summaries."
+        ),
+    },
+    {
+        "name": "cost_efficiency",
+        "description": (
+            "Cost efficiency analysis such as CPA/CPE, cost by market, "
+            "and top/bottom cost performance."
+        ),
+    },
+    {
         "name": "performance_trends",
         "description": (
             "Advertiser or business performance insights for QBRs. Includes KPI trends, growth/decline, "
@@ -89,8 +179,7 @@ ROUTE_CONFIG = [
         "name": "off_topic",
         "description": (
             "Anything outside LG Ads QBR insights. Includes general knowledge, coding, "
-            "personal advice, non-QBR business tasks, or requests to create non-text outputs "
-            "(charts, dashboards, files, images, exports)."
+            "personal advice, or non-QBR business tasks."
         ),
     },
     {
@@ -104,13 +193,11 @@ ROUTE_CONFIG = [
 OFF_TOPIC_USER_MESSAGE = (
     "I am focused on LG Ads QBR insights like advertiser performance, trends, "
     "inventory dynamics (CTV/OTT/FAST), pacing risks, and strategic recommendations. "
-    "I can respond with text guidance only (no files, images, or other outputs). "
     "If you share the advertiser and timeframe, I can help right away."
 )
 
 JAILBREAK_USER_MESSAGE = (
     "I’m not able to help with requests to bypass rules or reveal hidden instructions. "
-    "I can respond with text guidance only (no files, images, or other outputs). "
     "If you share the advertiser and timeframe, I can help with QBR insights."
 )
 

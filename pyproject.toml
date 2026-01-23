@@ -20,6 +20,7 @@ dependencies = [
     "ag-ui-protocol>=0.1.10",
     "aiosqlite>=0.22.1",
     "sqlalchemy>=2.0.45",
+    "sentence-transformers>=5.1.1",
     "uvicorn>=0.30.6",
     "websockets>=12.0",
     "python-pptx>=1.0.2",
@@ -34,11 +35,9 @@ observability = [
     "mlflow>=2.13.0",
 ]
 embeddings = [
-    "sentence-transformers>=5.1.1",
 ]
 retrieval = [
     "numpy>=1.26.0",
-    "sentence-transformers>=5.1.1",
 ]
 extraction = [
     "dspy>=3.1",
@@ -46,7 +45,6 @@ extraction = [
     "kreuzberg==4.0.0",
     "onnxruntime>=1.22.0",
     "python-dotenv>=1.2.1",
-    "sentence-transformers>=5.1.1",
     "sqlalchemy>=2.0.45",
 ]
 

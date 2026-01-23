@@ -35,6 +35,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "python-pptx" },
+    { name = "sentence-transformers" },
     { name = "sqlalchemy" },
     { name = "uvicorn" },
     { name = "websockets" },
@@ -45,16 +46,12 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
-embeddings = [
-    { name = "sentence-transformers" },
-]
 extraction = [
     { name = "dspy" },
     { name = "greenlet" },
     { name = "kreuzberg" },
     { name = "onnxruntime" },
     { name = "python-dotenv" },
-    { name = "sentence-transformers" },
     { name = "sqlalchemy" },
 ]
 observability = [
@@ -62,7 +59,6 @@ observability = [
 ]
 retrieval = [
     { name = "numpy" },
-    { name = "sentence-transformers" },
 ]
 
 [package.metadata]
@@ -87,9 +83,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "python-dotenv", marker = "extra == 'extraction'", specifier = ">=1.2.1" },
     { name = "python-pptx", specifier = ">=1.0.2" },
-    { name = "sentence-transformers", marker = "extra == 'embeddings'", specifier = ">=5.1.1" },
-    { name = "sentence-transformers", marker = "extra == 'extraction'", specifier = ">=5.1.1" },
-    { name = "sentence-transformers", marker = "extra == 'retrieval'", specifier = ">=5.1.1" },
+    { name = "sentence-transformers", specifier = ">=5.1.1" },
     { name = "sqlalchemy", specifier = ">=2.0.45" },
     { name = "sqlalchemy", marker = "extra == 'extraction'", specifier = ">=2.0.45" },
     { name = "uvicorn", specifier = ">=0.30.6" },
