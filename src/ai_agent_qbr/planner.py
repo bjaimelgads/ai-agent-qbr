@@ -16,6 +16,7 @@ from penguiflow.planner import PlannerEventCallback, ReactPlanner
 from penguiflow.planner.memory import MemoryBudget, MemoryIsolation, ShortTermMemoryConfig
 from penguiflow.rich_output import DEFAULT_ALLOWLIST, RichOutputConfig, attach_rich_output_nodes, get_runtime
 from .config import Config
+from .infrastructure.guardrails import build_guardrail_gateway
 from .tools import build_catalog_bundle
 
 logger = logging.getLogger(__name__)
@@ -437,6 +438,7 @@ def build_planner(
 
     # Create LLM client based on config (stub or real)
     llm_client = _create_llm_client(config)
+    guardrail_gateway = build_guardrail_gateway(config)
 
     if isinstance(llm_client, ScriptedLLM) or isinstance(llm_client, DatabricksDSPyClient):
         planner = ReactPlanner(
@@ -447,6 +449,7 @@ def build_planner(
             event_callback=event_callback,
             stream_final_response=config.planner_stream_final_response,
             short_term_memory=_build_short_term_memory(config),
+            guardrail_gateway=guardrail_gateway,
         )
         return PlannerBundle(planner=planner, llm_client=llm_client)
 
@@ -458,5 +461,6 @@ def build_planner(
         event_callback=event_callback,
         stream_final_response=config.planner_stream_final_response,
         short_term_memory=_build_short_term_memory(config),
+        guardrail_gateway=guardrail_gateway,
     )
     return PlannerBundle(planner=planner, llm_client=llm_client)

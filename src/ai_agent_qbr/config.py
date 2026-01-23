@@ -26,6 +26,21 @@ def _env_float(name: str, default: float) -> float:
     return float(raw) if raw is not None else default
 
 
+def _env_str(name: str, default: str) -> str:
+    """Parse string from environment variable."""
+    raw = os.getenv(name)
+    return raw if raw is not None else default
+
+
+def _env_optional_str(name: str, default: str | None) -> str | None:
+    """Parse optional string from environment variable."""
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    raw = raw.strip()
+    return raw or None
+
+
 def _env_csv(name: str, default: list[str]) -> list[str]:
     """Parse comma-separated list from environment variable."""
     raw = os.getenv(name)
@@ -134,6 +149,22 @@ class Config:
     faiss_auto_build: bool = False
     faiss_rebuild_on_startup: bool = False
 
+    # Guardrails
+    guardrails_enabled: bool = True
+    guardrails_mode: str = "enforce"
+    guardrails_scope_model_path: str | None = None
+    guardrails_jailbreak_endpoint: str | None = None
+    guardrails_jailbreak_token: str | None = None
+    guardrails_jailbreak_threshold: float = 0.6
+    guardrails_jailbreak_payload_style: str = "inputs_list"
+    guardrails_jailbreak_input_field: str | None = None
+    guardrails_sync_timeout_ms: float = 2000.0
+    guardrails_router_endpoint: str | None = (
+        "https://dbc-3b4bc42a-bf11.cloud.databricks.com/ml/endpoints/slm-router/metrics?o=185296477739056"
+    )
+    guardrails_router_token: str | None = None
+    guardrails_router_conversation_turns: int = 5
+
     @classmethod
     def from_env(cls) -> "Config":
         """Load configuration from environment variables."""
@@ -239,6 +270,27 @@ class Config:
             faiss_metric=os.getenv("FAISS_METRIC", "ip"),
             faiss_auto_build=_env_flag("FAISS_AUTO_BUILD", False),
             faiss_rebuild_on_startup=_env_flag("FAISS_REBUILD_ON_STARTUP", False),
+            guardrails_enabled=_env_flag("GUARDRAILS_ENABLED", True),
+            guardrails_mode=_env_str("GUARDRAILS_MODE", "enforce"),
+            guardrails_scope_model_path=_env_optional_str("GUARDRAILS_SCOPE_MODEL_PATH", None),
+            guardrails_jailbreak_endpoint=_env_optional_str("GUARDRAILS_JAILBREAK_ENDPOINT", None),
+            guardrails_jailbreak_token=_env_optional_str("GUARDRAILS_JAILBREAK_TOKEN", None),
+            guardrails_jailbreak_threshold=_env_float("GUARDRAILS_JAILBREAK_THRESHOLD", 0.6),
+            guardrails_jailbreak_payload_style=_env_str(
+                "GUARDRAILS_JAILBREAK_PAYLOAD_STYLE",
+                "inputs_list",
+            ),
+            guardrails_jailbreak_input_field=_env_optional_str("GUARDRAILS_JAILBREAK_INPUT_FIELD", None),
+            guardrails_sync_timeout_ms=_env_float("GUARDRAILS_SYNC_TIMEOUT_MS", 2000.0),
+            guardrails_router_endpoint=_env_optional_str(
+                "GUARDRAILS_ROUTER_ENDPOINT",
+                "https://dbc-3b4bc42a-bf11.cloud.databricks.com/ml/endpoints/slm-router/metrics?o=185296477739056",
+            ),
+            guardrails_router_token=_env_optional_str("GUARDRAILS_ROUTER_TOKEN", None),
+            guardrails_router_conversation_turns=_env_int(
+                "GUARDRAILS_ROUTER_CONVERSATION_TURNS",
+                5,
+            ),
         )
 
     def validate(self) -> None:
@@ -253,3 +305,7 @@ class Config:
             raise ValueError("RERANK_BACKEND must be one of: none, cross_encoder")
         if self.text_search_backend not in {"fts5", "auto", "like"}:
             raise ValueError("TEXT_SEARCH_BACKEND must be one of: fts5, auto, like")
+        if self.guardrails_mode not in {"shadow", "enforce"}:
+            raise ValueError("GUARDRAILS_MODE must be one of: shadow, enforce")
+        if self.guardrails_router_conversation_turns < 1:
+            raise ValueError("GUARDRAILS_ROUTER_CONVERSATION_TURNS must be >= 1")

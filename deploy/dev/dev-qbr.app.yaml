@@ -79,5 +79,11 @@ env:
     value: 'true'
   - name: 'LOG_LEVEL'
     value: 'DEBUG'
+  - name: 'GUARDRAILS_ENABLED'
+    value: 'true'
+  - name: 'GUARDRAILS_MODE'
+    value: 'enforce'
+  - name: 'GUARDRAILS_ROUTER_ENDPOINT'
+    value: 'https://dbc-3b4bc42a-bf11.cloud.databricks.com/ml/endpoints/slm-router/metrics?o=185296477739056'
 
  
