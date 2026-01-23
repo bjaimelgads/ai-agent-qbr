@@ -73,6 +73,8 @@ env:
     value: 'true'
   - name: 'MLFLOW_EXPERIMENT'
     value: '/Shared/ai-qbr-agent'
+  - name: 'PLATFORM_URL'
+    value: 'https://dev-ai-platform-backend-185296477739056.aws.databricksapps.com'
   - name: 'OUTPUT_PROTOCOL'
     value: 'websocket'
   - name: 'PLANNER_STREAM_FINAL_RESPONSE'

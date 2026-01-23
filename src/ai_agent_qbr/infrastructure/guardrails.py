@@ -102,7 +102,7 @@ ROUTE_CONFIG = [
 ]
 
 OFF_TOPIC_USER_MESSAGE = (
-    "Thanks for the message! I am focused on LG Ads QBR insights like advertiser performance, trends, "
+    "I am focused on LG Ads QBR insights like advertiser performance, trends, "
     "inventory dynamics (CTV/OTT/FAST), pacing risks, and strategic recommendations. "
     "I can respond with text guidance only (no files, images, or other outputs). "
     "If you share the advertiser and timeframe, I can help right away."
@@ -526,6 +526,30 @@ class SLMRouterRule:
                         messages.append({"role": role, "content": content})
 
         if not messages:
+            llm_context = payload.get("llm_context", {})
+            conversation_memory = {}
+            if isinstance(llm_context, dict):
+                conversation_memory = llm_context.get("conversation_memory", {})
+            recent_turns = []
+            if isinstance(conversation_memory, dict):
+                recent_turns = conversation_memory.get("recent_turns", [])
+            if isinstance(recent_turns, list):
+                flattened: list[dict[str, str]] = []
+                for turn in recent_turns:
+                    if not isinstance(turn, dict):
+                        continue
+                    user = turn.get("user")
+                    assistant = turn.get("assistant")
+                    if isinstance(user, str) and user.strip():
+                        flattened.append({"role": "user", "content": user.strip()})
+                    if isinstance(assistant, str) and assistant.strip():
+                        flattened.append({"role": "assistant", "content": assistant.strip()})
+                if flattened:
+                    max_history = max(1, self.conversation_turns - 1)
+                    history_limit = min(max_history, 3)
+                    messages.extend(flattened[-history_limit:])
+
+        if not messages:
             last_assistant = payload.get("last_assistant")
             if isinstance(last_assistant, str) and last_assistant.strip():
                 messages.append({"role": "assistant", "content": last_assistant.strip()})
@@ -639,6 +663,8 @@ def _augment_with_context(text: str, context: ContextSnapshotV1, payload: dict[s
         tools = ", ".join(tool.name for tool in context.available_tools)
         parts.append(f"[AVAILABLE_TOOLS] {tools}")
     return "\n".join(parts)
+
+
 
 
 def build_guardrail_gateway(config: Config) -> GuardrailGateway | None:
