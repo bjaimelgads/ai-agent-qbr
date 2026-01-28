@@ -21,10 +21,11 @@ flowchart LR
     A1["PPTX files"]:::source --> A2["Extraction pipeline<br/>text + images + slide structure"]:::process
     A2 --> A3["Chunking + embeddings"]:::process
     A2 --> A4["Heuristics<br/>metrics + charts + keywords"]:::process
-    A4 --> A5["Post-processing<br/>classification + summaries"]:::process
-    A5 --> A6["Post-embeddings"]:::process
-    A6 --> A7["SQLAlchemy writer"]:::process
-    A7 --> A8[(SQL database: qbr_intelligence + FTS5)]:::store
+    A4 --> A5["Metric context strategies<br/>period/brand/baseline"]:::process
+    A5 --> A6["Post-processing<br/>classification + summaries"]:::process
+    A6 --> A7["Post-embeddings"]:::process
+    A7 --> A8["SQLAlchemy writer"]:::process
+    A8 --> A9[(SQL database: qbr_intelligence + FTS5)]:::store
   end
 
   subgraph B["Indexing & Retrieval Infrastructure"]
@@ -46,7 +47,7 @@ flowchart LR
   D1["Web app / client"]:::edge
   end
 
-  A8 --> B1
+  A9 --> B1
   B1 --> B2
   B3 --> B2
   B1 --> B4
@@ -70,16 +71,17 @@ flowchart TD
   E1["PPTX file uploaded"]:::source --> E2["Kreuzberg extraction<br/>text + images + slide structure"]:::process
   E2 --> E3["Chunking + embedding generation"]:::process
   E2 --> E4["Detect metrics + charts + keywords"]:::process
-  E4 --> E5["LLM enhancement<br/>classify + summarize + normalize"]:::process
-  E5 --> E6["Post-embeddings"]:::process
-  E6 --> E7["Write to SQL database + FTS5 index<br/>documents, slides, chunks"]:::process
-  E7 --> E8[("qbr_intelligence ready for retrieval")]:::store
+  E4 --> E5["Metric context strategies<br/>period/brand/baseline"]:::process
+  E5 --> E6["LLM enhancement<br/>classify + summarize + normalize"]:::process
+  E6 --> E7["Post-embeddings"]:::process
+  E7 --> E8["Write to SQL database + FTS5 index<br/>documents, slides, chunks, metrics, periods"]:::process
+  E8 --> E9[("qbr_intelligence ready for retrieval")]:::store
 ```
 
 ### What Gets Stored
 - Documents + slides
 - Chunks (text segments with embeddings)
-- Metrics, charts, keywords, entities, images
+- Metrics, periods, charts, keywords, entities, images
 - LLM-generated summaries and classifications (when enabled)
 
 ## Workflow 2: End-to-End (Extraction to Answer)
@@ -116,6 +118,7 @@ sequenceDiagram
 
 ### Plain-English Summary
 - Extraction builds a searchable knowledge base (SQL + FTS5) from PowerPoint slides.
+- Metric context extraction can run in rule-based, LLM, or hybrid mode; optional LLM passes can be limited to specific slide ranges.
 - When a user asks a question, the agent searches both BM25 text and embeddings, reranks candidates, and then gives the LLM the most relevant slides as context.
 - The client interface returns the response back to the user.
 
