@@ -345,6 +345,36 @@ class Slide(Base):
 # =============================================================================
 
 
+class Period(Base):
+    """Normalized reporting period."""
+
+    __tablename__ = "periods"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    period_label: Mapped[str] = mapped_column(String(50), nullable=False)
+    period_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    period_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fiscal_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    start_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    end_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
+    metrics: Mapped[list["Metric"]] = relationship(
+        "Metric", back_populates="period"
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "period_label",
+            "start_date",
+            "end_date",
+            name="uq_period_label_range",
+        ),
+        Index("idx_period_label", "period_label"),
+        Index("idx_period_fiscal", "fiscal_year"),
+        Index("idx_period_type_number", "period_type", "period_number"),
+    )
+
+
 class Metric(Base):
     """
     Extracted and normalized business metric.
@@ -395,9 +425,21 @@ class Metric(Base):
     # Confidence
     extraction_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Period/brand/baseline context
+    period_label: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    period_start: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    period_end: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    brand: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    baseline_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    baseline_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    period_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
+    )
+
     # Relationships
     document: Mapped["Document"] = relationship("Document", back_populates="metrics")
     slide: Mapped["Slide | None"] = relationship("Slide", back_populates="metrics")
+    period: Mapped["Period | None"] = relationship("Period", back_populates="metrics")
 
     __table_args__ = (
         Index("idx_metric_document", "document_id"),

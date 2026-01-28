@@ -236,6 +236,50 @@ class MetricRefinementOutput(BaseModel):
 
 
 # =============================================================================
+# Metric Context Output
+# =============================================================================
+
+
+class MetricContextItem(BaseModel):
+    """Context fields for a metric (period/brand/baseline)."""
+
+    metric_id: str = Field(description="Metric candidate ID")
+    period_label: str | None = Field(
+        default=None, description="Period label (e.g., H2 FY25, Q1 2025)"
+    )
+    period_start: str | None = Field(
+        default=None, description="Period start date (ISO-8601), if available"
+    )
+    period_end: str | None = Field(
+        default=None, description="Period end date (ISO-8601), if available"
+    )
+    brand: str | None = Field(
+        default=None, description="Brand or client associated with the metric"
+    )
+    baseline_text: str | None = Field(
+        default=None, description="Baseline text (e.g., vs last quarter)"
+    )
+    baseline_type: str | None = Field(
+        default=None, description="Baseline type (e.g., yoy, qoq, mom, target)"
+    )
+    source_snippet: str | None = Field(
+        default=None, description="Text snippet supporting the context"
+    )
+    confidence: float | None = Field(
+        default=None, description="Confidence for the context extraction (0-1)"
+    )
+
+
+class MetricContextOutput(BaseModel):
+    """Structured output for per-slide metric context."""
+
+    contexts: list[MetricContextItem] = Field(
+        default_factory=list,
+        description="Context items for metrics on the slide",
+    )
+
+
+# =============================================================================
 # Chart Reconstruction Output
 # =============================================================================
 

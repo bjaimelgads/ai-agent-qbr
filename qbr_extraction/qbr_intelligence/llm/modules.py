@@ -15,6 +15,7 @@ from qbr_intelligence.schemas.llm_outputs import (
     EntityExtractionOutput,
     ExecutiveSummaryOutput,
     ImageAnalysisOutput,
+    MetricContextOutput,
     MetricDeduplicationOutput,
     MetricNormalizationOutput,
     MetricRefinementOutput,
@@ -223,6 +224,56 @@ class MetricRefiner(dspy.Module):
                 metric_dictionary_json=payload_dictionary,
             )
         return result.refined
+
+
+# =============================================================================
+# Metric Context Module
+# =============================================================================
+
+
+class MetricContextSignature(dspy.Signature):
+    """
+    Extract period, brand/client, and baseline context for slide metrics.
+    """
+
+    slide_text: str = dspy.InputField(desc="Full slide text")
+    speaker_notes: str = dspy.InputField(desc="Speaker notes for the slide (may be empty)")
+    candidates_json: str = dspy.InputField(
+        desc="JSON array of candidate metrics with ids, names, values, units, and context"
+    )
+    document_context: str = dspy.InputField(
+        desc="Metadata about the document (client, period, etc.)"
+    )
+
+    contexts: MetricContextOutput = dspy.OutputField(
+        desc="Context fields for metrics on the slide"
+    )
+
+
+class MetricContextExtractor(dspy.Module):
+    """DSPY module to extract period/brand/baseline context for slide metrics."""
+
+    def __init__(self, lm: dspy.LM | None = None):
+        super().__init__()
+        self.lm = lm
+        self.extract = dspy.ChainOfThought(MetricContextSignature)
+
+    def forward(
+        self,
+        slide_text: str,
+        speaker_notes: str,
+        candidates: list[dict],
+        document_context: str,
+    ) -> MetricContextOutput:
+        payload_candidates = json.dumps(candidates, indent=2)
+        with dspy.settings.context(lm=self.lm):
+            result = self.extract(
+                slide_text=slide_text,
+                speaker_notes=speaker_notes or "",
+                candidates_json=payload_candidates,
+                document_context=document_context,
+            )
+        return result.contexts
 
 
 # =============================================================================

@@ -44,6 +44,7 @@ from qbr_intelligence.db.models import (
     Image,
     Keyword,
     Metric,
+    Period,
     Slide,
     SlideType,
 )
@@ -52,8 +53,17 @@ from qbr_intelligence.llm.modules import (
     MetricRefiner,
     QBREnhancementPipeline,
     create_lm,
+    MetricContextExtractor,
 )
 from qbr_intelligence.pipeline.embeddings import EmbeddingSettings
+from qbr_intelligence.pipeline.metric_context import (
+    DocumentContext,
+    HybridMetricContextStrategy,
+    LLMMetricsContextStrategy,
+    RuleBasedMetricContextStrategy,
+    apply_context_strategies,
+    infer_baseline_type,
+)
 from qbr_intelligence.pipeline.metric_scanner import (
     MetricCandidate,
     MetricScanArtifacts,
@@ -146,6 +156,13 @@ class QBRProcessor:
             "is_calculated": "BOOLEAN",
             "depends_on": "TEXT",
             "formula": "TEXT",
+            "period_label": "TEXT",
+            "period_start": "TEXT",
+            "period_end": "TEXT",
+            "brand": "TEXT",
+            "baseline_text": "TEXT",
+            "baseline_type": "TEXT",
+            "period_id": "INTEGER",
         }
         missing = {name: ddl for name, ddl in needed.items() if name not in existing}
         if not missing:
@@ -554,6 +571,12 @@ class QBRProcessor:
             "formula": metric.formula,
             "extraction_confidence": metric.extraction_confidence,
             "metadata": metric.metadata,
+            "period_label": metric.period_label,
+            "period_start": metric.period_start,
+            "period_end": metric.period_end,
+            "brand": metric.brand,
+            "baseline_text": metric.baseline_text,
+            "baseline_type": metric.baseline_type,
         }
 
     def _refine_metrics_with_llm(
@@ -651,6 +674,7 @@ class QBRProcessor:
                 delta_abs = getattr(item, "delta_abs", None)
                 delta_pct = getattr(item, "delta_pct", None)
                 baseline_text = getattr(item, "baseline_text", None)
+                baseline_type = infer_baseline_type(baseline_text)
                 source_ids = getattr(item, "source_ids", None) or []
                 source_snippet = getattr(item, "source_snippet", None)
                 notes = getattr(item, "notes", None)
@@ -705,11 +729,124 @@ class QBRProcessor:
                         formula=definition.formula,
                         extraction_confidence=confidence,
                         metadata=metadata,
+                        baseline_text=baseline_text,
+                        baseline_type=baseline_type,
                     )
                 )
         elapsed = time.perf_counter() - start_time
         print(f"  [Metric Refine] Completed in {elapsed:.2f}s")
         return refined or metrics
+
+    def _apply_metric_context_strategies(
+        self,
+        *,
+        metrics: list[MetricCandidate],
+        slides: list[dict],
+        client_name: str | None,
+        report_period: str | None,
+        stage: str,
+        allow_llm: bool,
+    ) -> list[MetricCandidate]:
+        if not metrics:
+            return metrics
+        strategies_env = (os.getenv("METRIC_CONTEXT_STRATEGIES") or "hybrid").strip()
+        strategy_names = [s.strip().lower() for s in strategies_env.split(",") if s.strip()]
+        document_context = DocumentContext(client_name=client_name, report_period=report_period)
+        rule_strategy = RuleBasedMetricContextStrategy()
+        strategies = []
+        for name in strategy_names:
+            if name == "rule_based":
+                strategies.append(rule_strategy)
+            elif name == "llm":
+                if not allow_llm:
+                    continue
+                strategies.append(LLMMetricsContextStrategy(MetricContextExtractor(lm=self.lm)))
+            elif name == "hybrid":
+                if not allow_llm:
+                    strategies.append(rule_strategy)
+                    continue
+                llm_strategy = LLMMetricsContextStrategy(MetricContextExtractor(lm=self.lm))
+                strategies.append(
+                    HybridMetricContextStrategy(
+                        rule_strategy=rule_strategy,
+                        llm_strategy=llm_strategy,
+                    )
+                )
+        if not strategies:
+            return metrics
+        return apply_context_strategies(
+            metrics=metrics,
+            slides=slides,
+            document_context=document_context,
+            strategies=strategies,
+            stage=stage,
+        )
+
+    @staticmethod
+    def _infer_period_fields(period_label: str | None) -> dict:
+        if not period_label:
+            return {"period_type": None, "period_number": None, "fiscal_year": None}
+        text = period_label.strip().upper()
+        match = re.search(r"\bH([12])\s*FY(\d{2,4})\b", text)
+        if match:
+            return {
+                "period_type": "half",
+                "period_number": int(match.group(1)),
+                "fiscal_year": QBRProcessor._parse_year(match.group(2)),
+            }
+        match = re.search(r"\bQ([1-4])\s*FY?(\d{2,4})\b", text)
+        if match:
+            return {
+                "period_type": "quarter",
+                "period_number": int(match.group(1)),
+                "fiscal_year": QBRProcessor._parse_year(match.group(2)),
+            }
+        match = re.search(r"\bFY(\d{2,4})\b", text)
+        if match:
+            return {
+                "period_type": "fy",
+                "period_number": None,
+                "fiscal_year": QBRProcessor._parse_year(match.group(1)),
+            }
+        return {"period_type": "range", "period_number": None, "fiscal_year": None}
+
+    @staticmethod
+    def _parse_year(value: str) -> int:
+        year = int(value)
+        return 2000 + year if year < 100 else year
+
+    def _upsert_periods(self, session, metrics: list[MetricCandidate]) -> dict[tuple, Period]:
+        keys = {
+            (m.period_label, m.period_start, m.period_end)
+            for m in metrics
+            if m.period_label or m.period_start or m.period_end
+        }
+        if not keys:
+            return {}
+        labels = {k[0] for k in keys if k[0]}
+        existing = []
+        if labels:
+            existing = session.query(Period).filter(Period.period_label.in_(labels)).all()
+        period_map: dict[tuple, Period] = {
+            (p.period_label, p.start_date, p.end_date): p for p in existing
+        }
+        for period_label, period_start, period_end in keys:
+            key = (period_label, period_start, period_end)
+            if key in period_map:
+                continue
+            fields = self._infer_period_fields(period_label)
+            period = Period(
+                period_label=period_label or "Unknown",
+                period_type=fields["period_type"],
+                period_number=fields["period_number"],
+                fiscal_year=fields["fiscal_year"],
+                start_date=period_start,
+                end_date=period_end,
+            )
+            session.add(period)
+            period_map[key] = period
+        session.flush()
+        return period_map
 
     @classmethod
     def _build_chunks_from_pages(cls, pages: list[dict]) -> list[dict]:
@@ -1197,6 +1334,31 @@ Categories:
                 slides=slides_ordered,
                 metric_dictionary=build_metric_dictionary(),
             )
+        scanned_metrics = self._apply_metric_context_strategies(
+            metrics=scanned_metrics,
+            slides=slides_ordered,
+            client_name=client_name,
+            report_period=report_period,
+            stage="scanned",
+            allow_llm=run_llm_enhancement,
+        )
+        llm_deduped_metrics = self._apply_metric_context_strategies(
+            metrics=llm_deduped_metrics,
+            slides=slides_ordered,
+            client_name=client_name,
+            report_period=report_period,
+            stage="deduped",
+            allow_llm=run_llm_enhancement,
+        )
+        if refined_metrics is not None:
+            refined_metrics = self._apply_metric_context_strategies(
+                metrics=refined_metrics,
+                slides=slides_ordered,
+                client_name=client_name,
+                report_period=report_period,
+                stage="refined",
+                allow_llm=run_llm_enhancement,
+            )
         metrics_for_db = refined_metrics or llm_deduped_metrics
 
         print(f"  - Slides parsed: {len(slides_ordered)}")
@@ -1287,6 +1449,8 @@ Categories:
             slide_map = {s.slide_number: s for s in slides_to_add}
             print(f"  - Slides created: {len(slide_map)}")
 
+            period_map = self._upsert_periods(session, metrics_for_db)
+
             # Create metrics (bulk insert)
             metrics_to_add = [
                 Metric(
@@ -1303,6 +1467,17 @@ Categories:
                     formula=m.formula,
                     category=m.category,
                     extraction_confidence=m.extraction_confidence,
+                    period_label=m.period_label,
+                    period_start=m.period_start,
+                    period_end=m.period_end,
+                    brand=m.brand,
+                    baseline_text=m.baseline_text,
+                    baseline_type=m.baseline_type,
+                    period_id=period_map.get(
+                        (m.period_label, m.period_start, m.period_end)
+                    ).id
+                    if period_map.get((m.period_label, m.period_start, m.period_end))
+                    else None,
                 )
                 for m in metrics_for_db
             ]

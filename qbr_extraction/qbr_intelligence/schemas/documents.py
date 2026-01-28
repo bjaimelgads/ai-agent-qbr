@@ -256,6 +256,13 @@ class MetricCreate(BaseSchema):
     raw_value: str
     raw_context: str | None = None
     raw_metric_type: str
+    period_label: str | None = None
+    period_start: str | None = None
+    period_end: str | None = None
+    brand: str | None = None
+    baseline_text: str | None = None
+    baseline_type: str | None = None
+    period_id: int | None = None
 
 
 class MetricRead(BaseSchema):
@@ -290,6 +297,15 @@ class MetricRead(BaseSchema):
     significance: str | None = None
     benchmark_comparison: str | None = None
     extraction_confidence: float | None = None
+
+    # Period/brand/baseline context
+    period_label: str | None = None
+    period_start: str | None = None
+    period_end: str | None = None
+    brand: str | None = None
+    baseline_text: str | None = None
+    baseline_type: str | None = None
+    period_id: int | None = None
 
 
 # =============================================================================

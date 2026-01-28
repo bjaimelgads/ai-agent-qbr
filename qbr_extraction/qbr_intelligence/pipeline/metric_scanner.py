@@ -52,6 +52,12 @@ class MetricCandidate:
     formula: str | None = None
     extraction_confidence: float | None = None
     metadata: dict | None = None
+    period_label: str | None = None
+    period_start: str | None = None
+    period_end: str | None = None
+    brand: str | None = None
+    baseline_text: str | None = None
+    baseline_type: str | None = None
 
     def dedupe_key(self) -> tuple[str, float | None, str | None]:
         norm = None if self.normalized_value is None else round(self.normalized_value, 6)

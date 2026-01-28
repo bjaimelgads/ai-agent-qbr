@@ -30,100 +30,109 @@ Quick Start:
     ```
 """
 
+import os
+
 __version__ = "0.1.0"
 
-# Database
-from qbr_intelligence.db import init_db
-from qbr_intelligence.db.models import (
-    Chart,
-    Chunk,
-    Document,
-    DocumentFacet,
-    DocumentStatus,
-    Entity,
-    EntityRelation,
-    EntityType,
-    Facet,
-    FacetValue,
-    Image,
-    Keyword,
-    Metric,
-    MetricCategory,
-    Section,
-    Slide,
-    SlideEntity,
-    SlideType,
-)
+_LIGHT_IMPORT = os.getenv("QBR_INTELLIGENCE_LIGHT_IMPORT") == "1"
 
-# Pipeline
-from qbr_intelligence.pipeline import QBRProcessor
+if not _LIGHT_IMPORT:
+    # Database
+    from qbr_intelligence.db import init_db
+    from qbr_intelligence.db.models import (
+        Chart,
+        Chunk,
+        Document,
+        DocumentFacet,
+        DocumentStatus,
+        Entity,
+        EntityRelation,
+        EntityType,
+        Facet,
+        FacetValue,
+        Image,
+        Keyword,
+        Metric,
+        MetricCategory,
+        Period,
+        Section,
+        Slide,
+        SlideEntity,
+        SlideType,
+    )
 
-# LLM Modules
-from qbr_intelligence.llm import (
-    ChartReconstructor,
-    EntityExtractor,
-    ExecutiveSummarizer,
-    MetricNormalizer,
-    QBREnhancementPipeline,
-    SlideAnalyzer,
-)
-
-# Query Interface
-from qbr_intelligence.query import (
-    QBRQueryInterface,
-    get_action_items,
-    get_document_summary,
-    get_key_insights,
-    get_metrics_by_category,
-    get_recommendations,
-    get_slides_by_type,
-    get_top_metrics,
-    list_documents,
-    search_content,
-)
-
-__all__ = [
-    # Version
-    "__version__",
-    # Database init
-    "init_db",
-    # Database models
-    "Document",
-    "DocumentStatus",
-    "Section",
-    "Slide",
-    "SlideType",
-    "Metric",
-    "MetricCategory",
-    "Chart",
-    "Image",
-    "Entity",
-    "EntityType",
-    "EntityRelation",
-    "SlideEntity",
-    "Chunk",
-    "Facet",
-    "FacetValue",
-    "DocumentFacet",
-    "Keyword",
     # Pipeline
-    "QBRProcessor",
+    from qbr_intelligence.pipeline import QBRProcessor
+
     # LLM Modules
-    "SlideAnalyzer",
-    "MetricNormalizer",
-    "ChartReconstructor",
-    "ExecutiveSummarizer",
-    "EntityExtractor",
-    "QBREnhancementPipeline",
+    from qbr_intelligence.llm import (
+        ChartReconstructor,
+        EntityExtractor,
+        ExecutiveSummarizer,
+        MetricNormalizer,
+        QBREnhancementPipeline,
+        SlideAnalyzer,
+    )
+
     # Query Interface
-    "QBRQueryInterface",
-    "list_documents",
-    "get_document_summary",
-    "get_metrics_by_category",
-    "get_top_metrics",
-    "get_slides_by_type",
-    "get_recommendations",
-    "get_action_items",
-    "get_key_insights",
-    "search_content",
-]
+    from qbr_intelligence.query import (
+        QBRQueryInterface,
+        get_action_items,
+        get_document_summary,
+        get_key_insights,
+        get_metrics_by_category,
+        get_recommendations,
+        get_slides_by_type,
+        get_top_metrics,
+        list_documents,
+        search_content,
+    )
+
+    __all__ = [
+        # Version
+        "__version__",
+        # Database init
+        "init_db",
+        # Database models
+        "Document",
+        "DocumentStatus",
+        "Section",
+        "Slide",
+        "SlideType",
+        "Metric",
+        "MetricCategory",
+        "Period",
+        "Chart",
+        "Image",
+        "Entity",
+        "EntityType",
+        "EntityRelation",
+        "SlideEntity",
+        "Chunk",
+        "Facet",
+        "FacetValue",
+        "DocumentFacet",
+        "Keyword",
+        # Pipeline
+        "QBRProcessor",
+        # LLM Modules
+        "SlideAnalyzer",
+        "MetricNormalizer",
+        "ChartReconstructor",
+        "ExecutiveSummarizer",
+        "EntityExtractor",
+        "QBREnhancementPipeline",
+        # Query Interface
+        "QBRQueryInterface",
+        "list_documents",
+        "get_document_summary",
+        "search_content",
+        "get_slides_by_type",
+        "get_metrics_by_category",
+        "get_top_metrics",
+        "get_key_insights",
+        "get_recommendations",
+        "get_action_items",
+    ]
+else:
+    __all__ = ["__version__"]
