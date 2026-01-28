@@ -1,0 +1,11 @@
+{
+  "file_path": "/home/brunojaime/Documents/Projects/mcp-projects/LGAds/ai-agent-qbr/qbr_extraction/decks/Disney+ US FY25 H2.pptx",
+  "document_id": 2,
+  "started_at": "2026-01-27T23:26:50.181566+00:00",
+  "finished_at": "2026-01-27T23:28:56.288906+00:00",
+  "elapsed_seconds": 126.107,
+  "llm_enhancement": true,
+  "llm_model": "databricks/databricks-claude-sonnet-4-5",
+  "export_outputs": true,
+  "output_dir": "extraction_output/Disney+_US_FY25_H2"
+}

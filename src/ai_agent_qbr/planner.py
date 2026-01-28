@@ -32,6 +32,11 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - Use the `qbr_context` provided in the LLM context whenever available.
 - Cite slide ranges when possible.
 - If no context is provided, say that you could not find relevant QBR content.
+- If the user specifies a region (e.g., US or EMEA), only use data explicitly tied to that region.
+  Do not blend regions. If the available context spans multiple regions or is ambiguous, ask the user
+  to confirm the desired source (US vs EMEA vs global). If they want aggregated decks, separate the
+  response by region.
+- Use `region_verification` in context when available to resolve regional scope.
 - If the user asks about capabilities, what you can do, or how you can help, call `agent_capabilities`.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
@@ -428,6 +433,8 @@ def build_planner(
     - LLM_MODEL_NAME: Model name (default: databricks-claude-sonnet-4-5)
     - LLM_MAX_TOKENS: Max tokens (default: 4000)
     - LLM_CACHE_ENABLED: Enable response caching (default: true)
+    - REGION_VERIFY_MODEL_NAME: Small model for region verification (default: gpt-5-2-mini)
+    - REGION_VERIFY_MAX_TOKENS: Max tokens for region verification (default: 256)
     """
     nodes, registry = build_catalog_bundle()
     rich_output_config = _build_rich_output_config(config)

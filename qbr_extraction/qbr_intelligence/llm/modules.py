@@ -15,7 +15,10 @@ from qbr_intelligence.schemas.llm_outputs import (
     EntityExtractionOutput,
     ExecutiveSummaryOutput,
     ImageAnalysisOutput,
+    MetricDeduplicationOutput,
     MetricNormalizationOutput,
+    MetricRefinementOutput,
+    RefinedMetric,
     SlideAnalysisOutput,
 )
 
@@ -129,6 +132,97 @@ class MetricNormalizer(dspy.Module):
                 document_context=document_context or "Business quarterly review",
             )
         return result.normalized
+
+
+# =============================================================================
+# Metric Deduplication Module
+# =============================================================================
+
+
+class MetricDeduplicationSignature(dspy.Signature):
+    """
+    Identify duplicate metrics that should be removed.
+
+    Given a JSON array of metric candidates (with ids, names, values, units, and context),
+    return the list of ids that should be removed as duplicates.
+    """
+
+    metrics_json: str = dspy.InputField(
+        desc="JSON array of metric candidates with ids, names, values, units, contexts"
+    )
+
+    deduped: MetricDeduplicationOutput = dspy.OutputField(
+        desc="List of metric ids to remove as duplicates"
+    )
+
+
+class MetricDeduplicator(dspy.Module):
+    """DSPY module for deduplicating extracted metric candidates."""
+
+    def __init__(self, lm: dspy.LM | None = None):
+        super().__init__()
+        self.lm = lm
+        self.dedupe = dspy.ChainOfThought(MetricDeduplicationSignature)
+
+    def forward(self, metrics: list[dict]) -> MetricDeduplicationOutput:
+        metrics_json = json.dumps(metrics, indent=2)
+        with dspy.settings.context(lm=self.lm):
+            result = self.dedupe(metrics_json=metrics_json)
+        return result.deduped
+
+
+# =============================================================================
+# Metric Refinement Module
+# =============================================================================
+
+
+class MetricRefinementSignature(dspy.Signature):
+    """
+    Refine per-slide metrics by selecting true KPI values and deltas.
+
+    Given slide text and candidate metrics, return a clean list of metrics
+    with primary values and optional deltas/baselines.
+    """
+
+    slide_text: str = dspy.InputField(desc="Full slide text")
+    speaker_notes: str = dspy.InputField(desc="Speaker notes for the slide (may be empty)")
+    candidates_json: str = dspy.InputField(
+        desc="JSON array of candidate metrics with ids, names, values, units, and context"
+    )
+    metric_dictionary_json: str = dspy.InputField(
+        desc="JSON array of allowed metrics with names, units, and formulas"
+    )
+
+    refined: MetricRefinementOutput = dspy.OutputField(
+        desc="Refined metrics for the slide"
+    )
+
+
+class MetricRefiner(dspy.Module):
+    """DSPY module to refine slide metrics using full context."""
+
+    def __init__(self, lm: dspy.LM | None = None):
+        super().__init__()
+        self.lm = lm
+        self.refine = dspy.ChainOfThought(MetricRefinementSignature)
+
+    def forward(
+        self,
+        slide_text: str,
+        speaker_notes: str,
+        candidates: list[dict],
+        metric_dictionary: list[dict],
+    ) -> MetricRefinementOutput:
+        payload_candidates = json.dumps(candidates, indent=2)
+        payload_dictionary = json.dumps(metric_dictionary, indent=2)
+        with dspy.settings.context(lm=self.lm):
+            result = self.refine(
+                slide_text=slide_text,
+                speaker_notes=speaker_notes or "",
+                candidates_json=payload_candidates,
+                metric_dictionary_json=payload_dictionary,
+            )
+        return result.refined
 
 
 # =============================================================================

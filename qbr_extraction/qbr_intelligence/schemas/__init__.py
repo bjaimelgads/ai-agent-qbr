@@ -25,7 +25,10 @@ from qbr_intelligence.schemas.llm_outputs import (
     ExecutiveSummaryOutput,
     ExtractedEntity,
     ExtractedMetric,
+    MetricDeduplicationOutput,
     MetricNormalizationOutput,
+    MetricRefinementOutput,
+    RefinedMetric,
     SlideAnalysisOutput,
 )
 from qbr_intelligence.schemas.queries import (
@@ -58,7 +61,10 @@ __all__ = [
     "ChunkRead",
     # LLM Outputs
     "SlideAnalysisOutput",
+    "MetricDeduplicationOutput",
     "MetricNormalizationOutput",
+    "MetricRefinementOutput",
+    "RefinedMetric",
     "ExtractedMetric",
     "ChartReconstructionOutput",
     "ExecutiveSummaryOutput",

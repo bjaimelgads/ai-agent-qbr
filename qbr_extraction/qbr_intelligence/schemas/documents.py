@@ -274,6 +274,9 @@ class MetricRead(BaseSchema):
     name: str | None = None
     normalized_value: float | None = None
     unit: str | None = None
+    is_calculated: bool | None = None
+    depends_on: list[str] | None = None
+    formula: str | None = None
     category: MetricCategory = MetricCategory.OTHER
     trend: MetricTrend = MetricTrend.UNKNOWN
 

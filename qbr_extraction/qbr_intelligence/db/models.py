@@ -373,6 +373,9 @@ class Metric(Base):
     name: Mapped[str | None] = mapped_column(String(200), nullable=True)
     normalized_value: Mapped[float | None] = mapped_column(Float, nullable=True)
     unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    is_calculated: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    depends_on: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    formula: Mapped[str | None] = mapped_column(Text, nullable=True)
     category: Mapped[str] = mapped_column(
         String(50), default=MetricCategory.OTHER.value
     )

@@ -1,0 +1,1267 @@
+[
+  {
+    "id": "4237aff8cf544ecab892132baa1329a5",
+    "name": "Spend",
+    "raw_value": "$2800000.0",
+    "normalized_value": 2800000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$2.8M Investment | H2 FY25 investment, 8% increase from last quarter's $2,556,629.87 | vs last quarter",
+    "slide_number": 22,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": "delta_pct",
+      "change_percentage": 8.0,
+      "baseline_text": "vs last quarter",
+      "source_ids": [],
+      "source_snippet": "$2.8M Investment"
+    }
+  },
+  {
+    "id": "e2cf1b5f9578486193eccdac4732ca48",
+    "name": "Impressions",
+    "raw_value": "308000000.0",
+    "normalized_value": 308000000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "308M Impressions | 37% increase from last quarter's 224.80M | vs last quarter",
+    "slide_number": 22,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": "delta_pct",
+      "change_percentage": 37.0,
+      "baseline_text": "vs last quarter",
+      "source_ids": [],
+      "source_snippet": "308M Impressions"
+    }
+  },
+  {
+    "id": "c32ddc9acdf24d97969a7d412a897d5d",
+    "name": "Unique Reach",
+    "raw_value": "17000000.0",
+    "normalized_value": 17000000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "17M Total Unique Reach | Total unique users reached in H2 FY25",
+    "slide_number": 22,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [],
+      "source_snippet": "17M Total Unique Reach"
+    }
+  },
+  {
+    "id": "74adba12125248ce9f803f1509ad65ce",
+    "name": "Launches",
+    "raw_value": "21000000.0",
+    "normalized_value": 21000000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "performance",
+    "raw_context": "21M Launches (Opens) | 1.8x growth from H1, also 75% increase from last quarter's 11.95M | vs H1 (1.8x)",
+    "slide_number": 22,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": "delta_pct",
+      "change_percentage": 75.0,
+      "baseline_text": "vs H1 (1.8x)",
+      "source_ids": [],
+      "source_snippet": "21M Launches (Opens)"
+    }
+  },
+  {
+    "id": "43b651779f664795bc5f46095150642c",
+    "name": "Engagements",
+    "raw_value": "975000.0",
+    "normalized_value": 975000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "engagement",
+    "raw_context": "975K engagements (61%) | Proxy conversions: 2+ launches with 30+ min sessions within 7 days, 61% increase | vs last quarter",
+    "slide_number": 22,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.85,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": "delta_pct",
+      "change_percentage": 61.0,
+      "baseline_text": "vs last quarter",
+      "source_ids": [
+        "ba583e8c6b724b1198586ceb947061da"
+      ],
+      "source_snippet": "975K engagements (61%)"
+    }
+  },
+  {
+    "id": "64e8938684e34eaab00f0eb55c4a6155",
+    "name": "Cost per Engagement",
+    "raw_value": "$2.62",
+    "normalized_value": 2.62,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$2.62 CPE (32% decrease, $0.83 cheaper) | 32% decrease, $0.83 cheaper than previous period | vs last quarter",
+    "slide_number": 22,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "comparison_value": -0.83,
+      "comparison_type": "delta_pct",
+      "change_percentage": -32.0,
+      "baseline_text": "vs last quarter",
+      "source_ids": [
+        "01767e11e7d749b6bd3b951b272dfdc9",
+        "8d5d6c2c57d3478591cde9c0e03d018f"
+      ],
+      "source_snippet": "$2.62 CPE (32% decrease, $0.83 cheaper)"
+    }
+  },
+  {
+    "id": "a58a6dc632df41ab88098792bbe497c7",
+    "name": "Click Through Rate",
+    "raw_value": "0.49%",
+    "normalized_value": 0.49,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "A\u015fk\u0131 Hat\u0131rla - CTR: 0.49% | Creative: A\u015fk\u0131 Hat\u0131rla",
+    "slide_number": 59,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "e6516d5e316e446ca0ccbba38e61c5d7"
+      ],
+      "source_snippet": "A\u015fk\u0131 Hat\u0131rla - CTR: 0.49%"
+    }
+  },
+  {
+    "id": "732078c7b1c94e8c8827fbfa727d1f95",
+    "name": "Click Through Rate",
+    "raw_value": "0.33%",
+    "normalized_value": 0.33,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "2025 Spring Offer - Daredevil - CTR: 0.33% | Creative: 2025 Spring Offer - Daredevil",
+    "slide_number": 59,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "d42cc5b7b9ea4cb2815a9e84a11adf0c"
+      ],
+      "source_snippet": "2025 Spring Offer - Daredevil - CTR: 0.33%"
+    }
+  },
+  {
+    "id": "f077fba9f2c743b78cd9b9d91d7ebae4",
+    "name": "Click Through Rate",
+    "raw_value": "0.32%",
+    "normalized_value": 0.32,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "2025 Spring Offer - Baska Bir Sen - CTR: 0.32% | Creative: 2025 Spring Offer - Baska Bir Sen",
+    "slide_number": 59,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "7ea4736e887742e089cfc28f549c57e4"
+      ],
+      "source_snippet": "2025 Spring Offer - Baska Bir Sen - CTR: 0.32%"
+    }
+  },
+  {
+    "id": "d975233489f440fd8188f2586994d256",
+    "name": "Click Through Rate",
+    "raw_value": "0.26%",
+    "normalized_value": 0.26,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "CTR: 0.26% | 3D Carousel format",
+    "slide_number": 64,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "3e854e89010943fa836d50e0b3e3c945"
+      ],
+      "source_snippet": "CTR: 0.26%"
+    }
+  },
+  {
+    "id": "50cd790eb13c4973821aea8b4c4c9b23",
+    "name": "Click Through Rate",
+    "raw_value": "0.22%",
+    "normalized_value": 0.22,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "CTR: 0.22% | Video Companion format",
+    "slide_number": 64,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "d89186743ceb4f6b939d1c267957ac98"
+      ],
+      "source_snippet": "CTR: 0.22%"
+    }
+  },
+  {
+    "id": "38e0c247b7d8486bb1bed9cc31b79ce4",
+    "name": "Launch Rate",
+    "raw_value": "9.4%",
+    "normalized_value": 9.4,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "Launch Rate: 9.40% | 3D Carousel format",
+    "slide_number": 64,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Launches",
+      "Impressions"
+    ],
+    "formula": "Launches / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "b571499c91094df78c8916e358fb88cc"
+      ],
+      "source_snippet": "Launch Rate: 9.40%"
+    }
+  },
+  {
+    "id": "891aab8fe31648a19bd4650d0888fb5a",
+    "name": "Launch Rate",
+    "raw_value": "8.82%",
+    "normalized_value": 8.82,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "Launch Rate: 8.82% | Video Companion format",
+    "slide_number": 64,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Launches",
+      "Impressions"
+    ],
+    "formula": "Launches / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "40f58f9da5684b83b6e4adcc8cc0f36a"
+      ],
+      "source_snippet": "Launch Rate: 8.82%"
+    }
+  },
+  {
+    "id": "cb3e2911a5f540dc9e2b64885b19213a",
+    "name": "Cost per Engagement",
+    "raw_value": "$0.72",
+    "normalized_value": 0.72,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "CPE: $0.72 | 3D Carousel format",
+    "slide_number": 64,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "462d09ebd474439da8ee1f3a0964e404"
+      ],
+      "source_snippet": "CPE: $0.72"
+    }
+  },
+  {
+    "id": "2e292cc66a2245b1a064224fb4353c95",
+    "name": "Cost per Engagement",
+    "raw_value": "$1.32",
+    "normalized_value": 1.32,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "CPE: $1.32 | Video Companion format - not captured in candidates but visible in slide text",
+    "slide_number": 64,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "source_ids": [],
+      "source_snippet": "CPE: $1.32"
+    }
+  },
+  {
+    "id": "4e8e21c20f4c4933aebecafb8a48a25e",
+    "name": "Cost per Engagement",
+    "raw_value": "$4.22",
+    "normalized_value": 4.22,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "Cost per Engaged User (CPE): Cost to engage a Lapsed user - $4.22 | CPE improved from $4.40 to $4.22 quarter-over-quarter | vs last quarter",
+    "slide_number": 49,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": -0.18,
+      "comparison_type": "delta_pct",
+      "change_percentage": -4.09,
+      "baseline_text": "vs last quarter",
+      "source_ids": [
+        "573eb368dbd149a2b949be361b353e26",
+        "ec3bbd38128645bfb3edf2ae4fc9e561"
+      ],
+      "source_snippet": "Cost per Engaged User (CPE): Cost to engage a Lapsed user - $4.22"
+    }
+  },
+  {
+    "id": "814dc61d0ae140788f3265c4cb75d935",
+    "name": "Impressions",
+    "raw_value": "46800000.0",
+    "normalized_value": 46800000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "Impressions - 46.8M | Impressions decreased from 59M to 46.8M | vs last quarter",
+    "slide_number": 49,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": -12200000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": -20.68,
+      "baseline_text": "vs last quarter",
+      "source_ids": [
+        "a27e3b7596fc463fa9da409cd360f16f",
+        "eae5382f2cec4b2d895f8de2b7771896"
+      ],
+      "source_snippet": "Impressions - 46.8M"
+    }
+  },
+  {
+    "id": "320bd490f25c461db50f9d45572f3e91",
+    "name": "Launches",
+    "raw_value": "1900000.0",
+    "normalized_value": 1900000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "performance",
+    "raw_context": "Launches - 1.9M | Launches decreased from 2.4M to 1.9M | vs last quarter",
+    "slide_number": 49,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": -500000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": -20.83,
+      "baseline_text": "vs last quarter",
+      "source_ids": [
+        "62917d19e90342319c63fd8684fc0596"
+      ],
+      "source_snippet": "Launches - 1.9M"
+    }
+  },
+  {
+    "id": "ab510cb2cfa64c4da082f374059c594f",
+    "name": "Engagements",
+    "raw_value": "118000.0",
+    "normalized_value": 118000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "engagement",
+    "raw_context": "Qualified Engagements - 118K | Qualified Engagements decreased from 153K to 118K | vs last quarter",
+    "slide_number": 49,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": -35000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": -22.88,
+      "baseline_text": "vs last quarter",
+      "source_ids": [
+        "89612af321794b65a251e4f8eb3dab4c"
+      ],
+      "source_snippet": "Qualified Engagements - 118K"
+    }
+  },
+  {
+    "id": "6ea84fbf620b4aa29bc4f22cbfa3463c",
+    "name": "Spend",
+    "raw_value": "$430000.0",
+    "normalized_value": 430000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "Investment - $430K | Current period investment for Sept/June roadblocks | vs Last Half ($327K)",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": 103000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": 31.5,
+      "baseline_text": "vs Last Half ($327K)",
+      "source_ids": [
+        "e8478da187b543e4b8d5f0a0b0505a73"
+      ],
+      "source_snippet": "Investment - $430K"
+    }
+  },
+  {
+    "id": "c029081064ed45d8ba93a6ba6d05206f",
+    "name": "Unique Reach",
+    "raw_value": "4900000.0",
+    "normalized_value": 4900000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "Reach - 4.9M | Current period reach | vs Last Half (5.44M)",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "comparison_value": -540000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": -9.9,
+      "baseline_text": "vs Last Half (5.44M)",
+      "source_ids": [
+        "80805f7725994ee4a8e2ce9c2e43339c"
+      ],
+      "source_snippet": "Reach - 4.9M"
+    }
+  },
+  {
+    "id": "ee99bbb21af343988fdd5751db54f768",
+    "name": "Click Through Rate",
+    "raw_value": "0.12%",
+    "normalized_value": 0.12,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "CTR - 0.12% | Current period CTR | vs Last Half (0.17%)",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": "delta_pct",
+      "change_percentage": -29.4,
+      "baseline_text": "vs Last Half (0.17%)",
+      "source_ids": [
+        "fd316b058ba54de5a5846fdc354c78e0"
+      ],
+      "source_snippet": "CTR - 0.12%"
+    }
+  },
+  {
+    "id": "ea5296ea489548e2879e6f16d9fcde0b",
+    "name": "Launches",
+    "raw_value": "6200000.0",
+    "normalized_value": 6200000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "performance",
+    "raw_context": "Launches - 6.2M | Current period launches, significant increase | vs Last Half (4M)",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "comparison_value": 2200000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": 55.0,
+      "baseline_text": "vs Last Half (4M)",
+      "source_ids": [
+        "d323415b2c95484eaf964b0645dab77c"
+      ],
+      "source_snippet": "Launches - 6.2M"
+    }
+  },
+  {
+    "id": "ef10737af8894b288eb747785345488d",
+    "name": "Launch Rate",
+    "raw_value": "15.0%",
+    "normalized_value": 15.0,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "Launch Rate - 15% | Current period launch rate",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Launches",
+      "Impressions"
+    ],
+    "formula": "Launches / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "ee66c46dced34314b04a63165fb56609"
+      ],
+      "source_snippet": "Launch Rate - 15%"
+    }
+  },
+  {
+    "id": "14a21bd805c0493f9e55a75181049d23",
+    "name": "Engagements",
+    "raw_value": "608000.0",
+    "normalized_value": 608000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "engagement",
+    "raw_context": "Engaged Users - 608K | Engaged Users metric | vs Last Half (397K)",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "comparison_value": 211000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": 53.1,
+      "baseline_text": "vs Last Half (397K)",
+      "source_ids": [
+        "3d8e772eda7d4559947a3f75b920533e"
+      ],
+      "source_snippet": "Engaged Users - 608K"
+    }
+  },
+  {
+    "id": "2d5e61046bb54d6eaf8c140ca3b9af9f",
+    "name": "Cost per Engagement",
+    "raw_value": "$0.71",
+    "normalized_value": 0.71,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "CPE - $0.71 | Improved CPE vs baseline | vs Last Half ($0.82)",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": -0.11,
+      "comparison_type": "delta_pct",
+      "change_percentage": -13.4,
+      "baseline_text": "vs Last Half ($0.82)",
+      "source_ids": [
+        "7ba3dd4abfed4b879b69c5fcb8184801"
+      ],
+      "source_snippet": "CPE - $0.71"
+    }
+  },
+  {
+    "id": "b1e966cddc6343db916dce2b0b6ebb9a",
+    "name": "Installs",
+    "raw_value": "19000.0",
+    "normalized_value": 19000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "performance",
+    "raw_context": "Installs: 19K | Baseline period metric only",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.85,
+    "metadata": {
+      "source_ids": [
+        "1817feabf31f4f3ab6e1ad3585c26bbb"
+      ],
+      "source_snippet": "Installs: 19K"
+    }
+  },
+  {
+    "id": "38bd05e7dc354c789f2c1ab668890428",
+    "name": "Acquisitions",
+    "raw_value": "2000.0",
+    "normalized_value": 2000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "performance",
+    "raw_context": "Acquired Users: 2K | Baseline period metric only",
+    "slide_number": 70,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.85,
+    "metadata": {
+      "source_ids": [
+        "5ccca0c3a0214ec6928a7b5835d44d8f"
+      ],
+      "source_snippet": "Acquired Users: 2K"
+    }
+  },
+  {
+    "id": "28d19003edda4ec7bce46d5954fb0ff3",
+    "name": "Click Through Rate",
+    "raw_value": "0.15%",
+    "normalized_value": 0.15,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "Overall CTR\t0.15%\t0.13% | Roadblocks CTR (0.15%) vs Overall (0.13%). Slide claims 4x but actual lift is ~15% | vs Overall UK & DE Q3",
+    "slide_number": 75,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": 0.02,
+      "comparison_type": "delta_pct",
+      "change_percentage": 15.38,
+      "baseline_text": "vs Overall UK & DE Q3",
+      "source_ids": [
+        "31f309033fa74c7baed2d872691998fe",
+        "ee37377358244e95a298a31a2e46c05a"
+      ],
+      "source_snippet": "Overall CTR\t0.15%\t0.13%"
+    }
+  },
+  {
+    "id": "875950f042eb436585f70df7bb876425",
+    "name": "Launch Rate",
+    "raw_value": "19.31%",
+    "normalized_value": 19.31,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "Launch Rate 19.31%   17.45% | Roadblocks Launch Rate (19.31%) vs Overall (17.45%). Slide claims 3x but actual lift is ~11% | vs Overall UK & DE Q3",
+    "slide_number": 75,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Launches",
+      "Impressions"
+    ],
+    "formula": "Launches / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": 1.86,
+      "comparison_type": "delta_pct",
+      "change_percentage": 10.66,
+      "baseline_text": "vs Overall UK & DE Q3",
+      "source_ids": [
+        "36aa6e340d294cc0ae4072c422b4cf3d",
+        "b0acf8255a944ab5be26850b4d8bf4bb"
+      ],
+      "source_snippet": "Launch Rate 19.31%   17.45%"
+    }
+  },
+  {
+    "id": "27f38eec38b84e8da7a77332c832cdb6",
+    "name": "Cost per Engagement",
+    "raw_value": "$0.94",
+    "normalized_value": 0.94,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "CPE: 0.94    1.09 | Roadblocks CPE (0.94) vs Overall (1.09), showing improved efficiency | vs Overall UK & DE Q3",
+    "slide_number": 75,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "comparison_value": -0.15,
+      "comparison_type": "delta_pct",
+      "change_percentage": -13.76,
+      "baseline_text": "vs Overall UK & DE Q3",
+      "source_ids": [],
+      "source_snippet": "CPE: 0.94    1.09"
+    }
+  },
+  {
+    "id": "6ab9667eb0f548b8aace61c6f166232c",
+    "name": "Spend",
+    "raw_value": "$2807512.39",
+    "normalized_value": 2807512.39,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "Speaker: Laura H1'25: $2,571,477 H2'25: $2,807,512.39 | H2'25 spend with $300K additional investment mentioned in slide | vs H1'25",
+    "slide_number": 23,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 1.0,
+    "metadata": {
+      "comparison_value": 236035.39,
+      "comparison_type": "delta_pct",
+      "change_percentage": 9.18,
+      "baseline_text": "vs H1'25",
+      "source_ids": [
+        "17ff62f585f849d1b87db47924ec7c56"
+      ],
+      "source_snippet": "Speaker: Laura H1'25: $2,571,477 H2'25: $2,807,512.39"
+    }
+  },
+  {
+    "id": "5f09de9de3564c22b9f537aed2da4f69",
+    "name": "Unique Reach",
+    "raw_value": "17300000.0",
+    "normalized_value": 17300000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "ReachH1'25: 14.6M\n- H2'25: 17.3M\n- +18% | H2'25 reach showing 18% improvement over H1 | vs H1'25",
+    "slide_number": 23,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 1.0,
+    "metadata": {
+      "comparison_value": 2700000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": 18.0,
+      "baseline_text": "vs H1'25",
+      "source_ids": [],
+      "source_snippet": "ReachH1'25: 14.6M\n- H2'25: 17.3M\n- +18%"
+    }
+  },
+  {
+    "id": "87baa463e00344a58a7496c7504281f9",
+    "name": "Launches",
+    "raw_value": "21200000.0",
+    "normalized_value": 21200000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "performance",
+    "raw_context": "LaunchesH1'25: 12.0M\n- H2'25: 21.2M\n- +78% | H2'25 launches showing significant 78% improvement | vs H1'25",
+    "slide_number": 23,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 1.0,
+    "metadata": {
+      "comparison_value": 9200000.0,
+      "comparison_type": "delta_pct",
+      "change_percentage": 78.0,
+      "baseline_text": "vs H1'25",
+      "source_ids": [
+        "fc73b06461c2422c985c1afae371f785"
+      ],
+      "source_snippet": "LaunchesH1'25: 12.0M\n- H2'25: 21.2M\n- +78%"
+    }
+  },
+  {
+    "id": "c17aa330ecff4bd4a372f258591fb314",
+    "name": "Click Through Rate",
+    "raw_value": "",
+    "normalized_value": null,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "CTR up 58% | Improvement from moving to Suppression-based audience targeting | vs previous period (Suppression-based audience)",
+    "slide_number": 39,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": "delta_pct",
+      "change_percentage": 58.0,
+      "baseline_text": "vs previous period (Suppression-based audience)",
+      "source_ids": [
+        "e23749169f954212bf5f03bffc7e07b0"
+      ],
+      "source_snippet": "CTR up 58%"
+    }
+  },
+  {
+    "id": "5c22b5d804e64b188677b6a51a2b6cb1",
+    "name": "Click Through Rate",
+    "raw_value": "",
+    "normalized_value": null,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "drives 2\u20134x CTR | Content Store Roadblock drives 2-4x higher CTR; relative multiplier not absolute delta | Content Store Roadblock vs standard placement",
+    "slide_number": 39,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Clicks",
+      "Impressions"
+    ],
+    "formula": "Clicks / Impressions",
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "comparison_value": null,
+      "comparison_type": null,
+      "change_percentage": null,
+      "baseline_text": "Content Store Roadblock vs standard placement",
+      "source_ids": [],
+      "source_snippet": "drives 2\u20134x CTR"
+    }
+  },
+  {
+    "id": "b48605c4541444d589327dc35335accf",
+    "name": "Unique Reach",
+    "raw_value": "28.0%",
+    "normalized_value": 28.0,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "reach",
+    "raw_context": "28%+ reach | Home Screen Roadblocks drove 28%+ of total unique reach while representing 15% of spend",
+    "slide_number": 39,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.85,
+    "metadata": {
+      "source_ids": [],
+      "source_snippet": "28%+ reach"
+    }
+  },
+  {
+    "id": "19c0011c5d5d494bbefd48b976617596",
+    "name": "Spend",
+    "raw_value": "15.0%",
+    "normalized_value": 15.0,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "cost",
+    "raw_context": "Roadblocks = 15% of spend | Roadblocks represented 15% of total spend",
+    "slide_number": 39,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [],
+      "source_snippet": "Roadblocks = 15% of spend"
+    }
+  },
+  {
+    "id": "ae6f42c4863c43ec94b682e45aa5c997",
+    "name": "Cost per Engagement",
+    "raw_value": "$0.56",
+    "normalized_value": 0.56,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "Lilio & Stitch 2025 - CPE: - $0.56 | Lilio & Stitch 2025 creative campaign",
+    "slide_number": 60,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "ce8428bd0a6e4bcaa616c4da67cf9379"
+      ],
+      "source_snippet": "Lilio & Stitch 2025 - CPE: - $0.56"
+    }
+  },
+  {
+    "id": "0d91bb65c2434a24b02480358609d94e",
+    "name": "Cost per Engagement",
+    "raw_value": "$0.57",
+    "normalized_value": 0.57,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "2025 Sept Offer - Moana 2 - CPE: - $0.57 | 2025 Sept Offer - Moana 2 creative campaign",
+    "slide_number": 60,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "c1c80376aac64257a42f1a657652a7d0"
+      ],
+      "source_snippet": "2025 Sept Offer - Moana 2 - CPE: - $0.57"
+    }
+  },
+  {
+    "id": "d74ddfcdb603493cac79711d33e6cc3b",
+    "name": "Cost per Engagement",
+    "raw_value": "$0.92",
+    "normalized_value": 0.92,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "Alien Earth - CPE: - $0.92 | Alien Earth creative campaign",
+    "slide_number": 60,
+    "source": "llm_refined",
+    "is_calculated": true,
+    "depends_on": [
+      "Spend",
+      "Engagements"
+    ],
+    "formula": "Spend / Engagements",
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "e77c79f5d18a4c29b13d6a01f6289245"
+      ],
+      "source_snippet": "Alien Earth - CPE: - $0.92"
+    }
+  },
+  {
+    "id": "8a82bd813f5440d495ab8dd189b6c91e",
+    "name": "Spend",
+    "raw_value": "$124000.0",
+    "normalized_value": 124000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$124K Sept Investment | United Kingdom September investment",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "e05b31f387bd4254b82d4a63e1739445"
+      ],
+      "source_snippet": "$124K Sept Investment"
+    }
+  },
+  {
+    "id": "91fedc13f1d64a18b049d22240d3ff05",
+    "name": "Spend",
+    "raw_value": "$44000.0",
+    "normalized_value": 44000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$44K Sept Investment | Spain September investment",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "47db6de02996411fae618e0332a5cdf2"
+      ],
+      "source_snippet": "$44K Sept Investment"
+    }
+  },
+  {
+    "id": "be34f2d03a3a402bacbef8e811475190",
+    "name": "Spend",
+    "raw_value": "$172000.0",
+    "normalized_value": 172000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$172K Sept Investment | Germany September investment",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "1d2065dd28724c168d1838064de2922a"
+      ],
+      "source_snippet": "$172K Sept Investment"
+    }
+  },
+  {
+    "id": "c0638493fbd9462296532c2350fbea4d",
+    "name": "Spend",
+    "raw_value": "$78000.0",
+    "normalized_value": 78000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$78K Sept Investment | Italy September investment",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "648db8b240284442914b1a6051c83a5a"
+      ],
+      "source_snippet": "$78K Sept Investment"
+    }
+  },
+  {
+    "id": "a3b97d148d4b4d81855243a7c2edd787",
+    "name": "Spend",
+    "raw_value": "$49000.0",
+    "normalized_value": 49000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "$49K Sept Investment | France September investment",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.95,
+    "metadata": {
+      "source_ids": [
+        "728f7de12d7c404da2196522c8385b0c"
+      ],
+      "source_snippet": "$49K Sept Investment"
+    }
+  },
+  {
+    "id": "56c821f7e1c14391a38181f5f60139d8",
+    "name": "Unique Reach",
+    "raw_value": "2500000.0",
+    "normalized_value": 2500000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "2.5M Reach | United Kingdom reach",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "source_ids": [
+        "696bb2faf0ec4967a3e8f1866a68c0c4"
+      ],
+      "source_snippet": "2.5M Reach"
+    }
+  },
+  {
+    "id": "410aca195f7546c29973b2cf7776e2fe",
+    "name": "Unique Reach",
+    "raw_value": "1700000.0",
+    "normalized_value": 1700000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "1.7M Reach | Spain reach",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "source_ids": [
+        "696bb2faf0ec4967a3e8f1866a68c0c4"
+      ],
+      "source_snippet": "1.7M Reach"
+    }
+  },
+  {
+    "id": "cc1f0b1bd38b4cfc9d08780b85ac6abb",
+    "name": "Unique Reach",
+    "raw_value": "1500000.0",
+    "normalized_value": 1500000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "1.5M Reach | Germany reach",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "source_ids": [
+        "696bb2faf0ec4967a3e8f1866a68c0c4"
+      ],
+      "source_snippet": "1.5M Reach"
+    }
+  },
+  {
+    "id": "683c585b5b98467b8e34f3d33114aa41",
+    "name": "Unique Reach",
+    "raw_value": "1500000.0",
+    "normalized_value": 1500000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "1.5M Reach | Italy reach",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "source_ids": [
+        "696bb2faf0ec4967a3e8f1866a68c0c4"
+      ],
+      "source_snippet": "1.5M Reach"
+    }
+  },
+  {
+    "id": "94ba48c5731b4755ad3eb62a448366b7",
+    "name": "Unique Reach",
+    "raw_value": "819000.0",
+    "normalized_value": 819000.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "819K Reach | France reach",
+    "slide_number": 80,
+    "source": "llm_refined",
+    "is_calculated": false,
+    "depends_on": [],
+    "formula": null,
+    "extraction_confidence": 0.9,
+    "metadata": {
+      "source_ids": [
+        "696bb2faf0ec4967a3e8f1866a68c0c4"
+      ],
+      "source_snippet": "819K Reach"
+    }
+  }
+]

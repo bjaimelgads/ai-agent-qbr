@@ -173,6 +173,69 @@ class MetricNormalizationOutput(BaseModel):
 
 
 # =============================================================================
+# Metric Deduplication Output
+# =============================================================================
+
+
+class MetricDeduplicationOutput(BaseModel):
+    """Structured output for metric deduplication."""
+
+    remove_ids: list[str] = Field(
+        default_factory=list,
+        description="List of metric ids that should be removed as duplicates",
+    )
+    summary: str = Field(
+        default="",
+        description="Short explanation of duplicate removal decisions",
+    )
+
+
+# =============================================================================
+# Metric Refinement Output
+# =============================================================================
+
+
+class RefinedMetric(BaseModel):
+    """Refined metric extracted from slide context."""
+
+    metric_name: str = Field(description="Canonical metric name from the provided dictionary")
+    value: float | None = Field(default=None, description="Primary metric value")
+    unit: str | None = Field(default=None, description="Unit of measurement")
+    delta_abs: float | None = Field(
+        default=None, description="Absolute change value if present (e.g., $0.83 cheaper)"
+    )
+    delta_pct: float | None = Field(
+        default=None, description="Percent change if present (e.g., -32%)"
+    )
+    baseline_text: str | None = Field(
+        default=None, description="Baseline description (e.g., vs last half)"
+    )
+    notes: str | None = Field(
+        default=None, description="Short explanation or qualifiers"
+    )
+    confidence: float | None = Field(
+        default=None, description="Confidence in the refinement (0-1)"
+    )
+    source_ids: list[str] = Field(
+        default_factory=list,
+        description="IDs of the candidate metrics used to derive this metric",
+    )
+    source_snippet: str | None = Field(
+        default=None,
+        description="Exact text snippet the value was taken from",
+    )
+
+
+class MetricRefinementOutput(BaseModel):
+    """Structured output for per-slide metric refinement."""
+
+    metrics: list[RefinedMetric] = Field(
+        default_factory=list,
+        description="Refined metrics for the slide",
+    )
+
+
+# =============================================================================
 # Chart Reconstruction Output
 # =============================================================================
 

@@ -11,10 +11,15 @@ from dataclasses import dataclass
 from typing import Any
 
 from penguiflow.errors import FlowError
-from penguiflow.planner import PlannerFinish, PlannerPause
+from penguiflow.planner import PlannerFinish, PlannerPause, ToolContext
 
 from ai_agent_qbr.config import Config
 from ai_agent_qbr.infrastructure.memory_store import InMemoryMemoryStore
+from ai_agent_qbr.infrastructure.region_filter import (
+    build_context_from_items,
+    filter_items_by_region,
+)
+from ai_agent_qbr.infrastructure.region_verifier import RegionVerifier
 from ai_agent_qbr.observability.mlflow_logger import (
     MlflowConfig,
     MlflowTrace,
@@ -23,6 +28,8 @@ from ai_agent_qbr.observability.mlflow_logger import (
 )
 from ai_agent_qbr.planner import PlannerBundle, build_planner
 from ai_agent_qbr.telemetry import AgentTelemetry
+from ai_agent_qbr.tools.region_verifier import verify_region_filter
+from ai_agent_qbr.models import RegionFilterVerificationArgs
 from qbr_agent.application.use_cases import AnswerQuestion, HybridSearchKnowledge
 from qbr_agent.infrastructure.factory import InfrastructureBundle, build_infrastructure
 
@@ -185,6 +192,7 @@ class AiAgentQbrOrchestrator:
         self._recent_turns_limit = config.short_term_memory_full_zone_turns
         self._infra_bundle = infrastructure
         self._infra_lock = asyncio.Lock()
+        self._region_verifier: RegionVerifier | None = None
         self._mlflow_tracer = MlflowTracer(
             MlflowConfig(
                 enabled=config.mlflow_enabled,
@@ -322,6 +330,20 @@ class AiAgentQbrOrchestrator:
                     metadata={},
                 )
 
+            if self._region_verifier is None:
+                self._region_verifier = RegionVerifier(self._config)
+
+            region_result = await verify_region_filter(
+                RegionFilterVerificationArgs(question=query),
+                ToolContext(
+                    tool_context={
+                        "status_publisher": self._telemetry.publish_status,
+                        "region_verifier": self._region_verifier,
+                    }
+                ),
+            )
+            region_focus = region_result.region_focus
+
             infra = await self._get_infrastructure()
             search_use_case = HybridSearchKnowledge(
                 repository=infra.repository,
@@ -370,10 +392,23 @@ class AiAgentQbrOrchestrator:
                     min_score=self._config.retrieval_min_score,
                 )
 
+                if region_focus in {"us", "emea"}:
+                    filtered_citations = filter_items_by_region(
+                        answer_context.citations, region_focus
+                    )
+                    filtered_context = (
+                        build_context_from_items(filtered_citations)
+                        if filtered_citations
+                        else ""
+                    )
+                else:
+                    filtered_citations = list(answer_context.citations)
+                    filtered_context = answer_context.context or ""
+
                 self._mlflow_trace.set_outputs(
                     retrieval_span,
                     {
-                        "qbr_context": answer_context.context,
+                        "qbr_context": filtered_context,
                         "citations": [
                             {
                                 "chunk_id": result.chunk.chunk_id.value,
@@ -383,7 +418,7 @@ class AiAgentQbrOrchestrator:
                                 "end_slide": result.chunk.end_slide,
                                 "content": result.chunk.content,
                             }
-                            for result in answer_context.citations
+                            for result in filtered_citations
                         ],
                         "retrieval_debug": answer_use_case.last_debug or {},
                     },
@@ -394,11 +429,11 @@ class AiAgentQbrOrchestrator:
                 tags={"trace_id": trace_id},
             ) as retrieval_run:
                 if retrieval_run:
-                    retrieval_run.log_param("citation_count", len(answer_context.citations))
+                    retrieval_run.log_param("citation_count", len(filtered_citations))
                     self._mlflow_tracer.log_text(
                         retrieval_run,
                         "qbr_context",
-                        answer_context.context or "",
+                        filtered_context or "",
                     )
                     self._mlflow_tracer.log_json(
                         retrieval_run,
@@ -412,7 +447,7 @@ class AiAgentQbrOrchestrator:
                                 "end_slide": result.chunk.end_slide,
                                 "content": result.chunk.content,
                             }
-                            for result in answer_context.citations
+                            for result in filtered_citations
                         ],
                     )
                     if answer_use_case.last_debug:
@@ -430,7 +465,8 @@ class AiAgentQbrOrchestrator:
                 "conversation_memory": {
                     "recent_turns": list(self._recent_turns.get(session_key, []))
                 },
-                "qbr_context": answer_context.context,
+                "qbr_context": filtered_context,
+                "region_verification": region_result.model_dump(),
                 "qbr_citations": [
                     {
                         "chunk_id": result.chunk.chunk_id.value,
@@ -439,7 +475,7 @@ class AiAgentQbrOrchestrator:
                         "start_slide": result.chunk.start_slide,
                         "end_slide": result.chunk.end_slide,
                     }
-                    for result in answer_context.citations
+                    for result in filtered_citations
                 ],
             }
             tool_context = {
@@ -450,7 +486,9 @@ class AiAgentQbrOrchestrator:
                 "status_publisher": self._telemetry.publish_status,
                 "output_protocol": self._config.output_protocol,
                 "qbr_search_use_case": search_use_case,
-                "qbr_answer_context": answer_context.context,
+                "qbr_answer_context": filtered_context,
+                "region_focus": region_focus,
+                "region_verifier": self._region_verifier,
                 "retrieval_top_k": self._config.retrieval_top_k,
                 "retrieval_min_score": self._config.retrieval_min_score,
                 "retrieval_include_document_path": self._config.retrieval_include_document_path,
@@ -465,7 +503,7 @@ class AiAgentQbrOrchestrator:
                 span_type="LLM",
                 inputs={
                     "query": query,
-                    "qbr_context": answer_context.context,
+                    "qbr_context": filtered_context,
                     "qbr_citations": llm_context["qbr_citations"],
                 },
             ) as planner_span:

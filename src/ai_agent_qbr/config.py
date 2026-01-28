@@ -130,6 +130,8 @@ class Config:
     llm_model_name: str = "databricks-claude-sonnet-4-5"
     llm_max_tokens: int = 4000
     llm_cache_enabled: bool = True
+    region_verify_model_name: str = "databricks-gpt-5-mini"
+    region_verify_max_tokens: int = 256
 
     # Flag to use stub LLM (for testing)
     use_stub_llm: bool = True
@@ -258,6 +260,11 @@ class Config:
             llm_model_name=os.getenv("LLM_MODEL_NAME", "databricks-claude-sonnet-4-5"),
             llm_max_tokens=_env_int("LLM_MAX_TOKENS", 4000),
             llm_cache_enabled=_env_flag("LLM_CACHE_ENABLED", True),
+            region_verify_model_name=os.getenv(
+                "REGION_VERIFY_MODEL_NAME",
+                "databricks-gpt-5-mini",
+            ),
+            region_verify_max_tokens=_env_int("REGION_VERIFY_MAX_TOKENS", 256),
             use_stub_llm=_env_flag("USE_STUB_LLM", True),
             mlflow_enabled=_env_flag("MLFLOW_ENABLED", False),
             mlflow_tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),

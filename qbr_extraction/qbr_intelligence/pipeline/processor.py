@@ -12,6 +12,7 @@ import json
 import os
 import re
 import zipfile
+import time
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -29,7 +30,7 @@ from kreuzberg import (
     OcrConfig,
     PageConfig,
 )
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker
 
 from qbr_intelligence.db.models import (
@@ -47,10 +48,20 @@ from qbr_intelligence.db.models import (
     SlideType,
 )
 from qbr_intelligence.llm.modules import (
+    MetricDeduplicator,
+    MetricRefiner,
     QBREnhancementPipeline,
     create_lm,
 )
 from qbr_intelligence.pipeline.embeddings import EmbeddingSettings
+from qbr_intelligence.pipeline.metric_scanner import (
+    MetricCandidate,
+    MetricScanArtifacts,
+    MetricScanner,
+    _metric_type_from_unit,
+    _new_metric_id,
+    build_metric_dictionary,
+)
 from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
@@ -98,6 +109,7 @@ class QBRProcessor:
         self.engine = create_engine(database_url, echo=False)
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
+        self._ensure_metric_columns()
 
         # Initialize LLM (will be created when needed)
         self.llm_model = llm_model
@@ -122,6 +134,25 @@ class QBRProcessor:
         if self._enhancement_pipeline is None:
             self._enhancement_pipeline = QBREnhancementPipeline(lm=self.lm)
         return self._enhancement_pipeline
+
+    def _ensure_metric_columns(self) -> None:
+        if self.engine.dialect.name != "sqlite":
+            return
+        inspector = inspect(self.engine)
+        if "metrics" not in inspector.get_table_names():
+            return
+        existing = {col["name"] for col in inspector.get_columns("metrics")}
+        needed = {
+            "is_calculated": "BOOLEAN",
+            "depends_on": "TEXT",
+            "formula": "TEXT",
+        }
+        missing = {name: ddl for name, ddl in needed.items() if name not in existing}
+        if not missing:
+            return
+        with self.engine.begin() as conn:
+            for name, ddl in missing.items():
+                conn.execute(text(f"ALTER TABLE metrics ADD COLUMN {name} {ddl}"))
 
     def create_extraction_config(self) -> ExtractionConfig:
         """Create Kreuzberg extraction configuration."""
@@ -504,6 +535,181 @@ class QBRProcessor:
         if isinstance(value, bytes):
             return base64.b64encode(value).decode("ascii")
         return value
+
+    @staticmethod
+    def _metric_candidate_to_dict(metric) -> dict:
+        return {
+            "id": metric.metric_id,
+            "name": metric.name,
+            "raw_value": metric.raw_value,
+            "normalized_value": metric.normalized_value,
+            "unit": metric.unit,
+            "metric_type": metric.metric_type,
+            "category": metric.category,
+            "raw_context": metric.raw_context,
+            "slide_number": metric.slide_number,
+            "source": metric.source,
+            "is_calculated": metric.is_calculated,
+            "depends_on": metric.depends_on,
+            "formula": metric.formula,
+            "extraction_confidence": metric.extraction_confidence,
+            "metadata": metric.metadata,
+        }
+
+    def _refine_metrics_with_llm(
+        self,
+        *,
+        metrics: list,
+        slides: list[dict],
+        metric_dictionary: object,
+    ) -> list:
+        if not metrics:
+            return metrics
+        start_time = time.perf_counter()
+        limit_env = (os.getenv("LLM_METRIC_SLIDE_LIMIT") or "").strip()
+        slide_limit = int(limit_env) if limit_env.isdigit() else None
+        slides_env = (os.getenv("LLM_METRIC_SLIDES") or "").strip()
+        slide_allowlist: set[int] | None = None
+        if slides_env:
+            parsed = []
+            for token in slides_env.split(","):
+                token = token.strip()
+                if not token:
+                    continue
+                if token.isdigit():
+                    parsed.append(int(token))
+            if parsed:
+                slide_allowlist = set(parsed)
+        slide_lookup = {s.get("slide_number"): s for s in slides}
+        metrics_by_slide: dict[int | None, list] = {}
+        for metric in metrics:
+            metrics_by_slide.setdefault(metric.slide_number, []).append(metric)
+
+        dictionary_payload = [
+            {
+                "name": definition.name,
+                "unit": definition.unit_hint,
+                "formula": definition.formula,
+                "is_calculated": definition.is_calculated,
+                "depends_on": list(definition.depends_on),
+                "category": definition.category,
+            }
+            for definition in metric_dictionary.definitions
+        ]
+        dictionary_by_name = {definition.name: definition for definition in metric_dictionary.definitions}
+
+        refiner = MetricRefiner(lm=self.lm)
+        refined: list = []
+        processed = 0
+        for slide_number, slide_metrics in metrics_by_slide.items():
+            if slide_number is None:
+                continue
+            if slide_allowlist is not None and slide_number not in slide_allowlist:
+                continue
+            if slide_limit is not None and processed >= slide_limit:
+                continue
+            slide = slide_lookup.get(slide_number, {})
+            slide_text = slide.get("raw_text", "")
+            speaker_notes = slide.get("speaker_notes", "")
+            if not slide_text and not speaker_notes:
+                continue
+            candidates = [
+                {
+                    "id": m.metric_id,
+                    "name": m.name,
+                    "raw_value": m.raw_value,
+                    "value": m.normalized_value,
+                    "unit": m.unit,
+                    "context": m.raw_context,
+                    "category": m.category,
+                }
+                for m in slide_metrics
+            ]
+            try:
+                result = refiner(
+                    slide_text=slide_text,
+                    speaker_notes=speaker_notes,
+                    candidates=candidates,
+                    metric_dictionary=dictionary_payload,
+                )
+            except Exception as exc:
+                print(f"  [Metric Refine] LLM failed on slide {slide_number}: {exc}")
+                refined.extend(slide_metrics)
+                continue
+            processed += 1
+
+            refined_metrics = getattr(result, "metrics", []) or []
+            for item in refined_metrics:
+                metric_name = getattr(item, "metric_name", None)
+                if not metric_name:
+                    continue
+                definition = dictionary_by_name.get(metric_name)
+                if definition is None:
+                    continue
+                value = getattr(item, "value", None)
+                unit = getattr(item, "unit", None) or definition.unit_hint
+                delta_abs = getattr(item, "delta_abs", None)
+                delta_pct = getattr(item, "delta_pct", None)
+                baseline_text = getattr(item, "baseline_text", None)
+                source_ids = getattr(item, "source_ids", None) or []
+                source_snippet = getattr(item, "source_snippet", None)
+                notes = getattr(item, "notes", None)
+                confidence = getattr(item, "confidence", None)
+
+                raw_value = str(value) if value is not None else ""
+                if unit == "currency" and raw_value and not raw_value.startswith("$"):
+                    raw_value = f"${raw_value}"
+                if unit == "percent" and raw_value and not raw_value.endswith("%"):
+                    raw_value = f"{raw_value}%"
+
+                context_parts = [
+                    part
+                    for part in (source_snippet, notes, baseline_text)
+                    if isinstance(part, str) and part.strip()
+                ]
+                raw_context = " | ".join(context_parts) if context_parts else slide_text[:1200]
+                metadata = None
+                if delta_abs is not None or delta_pct is not None or baseline_text:
+                    comparison_value = None
+                    comparison_type = None
+                    if delta_abs is not None:
+                        comparison_value = delta_abs
+                        comparison_type = "delta_abs"
+                    if delta_pct is not None:
+                        comparison_type = "delta_pct"
+                    metadata = {
+                        "comparison_value": comparison_value,
+                        "comparison_type": comparison_type,
+                        "change_percentage": delta_pct,
+                        "baseline_text": baseline_text,
+                    }
+                if source_ids or source_snippet:
+                    if metadata is None:
+                        metadata = {}
+                    metadata["source_ids"] = source_ids
+                    metadata["source_snippet"] = source_snippet
+                refined.append(
+                    MetricCandidate(
+                        metric_id=_new_metric_id(),
+                        name=metric_name,
+                        raw_value=raw_value,
+                        normalized_value=value,
+                        unit=unit,
+                        raw_context=raw_context,
+                        slide_number=slide_number,
+                        metric_type=_metric_type_from_unit(unit),
+                        source="llm_refined",
+                        category=definition.category,
+                        is_calculated=definition.is_calculated,
+                        depends_on=list(definition.depends_on),
+                        formula=definition.formula,
+                        extraction_confidence=confidence,
+                        metadata=metadata,
+                    )
+                )
+        elapsed = time.perf_counter() - start_time
+        print(f"  [Metric Refine] Completed in {elapsed:.2f}s")
+        return refined or metrics
 
     @classmethod
     def _build_chunks_from_pages(cls, pages: list[dict]) -> list[dict]:
@@ -958,8 +1164,44 @@ Categories:
         )
         business_terms = self._extract_business_terms(result.content)
 
+        tables_payload: list[dict] = []
+        for idx, table in enumerate(result.tables or []):
+            tables_payload.append(
+                {
+                    "index": idx,
+                    "headers": getattr(table, "headers", None),
+                    "rows": getattr(table, "rows", None),
+                    "raw": str(table),
+                }
+            )
+
+        metric_scanner = MetricScanner(build_metric_dictionary())
+        artifacts = MetricScanArtifacts(
+            raw_content=result.content,
+            slides=slides_ordered,
+            metrics=metrics_ordered,
+            charts=charts_ordered,
+            chunks=chunks_for_storage,
+            tables=tables_payload,
+            keywords=business_terms,
+            export_dir=None,
+        )
+        scanned_metrics = metric_scanner.scan(artifacts)
+        scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
+        llm_deduped_metrics = scanned_metrics
+        refined_metrics = None
+        if run_llm_enhancement:
+            llm_deduped_metrics = self._dedupe_metrics_with_llm(scanned_metrics)
+            refined_metrics = self._refine_metrics_with_llm(
+                metrics=llm_deduped_metrics,
+                slides=slides_ordered,
+                metric_dictionary=build_metric_dictionary(),
+            )
+        metrics_for_db = refined_metrics or llm_deduped_metrics
+
         print(f"  - Slides parsed: {len(slides_ordered)}")
         print(f"  - Metrics found: {len(metrics_ordered)}")
+        print(f"  - Business metrics detected: {len(metrics_for_db)}")
         print(f"  - Charts detected: {len(charts_ordered)}")
 
         if export_outputs:
@@ -975,6 +1217,29 @@ Categories:
                 output_dir=target_dir,
                 chunks=chunks_for_storage,
             )
+            (target_dir / "11_business_metrics.json").write_text(
+                json.dumps(
+                    [self._metric_candidate_to_dict(m) for m in scanned_metrics],
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            if run_llm_enhancement:
+                (target_dir / "12_business_metrics_deduped.json").write_text(
+                    json.dumps(
+                        [self._metric_candidate_to_dict(m) for m in llm_deduped_metrics],
+                        indent=2,
+                    ),
+                    encoding="utf-8",
+                )
+                if refined_metrics is not None:
+                    (target_dir / "13_business_metrics_refined.json").write_text(
+                        json.dumps(
+                            [self._metric_candidate_to_dict(m) for m in refined_metrics],
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
             print(f"  - Extraction outputs saved: {target_dir}")
 
         # Step 3: Create database records
@@ -1026,15 +1291,23 @@ Categories:
             metrics_to_add = [
                 Metric(
                     document_id=document.id,
-                    slide_id=slide_map.get(m["slide_number"]).id if slide_map.get(m["slide_number"]) else None,
-                    raw_value=m["value"],
-                    raw_context=m.get("context"),
-                    raw_metric_type=m["metric_type"],
+                    slide_id=slide_map.get(m.slide_number).id if slide_map.get(m.slide_number) else None,
+                    raw_value=m.raw_value,
+                    raw_context=m.raw_context,
+                    raw_metric_type=m.metric_type,
+                    name=m.name,
+                    normalized_value=m.normalized_value,
+                    unit=m.unit,
+                    is_calculated=m.is_calculated,
+                    depends_on=m.depends_on,
+                    formula=m.formula,
+                    category=m.category,
+                    extraction_confidence=m.extraction_confidence,
                 )
-                for m in metrics_ordered
+                for m in metrics_for_db
             ]
             session.add_all(metrics_to_add)
-            print(f"  - Metrics created: {len(metrics_ordered)}")
+            print(f"  - Metrics created: {len(metrics_to_add)}")
 
             # Create charts (bulk insert)
             charts_to_add = [
@@ -1100,7 +1373,16 @@ Categories:
                 doc_id,
                 result.content,
                 slides_ordered,
-                metrics_ordered,
+                [
+                    {
+                        "value": m.raw_value,
+                        "metric_type": m.metric_type,
+                        "context": m.raw_context,
+                        "slide_number": m.slide_number,
+                        "name": m.name,
+                    }
+                    for m in metrics_for_db
+                ],
                 charts_ordered,
             )
             if export_outputs and llm_results is not None:
@@ -1178,6 +1460,59 @@ Categories:
                     doc.status = DocumentStatus.EXTRACTED.value  # Keep as extracted
                     session.commit()
             return None
+
+    def _dedupe_metrics_with_llm(
+        self,
+        metrics: list,
+    ) -> list:
+        if not metrics:
+            return metrics
+        try:
+            deduper = MetricDeduplicator(lm=self.lm)
+            by_name_value: dict[tuple[str, str | None, float | None], list] = {}
+            for metric in metrics:
+                rounded_value = (
+                    round(metric.normalized_value, 2)
+                    if metric.normalized_value is not None
+                    else None
+                )
+                key = (metric.name, metric.unit, rounded_value)
+                by_name_value.setdefault(key, []).append(metric)
+
+            remove_ids: set[str] = set()
+            max_batch = 60
+            for key, group in by_name_value.items():
+                if len(group) < 2:
+                    continue
+                batches = [group[i : i + max_batch] for i in range(0, len(group), max_batch)]
+                for batch in batches:
+                    payload = [
+                        {
+                            "id": m.metric_id,
+                            "name": m.name,
+                            "value": m.normalized_value,
+                            "unit": m.unit,
+                            "raw_value": m.raw_value,
+                            "context": m.raw_context,
+                            "slide_number": m.slide_number,
+                            "source": m.source,
+                        }
+                        for m in batch
+                    ]
+                    result = deduper(metrics=payload)
+                    batch_remove = set(getattr(result, "remove_ids", []) or [])
+                    remove_ids.update(batch_remove)
+
+            if not remove_ids:
+                return metrics
+            filtered = [m for m in metrics if m.metric_id not in remove_ids]
+            print(
+                f"  [Metric Dedupe] Removed {len(remove_ids)} duplicate metrics via LLM."
+            )
+            return filtered
+        except Exception as exc:
+            print(f"  [Metric Dedupe] LLM dedupe failed: {exc}")
+            return metrics
 
     def _save_enhancements(self, document_id: int, results: dict):
         """Save LLM enhancement results to database."""
