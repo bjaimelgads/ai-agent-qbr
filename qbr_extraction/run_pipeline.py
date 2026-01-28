@@ -11,6 +11,8 @@ Usage:
     python run_pipeline.py disney.pptx
     python run_pipeline.py disney.pptx --no-llm  # Skip LLM enhancement
     python run_pipeline.py --query-only          # Query existing data only
+    python run_pipeline.py disney.pptx --max-slides 4
+    python run_pipeline.py disney.pptx --slide-range 3-6
 
 Environment variables (can be set in .env file):
     OPENAI_API_KEY      - OpenAI API key (required for LLM enhancement)
@@ -55,6 +57,8 @@ async def process_document(
     export_outputs: bool = False,
     output_dir: str | None = None,
     override_existing: bool = False,
+    slide_range: tuple[int, int] | None = None,
+    max_slides: int | None = None,
 ) -> int:
     """
     Process a QBR document through the full pipeline.
@@ -111,6 +115,8 @@ async def process_document(
         run_llm_enhancement=run_llm_enhancement,
         export_outputs=export_outputs,
         output_dir=output_dir,
+        slide_range=slide_range,
+        max_slides=max_slides,
     )
     elapsed_seconds = time.perf_counter() - start_time
     end_dt = datetime.now(timezone.utc)
@@ -280,6 +286,22 @@ async def _delete_existing_documents(database_url: str, filename: str) -> int:
     return removed
 
 
+def _parse_slide_range(raw: str) -> tuple[int, int]:
+    value = raw.strip()
+    if "-" in value:
+        parts = value.split("-", 1)
+    elif ":" in value:
+        parts = value.split(":", 1)
+    else:
+        num = int(value)
+        return (num, num)
+    start = int(parts[0].strip())
+    end = int(parts[1].strip())
+    if start > end:
+        raise ValueError("Slide range start must be <= end.")
+    return (start, end)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="QBR Intelligence Pipeline - Process and query QBR documents"
@@ -335,6 +357,16 @@ def main():
         metavar="DIR",
         help="Override the extraction output directory (default: extraction_output)",
     )
+    parser.add_argument(
+        "--slide-range",
+        metavar="RANGE",
+        help="Process only slides in the given range (e.g., 1-4 or 3:7)",
+    )
+    parser.add_argument(
+        "--max-slides",
+        type=int,
+        help="Process only the first N slides",
+    )
 
     args = parser.parse_args()
 
@@ -343,6 +375,12 @@ def main():
 
         if args.file and args.folder:
             raise ValueError("Use either a single file or --folder, not both.")
+        if args.slide_range and args.max_slides:
+            raise ValueError("Use either --slide-range or --max-slides, not both.")
+        slide_range = _parse_slide_range(args.slide_range) if args.slide_range else None
+        max_slides = args.max_slides
+        if max_slides is not None and max_slides <= 0:
+            raise ValueError("--max-slides must be a positive integer.")
 
         # Process document if provided
         if args.folder and not args.query_only:
@@ -366,6 +404,8 @@ def main():
                     export_outputs=args.export_extraction,
                     output_dir=args.extraction_output_dir,
                     override_existing=args.override,
+                    slide_range=slide_range,
+                    max_slides=max_slides,
                 )
         elif args.file and not args.query_only:
             doc_id = await process_document(
@@ -375,6 +415,8 @@ def main():
                 export_outputs=args.export_extraction,
                 output_dir=args.extraction_output_dir,
                 override_existing=args.override,
+                slide_range=slide_range,
+                max_slides=max_slides,
             )
 
         # Run query demo

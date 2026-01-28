@@ -220,6 +220,34 @@ class QBRProcessor:
 
         return result
 
+    @staticmethod
+    def _build_content_from_pages(pages: list[dict]) -> str:
+        """Rebuild raw content from page blocks."""
+        blocks: list[str] = []
+        for page in pages:
+            page_num = page.get("page_number")
+            page_text = (page.get("content") or "").strip()
+            blocks.append(f"<!-- PAGE {page_num} -->\n{page_text}\n")
+        return "\n".join(blocks).strip()
+
+    @staticmethod
+    def _select_pages(
+        pages: list[dict],
+        *,
+        slide_range: tuple[int, int] | None = None,
+        max_slides: int | None = None,
+    ) -> list[dict]:
+        """Filter pages by range or max count, preserving order."""
+        if not pages:
+            return pages
+        if slide_range is not None:
+            start, end = slide_range
+            return [page for page in pages if start <= int(page.get("page_number", 0)) <= end]
+        if max_slides is not None:
+            ordered = sorted(pages, key=lambda item: int(item.get("page_number", 0)))
+            return ordered[:max_slides]
+        return pages
+
     def parse_slides(self, content: str) -> list[dict]:
         """Parse content into individual slides."""
         slides = []
@@ -359,6 +387,8 @@ class QBRProcessor:
         business_terms: set[str],
         output_dir: Path,
         chunks: list[dict] | None = None,
+        content_override: str | None = None,
+        pages_override: list[dict] | None = None,
     ) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         images_dir = output_dir / "images"
@@ -366,14 +396,22 @@ class QBRProcessor:
 
         chunks_source = chunks if chunks is not None else (result.chunks or [])
 
-        slide_texts = self._load_pptx_slide_texts(file_path) if file_path.suffix.lower() == ".pptx" else []
-        pages = self._split_pages(result.content)
-        remap = self._build_page_remap(pages, slide_texts) if slide_texts and pages else None
+        raw_content_export = content_override or result.content
+        pages = pages_override or self._split_pages(raw_content_export)
+        slide_texts = (
+            self._load_pptx_slide_texts(file_path)
+            if file_path.suffix.lower() == ".pptx" and pages_override is None
+            else []
+        )
+        remap = (
+            self._build_page_remap(pages, slide_texts)
+            if slide_texts and pages and pages_override is None
+            else None
+        )
 
         slides_export = slides
         metrics_export = metrics
         charts_export = charts
-        raw_content_export = result.content
 
         if remap:
             pages_by_num = {page["page_number"]: page for page in pages}
@@ -413,7 +451,7 @@ class QBRProcessor:
             "extraction_timestamp": datetime.now().isoformat(),
             "kreuzberg_version": kreuzberg.version("kreuzberg"),
             "mime_type": result.mime_type,
-            "page_count": result.get_page_count(),
+            "page_count": len(pages) if pages is not None else result.get_page_count(),
             "detected_languages": result.detected_languages,
             "table_count": len(result.tables),
             "image_count": len(result.images) if result.images else 0,
@@ -1230,6 +1268,8 @@ Categories:
         run_llm_enhancement: bool = True,
         export_outputs: bool = False,
         output_dir: Path | str | None = None,
+        slide_range: tuple[int, int] | None = None,
+        max_slides: int | None = None,
     ) -> int:
         """
         Process a document through the full pipeline.
@@ -1239,6 +1279,8 @@ Categories:
             client_name: Optional client name
             report_period: Optional report period
             run_llm_enhancement: Whether to run LLM enhancement
+            slide_range: Optional (start, end) slide range to process
+            max_slides: Optional max number of slides to process
 
         Returns:
             Document ID in the database
@@ -1274,6 +1316,20 @@ Categories:
             if remapped_pages:
                 chunks_for_storage = self._build_chunks_from_pages(remapped_pages)
 
+        pages_for_selection = remapped_pages or pages
+        content_for_processing = result.content
+        pages_override: list[dict] | None = None
+        if slide_range is not None or max_slides is not None:
+            selected_pages = self._select_pages(
+                pages_for_selection,
+                slide_range=slide_range,
+                max_slides=max_slides,
+            )
+            if selected_pages:
+                content_for_processing = self._build_content_from_pages(selected_pages)
+                pages_override = selected_pages
+                chunks_for_storage = self._build_chunks_from_pages(selected_pages)
+
         post_embedding_settings = PostEmbeddingSettings.from_env()
         try:
             filled = apply_post_embeddings(chunks_for_storage, post_embedding_settings)
@@ -1290,16 +1346,17 @@ Categories:
         print("STEP 2: PARSING")
         print("=" * 60)
 
-        slides = self.parse_slides(result.content)
-        metrics = self.extract_metrics(result.content)
+        slides = self.parse_slides(content_for_processing)
+        metrics = self.extract_metrics(content_for_processing)
         charts = self.detect_charts(slides)
+        remap_for_parsing = remap if pages_override is None else None
         slides_ordered, metrics_ordered, charts_ordered = self._apply_slide_remap(
             slides=slides,
             metrics=metrics,
             charts=charts,
-            remap=remap,
+            remap=remap_for_parsing,
         )
-        business_terms = self._extract_business_terms(result.content)
+        business_terms = self._extract_business_terms(content_for_processing)
 
         tables_payload: list[dict] = []
         for idx, table in enumerate(result.tables or []):
@@ -1378,6 +1435,8 @@ Categories:
                 business_terms=business_terms,
                 output_dir=target_dir,
                 chunks=chunks_for_storage,
+                content_override=content_for_processing if pages_override else None,
+                pages_override=pages_override,
             )
             (target_dir / "11_business_metrics.json").write_text(
                 json.dumps(
