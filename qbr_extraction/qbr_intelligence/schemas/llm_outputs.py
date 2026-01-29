@@ -191,6 +191,38 @@ class MetricDeduplicationOutput(BaseModel):
 
 
 # =============================================================================
+# Metric Review Output (per-candidate)
+# =============================================================================
+
+
+class MetricReviewResult(BaseModel):
+    """Review outcome for a single metric candidate group."""
+
+    chosen_index: int = Field(
+        description="Index of the best candidate in the provided list (0-based). Use -1 to keep current."
+    )
+    normalized_value: float | None = Field(
+        default=None, description="Corrected normalized value if needed"
+    )
+    unit: str | None = Field(default=None, description="Corrected unit if needed")
+    notes: str | None = Field(
+        default=None, description="Short reasoning or qualifiers"
+    )
+    confidence: float | None = Field(
+        default=None, description="Confidence in the decision (0-1)"
+    )
+    source_snippet: str | None = Field(
+        default=None, description="Exact snippet supporting the choice"
+    )
+
+
+class MetricReviewOutput(BaseModel):
+    """Structured output for per-metric review."""
+
+    review: MetricReviewResult = Field(description="Review decision for the metric")
+
+
+# =============================================================================
 # Metric Refinement Output
 # =============================================================================
 

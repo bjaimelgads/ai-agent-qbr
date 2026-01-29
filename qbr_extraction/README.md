@@ -125,6 +125,7 @@ metrics extract qbr_extraction/decks/Disney+\\ US\\ FY24\\ H2.pptx --out /tmp/me
 
 Notes:
 - LLM adjudication is gated and cached; set `LEGACY_LLM_METRICS=true` to re-enable the legacy full LLM metric refinement steps.
+- When `LEGACY_LLM_METRICS=true` and `--llm-metrics` is set, the legacy metrics LLM only runs on gated cases (unit mismatch, ambiguity, conflicting duplicates, or weak provenance).
 - For local runs without the `metrics` console script, use `uv run python scripts/metrics.py extract ...`.
 
 ### Command Line Options

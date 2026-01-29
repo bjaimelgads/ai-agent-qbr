@@ -131,6 +131,44 @@ class FacetType(str, Enum):
 
 
 # =============================================================================
+# Region Models
+# =============================================================================
+
+
+class Region(Base):
+    """Geographic region (e.g., US, EMEA)."""
+
+    __tablename__ = "regions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    countries: Mapped[list["RegionCountry"]] = relationship(
+        "RegionCountry", back_populates="region", cascade="all, delete-orphan"
+    )
+    documents: Mapped[list["Document"]] = relationship(
+        "Document", back_populates="region"
+    )
+    metrics: Mapped[list["Metric"]] = relationship("Metric", back_populates="region")
+
+
+class RegionCountry(Base):
+    """Country membership for a region (canonical names)."""
+
+    __tablename__ = "region_countries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    region_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("regions.id", ondelete="CASCADE"), nullable=False
+    )
+    country_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    country_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
+    region: Mapped["Region"] = relationship("Region", back_populates="countries")
+
+
+# =============================================================================
 # Document Model
 # =============================================================================
 
@@ -184,6 +222,9 @@ class Document(Base):
     client_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("clients.id", ondelete="SET NULL"), nullable=True
     )
+    region_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("regions.id", ondelete="SET NULL"), nullable=True
+    )
     report_period: Mapped[str | None] = mapped_column(String(100), nullable=True)
     fiscal_year: Mapped[str | None] = mapped_column(String(20), nullable=True)
     quarter: Mapped[str | None] = mapped_column(String(10), nullable=True)
@@ -198,6 +239,9 @@ class Document(Base):
     )
     metrics: Mapped[list["Metric"]] = relationship(
         "Metric", back_populates="document", cascade="all, delete-orphan"
+    )
+    region: Mapped["Region | None"] = relationship(
+        "Region", back_populates="documents"
     )
     charts: Mapped[list["Chart"]] = relationship(
         "Chart", back_populates="document", cascade="all, delete-orphan"
@@ -479,6 +523,10 @@ class Metric(Base):
     period_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
     )
+    region_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("regions.id", ondelete="SET NULL"), nullable=True
+    )
+    country: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Relationships
     document: Mapped["Document"] = relationship("Document", back_populates="metrics")
@@ -487,11 +535,13 @@ class Metric(Base):
     metric_catalog: Mapped["MetricCatalog | None"] = relationship(
         "MetricCatalog", back_populates="metrics"
     )
+    region: Mapped["Region | None"] = relationship("Region", back_populates="metrics")
 
     __table_args__ = (
         Index("idx_metric_document", "document_id"),
         Index("idx_metric_category", "category"),
         Index("idx_metric_name", "name"),
+        Index("idx_metric_region", "region_id"),
     )
 
 

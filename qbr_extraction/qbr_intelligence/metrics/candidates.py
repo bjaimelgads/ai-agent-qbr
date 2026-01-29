@@ -22,6 +22,7 @@ from qbr_intelligence.metrics.models import (
     SCALE_M,
     SCALE_ONES,
 )
+from qbr_intelligence.metrics.regions import infer_country_from_text
 
 
 _RANGE_RE = re.compile(
@@ -265,6 +266,9 @@ def extract_qualifiers(text: str) -> dict[str, str]:
     qualifiers: dict[str, str] = {}
     if not text:
         return qualifiers
+    country = infer_country_from_text(text)
+    if country:
+        qualifiers["country"] = country
     if re.search(r"\bUS\b|\bUnited States\b|\bDomestic\b", text, re.IGNORECASE):
         qualifiers["geo"] = "US"
     elif re.search(r"\bGlobal\b|\bWorldwide\b", text, re.IGNORECASE):

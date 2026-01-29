@@ -29,7 +29,7 @@ from qbr_intelligence.metrics.scoring import ScoringWeights, score_link
 
 @dataclass(frozen=True)
 class PipelineConfig:
-    low_confidence_threshold: float = 0.62
+    low_confidence_threshold: float = 0.36
     tie_margin: float = 0.08
     adjudicate_max_candidates: int = 3
 
@@ -128,9 +128,20 @@ class MetricExtractionPipeline:
             labels=tuple(labels),
             values=tuple(values),
             links=tuple(scored_links),
-            notes=(),
+            notes=tuple(self._adjudicator_notes()),
         )
         return metrics, debug
+
+    def _adjudicator_notes(self) -> list[str]:
+        if not self._adjudicator or not self._adjudicator.enabled:
+            return []
+        return [
+            f"adjudicator_total_requests={self._adjudicator.total_requests}",
+            f"adjudicator_cache_hits={self._adjudicator.cache_hits}",
+            f"adjudicator_llm_calls={self._adjudicator.llm_calls}",
+            f"adjudicator_parse_failures={self._adjudicator.parse_failures}",
+            f"adjudicator_empty_responses={self._adjudicator.empty_responses}",
+        ]
 
     def _select_links(
         self, links: list[LinkCandidate], *, deck_hash: str | None

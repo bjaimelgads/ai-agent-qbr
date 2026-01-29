@@ -48,13 +48,15 @@ from qbr_intelligence.db.models import (
     Metric,
     MetricAlias,
     MetricCatalog,
+    Region,
+    RegionCountry,
     Period,
     Slide,
     SlideType,
 )
 from qbr_intelligence.llm.modules import (
     MetricDeduplicator,
-    MetricRefiner,
+    MetricReviewer,
     QBREnhancementPipeline,
     ExecutiveSummarizer,
     create_lm,
@@ -82,6 +84,13 @@ from qbr_intelligence.metrics.catalog import build_metric_catalog, build_metric_
 from qbr_intelligence.metrics.pipeline import MetricExtractionPipeline, PipelineConfig
 from qbr_intelligence.metrics.parsing import parse_pptx_deck, compute_deck_hash
 from qbr_intelligence.metrics.adjudicator import LLMAdjudicator
+from qbr_intelligence.metrics.regions import (
+    EMEA_COUNTRIES,
+    REGION_EMEA,
+    REGION_US,
+    infer_country_from_text,
+    infer_region_from_text,
+)
 from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
@@ -134,6 +143,8 @@ class QBRProcessor:
         self._seed_clients()
         self._client_names = self._load_client_names()
         self._seed_metric_catalog()
+        self._seed_regions()
+        self._region_map = self._load_region_map()
         self._metric_catalog_map = self._load_metric_catalog_map()
 
         # Initialize LLM (will be created when needed)
@@ -142,6 +153,7 @@ class QBRProcessor:
 
         # Enhancement pipeline (lazy loaded)
         self._enhancement_pipeline: QBREnhancementPipeline | None = None
+        self._adjudicator_debug_count = 0
 
     @property
     def lm(self):
@@ -166,6 +178,45 @@ class QBRProcessor:
             lm = self.lm
         except Exception:
             return ""
+        debug_enabled = (os.getenv("METRIC_ADJUDICATOR_DEBUG") or "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        def _extract_text(response) -> str:
+            if isinstance(response, str):
+                return response
+            if isinstance(response, (list, tuple)) and response:
+                if isinstance(response[0], str):
+                    return response[0]
+            if isinstance(response, dict):
+                choices = response.get("choices")
+                if choices:
+                    choice = choices[0]
+                    if isinstance(choice, dict):
+                        message = choice.get("message") or {}
+                        if isinstance(message, dict) and message.get("content"):
+                            return message["content"]
+                        if choice.get("text"):
+                            return choice["text"]
+                if response.get("content"):
+                    return response["content"]
+            choices = getattr(response, "choices", None)
+            if choices:
+                choice = choices[0]
+                message = getattr(choice, "message", None)
+                if message is not None:
+                    content = getattr(message, "content", None)
+                    if isinstance(content, str):
+                        return content
+                text = getattr(choice, "text", None)
+                if isinstance(text, str):
+                    return text
+            for attr in ("text", "completion", "content", "output_text"):
+                value = getattr(response, attr, None)
+                if isinstance(value, str) and value.strip():
+                    return value
+            return ""
         for method_name in ("request", "complete", "__call__"):
             method = getattr(lm, method_name, None)
             if not callable(method):
@@ -174,12 +225,15 @@ class QBRProcessor:
                 response = method(prompt)
             except Exception:
                 continue
-            if isinstance(response, str):
-                return response
-            for attr in ("text", "completion", "content"):
-                value = getattr(response, attr, None)
-                if isinstance(value, str) and value.strip():
-                    return value
+            if debug_enabled and self._adjudicator_debug_count < 3:
+                summary = f"type={type(response).__name__}"
+                if isinstance(response, dict):
+                    summary += f" keys={list(response.keys())}"
+                print(f"  [Metric Adjudicator Debug] response {summary}")
+                self._adjudicator_debug_count += 1
+            text = _extract_text(response)
+            if text:
+                return text
             try:
                 return str(response)
             except Exception:
@@ -202,6 +256,8 @@ class QBRProcessor:
             "baseline_text": "TEXT",
             "baseline_type": "TEXT",
             "period_id": "INTEGER",
+            "region_id": "INTEGER",
+            "country": "TEXT",
         }
         missing = {name: ddl for name, ddl in needed.items() if name not in existing}
         if not missing:
@@ -220,6 +276,7 @@ class QBRProcessor:
         needed = {
             "half": "TEXT",
             "client_id": "INTEGER",
+            "region_id": "INTEGER",
         }
         missing = {name: ddl for name, ddl in needed.items() if name not in existing}
         if not missing:
@@ -673,6 +730,69 @@ class QBRProcessor:
             "baseline_type": metric.baseline_type,
         }
 
+    @staticmethod
+    def _extract_context_window(
+        text: str,
+        anchors: list[str],
+        *,
+        line_window: int = 1,
+        max_chars: int = 320,
+    ) -> str | None:
+        if not text:
+            return None
+        anchors_clean = [anchor.strip() for anchor in anchors if anchor and anchor.strip()]
+        if not anchors_clean:
+            return None
+        lines = text.splitlines()
+        for idx, line in enumerate(lines):
+            line_lower = line.lower()
+            if any(anchor.lower() in line_lower for anchor in anchors_clean):
+                start = max(0, idx - line_window)
+                end = min(len(lines), idx + line_window + 1)
+                snippet = " ".join(l.strip() for l in lines[start:end] if l.strip())
+                return snippet[:max_chars]
+        text_lower = text.lower()
+        for anchor in anchors_clean:
+            pos = text_lower.find(anchor.lower())
+            if pos >= 0:
+                start = max(0, pos - max_chars // 2)
+                end = min(len(text), pos + max_chars // 2)
+                snippet = text[start:end].replace("\n", " ").strip()
+                return snippet[:max_chars]
+        return None
+
+    @staticmethod
+    def _build_metric_review_context(
+        *,
+        metric: MetricCandidate,
+        slide: dict,
+        catalog_entry: object | None,
+    ) -> str:
+        anchors = [metric.name, metric.raw_value]
+        if catalog_entry is not None:
+            aliases = [alias.alias for alias in getattr(catalog_entry, "aliases", [])]
+            anchors.extend(aliases[:6])
+
+        snippets: list[tuple[str, str]] = []
+        if metric.raw_context:
+            snippets.append(("raw_context", metric.raw_context.strip()))
+
+        slide_text = slide.get("raw_text") or ""
+        slide_snippet = QBRProcessor._extract_context_window(slide_text, anchors)
+        if slide_snippet:
+            snippets.append(("slide_text", slide_snippet))
+
+        notes_text = slide.get("speaker_notes") or ""
+        notes_snippet = QBRProcessor._extract_context_window(notes_text, anchors)
+        if notes_snippet:
+            snippets.append(("speaker_notes", notes_snippet))
+
+        if not snippets and slide_text:
+            fallback = slide_text.replace("\n", " ").strip()
+            snippets.append(("slide_text", fallback[:320]))
+
+        return "\n".join(f"{label}: {text}" for label, text in snippets if text)
+
     def _refine_metrics_with_llm(
         self,
         *,
@@ -698,134 +818,130 @@ class QBRProcessor:
             if parsed:
                 slide_allowlist = set(parsed)
         slide_lookup = {s.get("slide_number"): s for s in slides}
-        metrics_by_slide: dict[int | None, list] = {}
-        for metric in metrics:
-            metrics_by_slide.setdefault(metric.slide_number, []).append(metric)
-
-        dictionary_payload = [
-            {
-                "name": definition.name,
-                "unit": definition.unit_hint,
-                "formula": definition.formula,
-                "is_calculated": definition.is_calculated,
-                "depends_on": list(definition.depends_on),
-                "category": definition.category,
-            }
-            for definition in metric_dictionary.definitions
-        ]
+        catalog_entries = self._load_metric_catalog_entries()
+        catalog_by_name = {entry.name: entry for entry in catalog_entries}
         dictionary_by_name = {definition.name: definition for definition in metric_dictionary.definitions}
 
-        refiner = MetricRefiner(lm=self.lm)
+        metrics_by_group: dict[tuple[int | None, str], list] = {}
+        for metric in metrics:
+            metrics_by_group.setdefault((metric.slide_number, metric.name), []).append(metric)
+
+        reviewer = MetricReviewer(lm=self.lm)
         refined: list = []
         processed = 0
-        for slide_number, slide_metrics in metrics_by_slide.items():
+        total_groups = len(metrics_by_group)
+        for (slide_number, metric_name), group in metrics_by_group.items():
             if slide_number is None:
+                refined.extend(group)
                 continue
             if slide_allowlist is not None and slide_number not in slide_allowlist:
+                refined.extend(group)
                 continue
             if slide_limit is not None and processed >= slide_limit:
+                refined.extend(group)
                 continue
             slide = slide_lookup.get(slide_number, {})
-            slide_text = slide.get("raw_text", "")
-            speaker_notes = slide.get("speaker_notes", "")
-            if not slide_text and not speaker_notes:
-                continue
+            definition = dictionary_by_name.get(metric_name)
+            catalog_entry = catalog_by_name.get(metric_name)
+            context_snippets = self._build_metric_review_context(
+                metric=group[0],
+                slide=slide,
+                catalog_entry=catalog_entry,
+            )
+
             candidates = [
                 {
                     "id": m.metric_id,
-                    "name": m.name,
                     "raw_value": m.raw_value,
-                    "value": m.normalized_value,
+                    "normalized_value": m.normalized_value,
                     "unit": m.unit,
-                    "context": m.raw_context,
-                    "category": m.category,
+                    "source": m.source,
+                    "context": (m.raw_context or "")[:240],
+                    "confidence": m.extraction_confidence,
                 }
-                for m in slide_metrics
+                for m in group
             ]
+            catalog_payload = {
+                "name": metric_name,
+                "expected_unit": getattr(catalog_entry, "expected_unit", None)
+                or (definition.unit_hint if definition else None),
+                "aliases": [alias.alias for alias in getattr(catalog_entry, "aliases", [])],
+                "disambiguation": list(getattr(catalog_entry, "disambiguation", ())),
+                "metric_id": getattr(catalog_entry, "metric_id", None),
+            }
             try:
-                result = refiner(
-                    slide_text=slide_text,
-                    speaker_notes=speaker_notes,
+                result = reviewer(
+                    metric_catalog=catalog_payload,
+                    context_snippets=context_snippets,
                     candidates=candidates,
-                    metric_dictionary=dictionary_payload,
                 )
             except Exception as exc:
                 print(f"  [Metric Refine] LLM failed on slide {slide_number}: {exc}")
-                refined.extend(slide_metrics)
+                refined.extend(group)
                 continue
             processed += 1
 
-            refined_metrics = getattr(result, "metrics", []) or []
-            for item in refined_metrics:
-                metric_name = getattr(item, "metric_name", None)
-                if not metric_name:
-                    continue
-                definition = dictionary_by_name.get(metric_name)
-                if definition is None:
-                    continue
-                value = getattr(item, "value", None)
-                unit = getattr(item, "unit", None) or definition.unit_hint
-                delta_abs = getattr(item, "delta_abs", None)
-                delta_pct = getattr(item, "delta_pct", None)
-                baseline_text = getattr(item, "baseline_text", None)
-                baseline_type = infer_baseline_type(baseline_text)
-                source_ids = getattr(item, "source_ids", None) or []
-                source_snippet = getattr(item, "source_snippet", None)
-                notes = getattr(item, "notes", None)
-                confidence = getattr(item, "confidence", None)
+            review = getattr(result, "review", None)
+            chosen_index = getattr(review, "chosen_index", 0) if review is not None else 0
+            if chosen_index is None or not isinstance(chosen_index, int):
+                chosen_index = 0
+            if chosen_index < 0 or chosen_index >= len(group):
+                chosen_index = 0
+            chosen = group[chosen_index]
 
-                raw_value = str(value) if value is not None else ""
-                if unit == "currency" and raw_value and not raw_value.startswith("$"):
+            unit = getattr(review, "unit", None) if review is not None else None
+            value = getattr(review, "normalized_value", None) if review is not None else None
+            notes = getattr(review, "notes", None) if review is not None else None
+            confidence = getattr(review, "confidence", None) if review is not None else None
+            source_snippet = getattr(review, "source_snippet", None) if review is not None else None
+
+            final_unit = unit or chosen.unit or (definition.unit_hint if definition else None)
+            final_value = value if value is not None else chosen.normalized_value
+            raw_value = chosen.raw_value or ""
+            if final_value is not None:
+                raw_value = str(final_value)
+                if final_unit == "currency" and raw_value and not raw_value.startswith("$"):
                     raw_value = f"${raw_value}"
-                if unit == "percent" and raw_value and not raw_value.endswith("%"):
+                if final_unit == "percent" and raw_value and not raw_value.endswith("%"):
                     raw_value = f"{raw_value}%"
 
-                context_parts = [
-                    part
-                    for part in (source_snippet, notes, baseline_text)
-                    if isinstance(part, str) and part.strip()
-                ]
-                raw_context = " | ".join(context_parts) if context_parts else slide_text[:1200]
-                metadata = None
-                if delta_abs is not None or delta_pct is not None or baseline_text:
-                    comparison_value = None
-                    comparison_type = None
-                    if delta_abs is not None:
-                        comparison_value = delta_abs
-                        comparison_type = "delta_abs"
-                    if delta_pct is not None:
-                        comparison_type = "delta_pct"
-                    metadata = {
-                        "comparison_value": comparison_value,
-                        "comparison_type": comparison_type,
-                        "change_percentage": delta_pct,
-                        "baseline_text": baseline_text,
-                    }
-                if source_ids or source_snippet:
-                    if metadata is None:
-                        metadata = {}
-                    metadata["source_ids"] = source_ids
-                    metadata["source_snippet"] = source_snippet
-                refined.append(
-                    MetricCandidate(
-                        metric_id=_new_metric_id(),
-                        name=metric_name,
-                        raw_value=raw_value,
-                        normalized_value=value,
-                        unit=unit,
-                        raw_context=raw_context,
-                        slide_number=slide_number,
-                        metric_type=_metric_type_from_unit(unit),
-                        source="llm_refined",
-                        category=definition.category,
-                        extraction_confidence=confidence,
-                        metadata=metadata,
-                        baseline_text=baseline_text,
-                        baseline_type=baseline_type,
-                    )
+            metadata = dict(chosen.metadata or {})
+            metadata["llm_review"] = {
+                "chosen_index": chosen_index,
+                "notes": notes,
+                "confidence": confidence,
+                "source_snippet": source_snippet,
+            }
+
+            refined.append(
+                MetricCandidate(
+                    metric_id=_new_metric_id(),
+                    name=chosen.name,
+                    raw_value=raw_value,
+                    normalized_value=final_value,
+                    unit=final_unit,
+                    raw_context=source_snippet or chosen.raw_context,
+                    slide_number=slide_number,
+                    metric_type=_metric_type_from_unit(final_unit),
+                    source="llm_refined",
+                    category=chosen.category,
+                    extraction_confidence=confidence or chosen.extraction_confidence,
+                    metadata=metadata,
+                    baseline_text=chosen.baseline_text,
+                    baseline_type=chosen.baseline_type,
+                    period_label=chosen.period_label,
+                    period_start=chosen.period_start,
+                    period_end=chosen.period_end,
+                    brand=chosen.brand,
+                    metric_catalog_id=chosen.metric_catalog_id,
+                    metric_catalog_slug=chosen.metric_catalog_slug,
                 )
+            )
+
         elapsed = time.perf_counter() - start_time
-        print(f"  [Metric Refine] Completed in {elapsed:.2f}s")
+        print(
+            f"  [Metric Refine] groups={total_groups} processed={processed} completed={elapsed:.2f}s"
+        )
         return refined or metrics
 
     def _apply_metric_context_strategies(
@@ -1262,6 +1378,44 @@ Categories:
         matches.sort(reverse=True)
         return matches[0][1]
 
+    def _region_id_for_code(self, code: str | None) -> int | None:
+        if not code:
+            return None
+        return self._region_map.get(code)
+
+    def _infer_document_region(self, file_stem: str) -> tuple[int | None, str | None]:
+        inferred_country = infer_country_from_text(file_stem)
+        inferred_region = infer_region_from_text(file_stem)
+        region_id = self._region_id_for_code(inferred_region)
+        return region_id, inferred_country
+
+    def _infer_metric_region(
+        self,
+        metric: MetricCandidate,
+        *,
+        document_region_id: int | None,
+    ) -> tuple[int | None, str | None]:
+        qualifiers = (metric.metadata or {}).get("qualifiers") or {}
+        raw_context = metric.raw_context or ""
+        qualifier_geo = qualifiers.get("geo")
+        qualifier_country = qualifiers.get("country") or qualifiers.get("geo_country")
+
+        if qualifier_country:
+            inferred_country = qualifier_country
+        else:
+            inferred_country = infer_country_from_text(raw_context)
+
+        inferred_region = None
+        if qualifier_geo:
+            inferred_region = infer_region_from_text(qualifier_geo)
+        if not inferred_region and inferred_country:
+            inferred_region = infer_region_from_text(inferred_country)
+        if not inferred_region:
+            inferred_region = infer_region_from_text(raw_context)
+
+        region_id = self._region_id_for_code(inferred_region) or document_region_id
+        return region_id, inferred_country
+
     def _seed_clients(self) -> None:
         with self.SessionLocal() as session:
             existing = session.query(Client).count()
@@ -1274,6 +1428,39 @@ Categories:
         with self.SessionLocal() as session:
             rows = session.query(Client.name).all()
         return [row[0] for row in rows if row and row[0]]
+
+    def _seed_regions(self) -> None:
+        with self.SessionLocal() as session:
+            existing = session.query(Region).count()
+            if existing:
+                return
+            us = Region(code=REGION_US, name="United States")
+            emea = Region(code=REGION_EMEA, name="Europe, Middle East, and Africa")
+            session.add_all([us, emea])
+            session.flush()
+            session.add(
+                RegionCountry(
+                    region_id=us.id,
+                    country_name="United States",
+                    country_code="US",
+                )
+            )
+            for country in sorted(EMEA_COUNTRIES):
+                if country.lower() in {"uk", "uae"}:
+                    continue
+                session.add(
+                    RegionCountry(
+                        region_id=emea.id,
+                        country_name=country,
+                        country_code=None,
+                    )
+                )
+            session.commit()
+
+    def _load_region_map(self) -> dict[str, int]:
+        with self.SessionLocal() as session:
+            rows = session.query(Region.code, Region.id).all()
+        return {code: region_id for code, region_id in rows if code}
 
     def _seed_metric_catalog(self) -> None:
         with self.SessionLocal() as session:
@@ -1332,6 +1519,68 @@ Categories:
             return entries if entries else build_metric_catalog()
         except Exception:
             return build_metric_catalog()
+
+    def _load_metric_unit_map(self) -> dict[str, str]:
+        try:
+            with self.SessionLocal() as session:
+                rows = session.query(MetricCatalog.name, MetricCatalog.default_unit).all()
+            return {name: unit for name, unit in rows if name}
+        except Exception:
+            return {definition.name: definition.unit_hint for definition in build_metric_dictionary().definitions}
+
+    @staticmethod
+    def _unit_matches_expected(actual: str | None, expected: str | None) -> bool:
+        if not expected:
+            return True
+        actual = (actual or "").lower()
+        expected = expected.lower()
+        if expected == "percent":
+            return actual == "percent"
+        if expected == "currency":
+            return actual == "currency"
+        if expected == "time":
+            return actual == "time"
+        if expected == "count":
+            return actual in {"count", ""}
+        if expected == "ratio":
+            return actual == "ratio"
+        return True
+
+    def _select_metrics_for_llm_refine(self, metrics: list[MetricCandidate]) -> list[MetricCandidate]:
+        if not metrics:
+            return []
+        unit_map = self._load_metric_unit_map()
+        by_slide_name: dict[tuple[int | None, str], list[MetricCandidate]] = {}
+        for metric in metrics:
+            by_slide_name.setdefault((metric.slide_number, metric.name), []).append(metric)
+
+        conflicting: set[str] = set()
+        for items in by_slide_name.values():
+            values = {m.normalized_value for m in items}
+            if len(values) > 1:
+                for metric in items:
+                    conflicting.add(metric.metric_id)
+
+        selected: list[MetricCandidate] = []
+        for metric in metrics:
+            expected_unit = unit_map.get(metric.name)
+            unit_mismatch = not self._unit_matches_expected(metric.unit, expected_unit)
+            raw_value = (metric.raw_value or "").strip()
+            raw_unit_mismatch = (
+                ("%" in raw_value and metric.unit != "percent")
+                or ("$" in raw_value and metric.unit != "currency")
+            )
+            ambiguous_label = metric.name.lower() in {"rate", "ratio", "value", "index"}
+            reach_ambiguity = metric.name == "Reach" and any(
+                token in (metric.raw_context or "").lower()
+                for token in ("unique", "deduplicated", "unduplicated")
+            )
+            weak_source = metric.source == "speaker_notes"
+            conflict = metric.metric_id in conflicting
+
+            if unit_mismatch or raw_unit_mismatch or ambiguous_label or reach_ambiguity or weak_source or conflict:
+                selected.append(metric)
+        return selected
 
     def _apply_metric_catalog(self, metrics: list) -> list:
         if not metrics:
@@ -1574,6 +1823,7 @@ Categories:
                 chunks_for_storage = self._build_chunks_from_pages(selected_pages)
 
         inferred_client = client_name or self._infer_client_name(file_path.stem)
+        inferred_region_id, _ = self._infer_document_region(file_path.stem)
         inferred_period, inferred_fiscal_year, inferred_quarter, inferred_half = (
             self._infer_period_from_title(report_period or file_path.stem)
         )
@@ -1657,6 +1907,15 @@ Categories:
                 deck, deck_hash=deck_hash
             )
             scanned_metrics = [to_metric_candidate(metric) for metric in extracted_metrics]
+            if adjudicator is not None:
+                print(
+                    "  [Metric Adjudicator] "
+                    f"requests={adjudicator.total_requests} "
+                    f"cache_hits={adjudicator.cache_hits} "
+                    f"llm_calls={adjudicator.llm_calls} "
+                    f"parse_failures={adjudicator.parse_failures} "
+                    f"empty_responses={adjudicator.empty_responses}"
+                )
         else:
             metric_scanner = MetricScanner(build_metric_dictionary())
             artifacts = MetricScanArtifacts(
@@ -1680,12 +1939,21 @@ Categories:
             "yes",
         }
         if run_llm_metrics and use_legacy_llm_metrics:
-            llm_deduped_metrics = self._dedupe_metrics_with_llm(scanned_metrics)
-            refined_metrics = self._refine_metrics_with_llm(
-                metrics=llm_deduped_metrics,
-                slides=slides_ordered,
-                metric_dictionary=build_metric_dictionary(),
-            )
+            llm_candidates = self._select_metrics_for_llm_refine(scanned_metrics)
+            if llm_candidates:
+                llm_deduped_subset = self._dedupe_metrics_with_llm(llm_candidates)
+                refined_subset = self._refine_metrics_with_llm(
+                    metrics=llm_deduped_subset,
+                    slides=slides_ordered,
+                    metric_dictionary=build_metric_dictionary(),
+                )
+                refined_ids = {metric.metric_id for metric in llm_candidates}
+                llm_deduped_metrics = [
+                    metric for metric in scanned_metrics if metric.metric_id not in refined_ids
+                ] + list(refined_subset)
+                refined_metrics = llm_deduped_metrics
+            else:
+                llm_deduped_metrics = scanned_metrics
         scanned_metrics = self._apply_metric_context_strategies(
             metrics=scanned_metrics,
             slides=slides_ordered,
@@ -1808,6 +2076,7 @@ Categories:
                 extraction_metadata=result.metadata,
                 detected_languages=result.detected_languages,
                 client_id=client.id if client else None,
+                region_id=inferred_region_id,
                 report_period=report_period,
                 fiscal_year=fiscal_year,
                 quarter=quarter,
@@ -1840,33 +2109,41 @@ Categories:
             period_map = self._upsert_periods(session, metrics_for_db)
 
             # Create metrics (bulk insert)
-            metrics_to_add = [
-                Metric(
-                    document_id=document.id,
-                    slide_id=slide_map.get(m.slide_number).id if slide_map.get(m.slide_number) else None,
-                    raw_value=m.raw_value,
-                    raw_context=m.raw_context,
-                    raw_metric_type=m.metric_type,
-                    metric_catalog_id=m.metric_catalog_id,
-                    name=m.name,
-                    normalized_value=m.normalized_value,
-                    unit=m.unit,
-                    category=m.category,
-                    extraction_confidence=m.extraction_confidence,
-                    period_label=m.period_label,
-                    period_start=m.period_start,
-                    period_end=m.period_end,
-                    brand=m.brand,
-                    baseline_text=m.baseline_text,
-                    baseline_type=m.baseline_type,
-                    period_id=period_map.get(
-                        (m.period_label, m.period_start, m.period_end)
-                    ).id
-                    if period_map.get((m.period_label, m.period_start, m.period_end))
-                    else None,
+            metrics_to_add: list[Metric] = []
+            for m in metrics_for_db:
+                region_id, country = self._infer_metric_region(
+                    m, document_region_id=inferred_region_id
                 )
-                for m in metrics_for_db
-            ]
+                metrics_to_add.append(
+                    Metric(
+                        document_id=document.id,
+                        slide_id=slide_map.get(m.slide_number).id
+                        if slide_map.get(m.slide_number)
+                        else None,
+                        raw_value=m.raw_value,
+                        raw_context=m.raw_context,
+                        raw_metric_type=m.metric_type,
+                        metric_catalog_id=m.metric_catalog_id,
+                        name=m.name,
+                        normalized_value=m.normalized_value,
+                        unit=m.unit,
+                        category=m.category,
+                        extraction_confidence=m.extraction_confidence,
+                        period_label=m.period_label,
+                        period_start=m.period_start,
+                        period_end=m.period_end,
+                        brand=m.brand,
+                        baseline_text=m.baseline_text,
+                        baseline_type=m.baseline_type,
+                        period_id=period_map.get(
+                            (m.period_label, m.period_start, m.period_end)
+                        ).id
+                        if period_map.get((m.period_label, m.period_start, m.period_end))
+                        else None,
+                        region_id=region_id,
+                        country=country,
+                    )
+                )
             session.add_all(metrics_to_add)
             print(f"  - Metrics created: {len(metrics_to_add)}")
 

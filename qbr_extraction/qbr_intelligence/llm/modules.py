@@ -18,6 +18,7 @@ from qbr_intelligence.schemas.llm_outputs import (
     MetricContextOutput,
     MetricDeduplicationOutput,
     MetricNormalizationOutput,
+    MetricReviewOutput,
     MetricRefinementOutput,
     RefinedMetric,
     SlideAnalysisOutput,
@@ -173,57 +174,56 @@ class MetricDeduplicator(dspy.Module):
 
 
 # =============================================================================
-# Metric Refinement Module
+# Metric Candidate Review Module
 # =============================================================================
 
 
-class MetricRefinementSignature(dspy.Signature):
+class MetricReviewSignature(dspy.Signature):
     """
-    Refine per-slide metrics by selecting true KPI values and deltas.
+    Review a specific metric candidate group with minimal context.
 
-    Given slide text and candidate metrics, return a clean list of metrics
-    with primary values and optional deltas/baselines.
+    Given metric catalog info, context snippets, and candidate values,
+    select the best candidate or correct value/unit if needed.
     """
 
-    slide_text: str = dspy.InputField(desc="Full slide text")
-    speaker_notes: str = dspy.InputField(desc="Speaker notes for the slide (may be empty)")
+    metric_catalog_json: str = dspy.InputField(
+        desc="JSON object with metric name, aliases, expected unit, and disambiguation tokens"
+    )
+    context_snippets: str = dspy.InputField(
+        desc="Deterministic context snippets near the metric label/value"
+    )
     candidates_json: str = dspy.InputField(
-        desc="JSON array of candidate metrics with ids, names, values, units, and context"
-    )
-    metric_dictionary_json: str = dspy.InputField(
-        desc="JSON array of allowed metrics with names, units, and formulas"
+        desc="JSON array of candidate values for the metric"
     )
 
-    refined: MetricRefinementOutput = dspy.OutputField(
-        desc="Refined metrics for the slide"
+    review: MetricReviewOutput = dspy.OutputField(
+        desc="Best candidate selection and optional corrections"
     )
 
 
-class MetricRefiner(dspy.Module):
-    """DSPY module to refine slide metrics using full context."""
+class MetricReviewer(dspy.Module):
+    """DSPY module to review a specific metric candidate group."""
 
     def __init__(self, lm: dspy.LM | None = None):
         super().__init__()
         self.lm = lm
-        self.refine = dspy.ChainOfThought(MetricRefinementSignature)
+        self.review = dspy.ChainOfThought(MetricReviewSignature)
 
     def forward(
         self,
-        slide_text: str,
-        speaker_notes: str,
+        metric_catalog: dict,
+        context_snippets: str,
         candidates: list[dict],
-        metric_dictionary: list[dict],
-    ) -> MetricRefinementOutput:
+    ) -> MetricReviewOutput:
+        payload_catalog = json.dumps(metric_catalog, indent=2)
         payload_candidates = json.dumps(candidates, indent=2)
-        payload_dictionary = json.dumps(metric_dictionary, indent=2)
         with dspy.settings.context(lm=self.lm):
-            result = self.refine(
-                slide_text=slide_text,
-                speaker_notes=speaker_notes or "",
+            result = self.review(
+                metric_catalog_json=payload_catalog,
+                context_snippets=context_snippets,
                 candidates_json=payload_candidates,
-                metric_dictionary_json=payload_dictionary,
             )
-        return result.refined
+        return result.review
 
 
 # =============================================================================
@@ -786,6 +786,10 @@ def create_lm(
     Example:
         >>> lm = create_lm("databricks/databricks-claude-opus-4-5")
     """
+    dspy.configure_cache(
+        enable_disk_cache=False,
+        enable_memory_cache=False,
+    )
     return dspy.LM(
         model=model,
         max_tokens=max_tokens,

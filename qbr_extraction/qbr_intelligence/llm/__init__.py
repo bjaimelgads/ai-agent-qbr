@@ -7,7 +7,7 @@ from qbr_intelligence.llm.modules import (
     MetricContextExtractor,
     MetricDeduplicator,
     MetricNormalizer,
-    MetricRefiner,
+    MetricReviewer,
     QBREnhancementPipeline,
     SlideAnalyzer,
 )
@@ -16,7 +16,7 @@ __all__ = [
     "SlideAnalyzer",
     "MetricDeduplicator",
     "MetricNormalizer",
-    "MetricRefiner",
+    "MetricReviewer",
     "MetricContextExtractor",
     "ChartReconstructor",
     "ExecutiveSummarizer",

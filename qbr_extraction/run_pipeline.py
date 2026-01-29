@@ -61,7 +61,6 @@ async def process_document(
     run_llm_enhancement: bool = False,
     run_llm_summary: bool = False,
     run_llm_adjudicator: bool = False,
-    run_llm_adjudicator: bool = False,
     export_outputs: bool = False,
     output_dir: str | None = None,
     override_existing: bool = False,

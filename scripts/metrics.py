@@ -21,6 +21,40 @@ from qbr_intelligence.metrics.parsing import compute_deck_hash
 
 def _call_llm_text(prompt: str, model: str) -> str:
     lm = create_lm(model=model, temperature=0.0)
+    def _extract_text(response) -> str:
+        if isinstance(response, str):
+            return response
+        if isinstance(response, (list, tuple)) and response:
+            if isinstance(response[0], str):
+                return response[0]
+        if isinstance(response, dict):
+            choices = response.get("choices")
+            if choices:
+                choice = choices[0]
+                if isinstance(choice, dict):
+                    message = choice.get("message") or {}
+                    if isinstance(message, dict) and message.get("content"):
+                        return message["content"]
+                    if choice.get("text"):
+                        return choice["text"]
+            if response.get("content"):
+                return response["content"]
+        choices = getattr(response, "choices", None)
+        if choices:
+            choice = choices[0]
+            message = getattr(choice, "message", None)
+            if message is not None:
+                content = getattr(message, "content", None)
+                if isinstance(content, str):
+                    return content
+            text = getattr(choice, "text", None)
+            if isinstance(text, str):
+                return text
+        for attr in ("text", "completion", "content", "output_text"):
+            value = getattr(response, attr, None)
+            if isinstance(value, str) and value.strip():
+                return value
+        return ""
     for method_name in ("request", "complete", "__call__"):
         method = getattr(lm, method_name, None)
         if not callable(method):
@@ -29,12 +63,9 @@ def _call_llm_text(prompt: str, model: str) -> str:
             response = method(prompt)
         except Exception:
             continue
-        if isinstance(response, str):
-            return response
-        for attr in ("text", "completion", "content"):
-            value = getattr(response, attr, None)
-            if isinstance(value, str) and value.strip():
-                return value
+        text = _extract_text(response)
+        if text:
+            return text
         try:
             return str(response)
         except Exception:
