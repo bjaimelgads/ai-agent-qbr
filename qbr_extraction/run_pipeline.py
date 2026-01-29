@@ -9,7 +9,9 @@ This script shows how to:
 
 Usage:
     python run_pipeline.py disney.pptx
-    python run_pipeline.py disney.pptx --no-llm  # Skip LLM enhancement
+    python run_pipeline.py disney.pptx --llm-metrics  # LLM metrics only
+    python run_pipeline.py disney.pptx --llm-summary  # LLM summary only
+    python run_pipeline.py disney.pptx --llm  # Full LLM enhancement
     python run_pipeline.py --query-only          # Query existing data only
     python run_pipeline.py disney.pptx --max-slides 4
     python run_pipeline.py disney.pptx --slide-range 3-6
@@ -53,7 +55,9 @@ load_dotenv()
 async def process_document(
     file_path: str,
     database_url: str,
+    run_llm_metrics: bool = True,
     run_llm_enhancement: bool = True,
+    run_llm_summary: bool = False,
     export_outputs: bool = False,
     output_dir: str | None = None,
     override_existing: bool = False,
@@ -82,7 +86,7 @@ async def process_document(
 
     # Check LLM config if enhancement enabled
     llm_model = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
-    if run_llm_enhancement:
+    if run_llm_enhancement or run_llm_metrics or run_llm_summary:
         print("\n[2/4] LLM Enhancement enabled")
         print(f"      Model: {llm_model}")
         print("      LiteLLM picks up provider-specific env vars:")
@@ -90,8 +94,14 @@ async def process_document(
         print("      - OpenAI: OPENAI_API_KEY")
         print("      - Anthropic: ANTHROPIC_API_KEY")
         print("      - OpenRouter: OPENROUTER_API_KEY")
+        if not run_llm_enhancement and run_llm_metrics and not run_llm_summary:
+            print("      Mode: metrics-only (other LLM steps disabled)")
+        if not run_llm_enhancement and run_llm_summary and not run_llm_metrics:
+            print("      Mode: summary-only (other LLM steps disabled)")
+        if not run_llm_enhancement and run_llm_summary and run_llm_metrics:
+            print("      Mode: metrics + summary (other LLM steps disabled)")
     else:
-        print("\n[2/4] Skipping LLM enhancement (--no-llm)")
+        print("\n[2/4] Skipping LLM enhancement (default)")
 
     embedding_settings = EmbeddingSettings.from_env()
     if embedding_settings.enabled:
@@ -112,7 +122,9 @@ async def process_document(
     start_time = time.perf_counter()
     doc_id = processor.process_document(
         file_path=file_path,
+        run_llm_metrics=run_llm_metrics,
         run_llm_enhancement=run_llm_enhancement,
+        run_llm_summary=run_llm_summary,
         export_outputs=export_outputs,
         output_dir=output_dir,
         slide_range=slide_range,
@@ -139,6 +151,7 @@ async def process_document(
     }
     timing_path.write_text(json.dumps(timing_payload, indent=2), encoding="utf-8")
     print(f"      Timing saved: {timing_path}")
+    print(f"      Elapsed time: {timing_payload['elapsed_seconds']}s")
 
     print(f"\n[4/4] Processing complete. Document ID: {doc_id}")
 
@@ -188,7 +201,7 @@ async def query_demo(database_url: str, document_id: int | None = None):
         print(f"\n[Query 4] Top Metrics (ID: {document_id}):")
         top = await get_top_metrics(session, document_id, limit=5)
         for m in top.get("top_metrics", []):
-            print(f"  - {m['name']}: {m['raw_value']} ({m.get('trend', 'N/A')})")
+            print(f"  - {m['name']}: {m['raw_value']}")
 
         print(f"\n[Query 5] Key Insights (ID: {document_id}):")
         insights = await get_key_insights(session, document_id)
@@ -323,9 +336,19 @@ def main():
         help=f"Database URL (default: {default_db})",
     )
     parser.add_argument(
-        "--no-llm",
+        "--llm-metrics",
         action="store_true",
-        help="Skip LLM enhancement",
+        help="Run only LLM metric refinement (skip other LLM steps)",
+    )
+    parser.add_argument(
+        "--llm-summary",
+        action="store_true",
+        help="Run only LLM executive summary (skip other LLM steps)",
+    )
+    parser.add_argument(
+        "--llm",
+        action="store_true",
+        help="Run full LLM enhancement pipeline",
     )
     parser.add_argument(
         "--query-only",
@@ -377,6 +400,26 @@ def main():
             raise ValueError("Use either a single file or --folder, not both.")
         if args.slide_range and args.max_slides:
             raise ValueError("Use either --slide-range or --max-slides, not both.")
+        if args.llm:
+            run_llm_metrics = True
+            run_llm_enhancement = True
+            run_llm_summary = True
+        elif args.llm_metrics and args.llm_summary:
+            run_llm_metrics = True
+            run_llm_enhancement = False
+            run_llm_summary = True
+        elif args.llm_metrics:
+            run_llm_metrics = True
+            run_llm_enhancement = False
+            run_llm_summary = False
+        elif args.llm_summary:
+            run_llm_metrics = False
+            run_llm_enhancement = False
+            run_llm_summary = True
+        else:
+            run_llm_metrics = False
+            run_llm_enhancement = False
+            run_llm_summary = False
         slide_range = _parse_slide_range(args.slide_range) if args.slide_range else None
         max_slides = args.max_slides
         if max_slides is not None and max_slides <= 0:
@@ -400,7 +443,9 @@ def main():
                 doc_id = await process_document(
                     file_path=str(pptx_path),
                     database_url=args.db,
-                    run_llm_enhancement=not args.no_llm,
+                    run_llm_metrics=run_llm_metrics,
+                    run_llm_enhancement=run_llm_enhancement,
+                    run_llm_summary=run_llm_summary,
                     export_outputs=args.export_extraction,
                     output_dir=args.extraction_output_dir,
                     override_existing=args.override,
@@ -411,7 +456,9 @@ def main():
             doc_id = await process_document(
                 file_path=args.file,
                 database_url=args.db,
-                run_llm_enhancement=not args.no_llm,
+                run_llm_metrics=run_llm_metrics,
+                run_llm_enhancement=run_llm_enhancement,
+                run_llm_summary=run_llm_summary,
                 export_outputs=args.export_extraction,
                 output_dir=args.extraction_output_dir,
                 override_existing=args.override,

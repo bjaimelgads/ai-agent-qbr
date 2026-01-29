@@ -92,18 +92,12 @@ class MetricFilter(BaseModel):
     # Category filter (singular for convenience)
     category: str | None = Field(default=None, description="Single category filter")
 
-    # Trend filter
-    trends: list[str] | None = Field(default=None)
-
     # Value filters
     min_value: float | None = Field(default=None)
     max_value: float | None = Field(default=None)
 
     # Name search
     name_contains: str | None = Field(default=None)
-
-    # Positive/negative trend
-    is_positive_trend: bool | None = Field(default=None)
 
 
 class SlideFilter(BaseModel):

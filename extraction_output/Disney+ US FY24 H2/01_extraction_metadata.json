@@ -1,6 +1,6 @@
 {
-  "source_file": "/home/brunojaime/Documents/Projects/mcp-projects/LGAds/ai-agent-qbr/qbr_extraction/decks/Disney+ US FY24 H2.pptx",
-  "extraction_timestamp": "2026-01-23T09:06:27.611599",
+  "source_file": "qbr_extraction/decks/Disney+ US FY24 H2.pptx",
+  "extraction_timestamp": "2026-01-29T02:50:07.707961",
   "kreuzberg_version": "4.0.0",
   "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   "page_count": 69,
@@ -9,10 +9,10 @@
     "fra",
     "lat",
     "cat",
-    "ita",
     "afr",
-    "dan",
-    "lit"
+    "lit",
+    "ita",
+    "dan"
   ],
   "table_count": 0,
   "image_count": 170,

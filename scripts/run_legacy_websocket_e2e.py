@@ -85,11 +85,17 @@ def _setup_db(db_url: str) -> None:
         engine = create_async_engine(db_url)
         metadata = MetaData()
         Table(
+            "clients",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(255), unique=True),
+        )
+        Table(
             "documents",
             metadata,
             Column("id", Integer, primary_key=True),
             Column("filename", String(255)),
-            Column("client_name", String(255)),
+            Column("client_id", Integer),
             Column("period", String(100)),
             Column("status", String(50)),
             Column("executive_summary", Text),
@@ -142,10 +148,16 @@ def _setup_db(db_url: str) -> None:
             ]
 
             await conn.execute(
+                metadata.tables["clients"].insert().values(
+                    id=1,
+                    name="Acme",
+                )
+            )
+            await conn.execute(
                 metadata.tables["documents"].insert().values(
                     id=1,
                     filename="qbr_h1.pptx",
-                    client_name="Acme",
+                    client_id=1,
                     period="H1",
                     status="enhanced",
                     executive_summary="H1 summary",
@@ -155,7 +167,7 @@ def _setup_db(db_url: str) -> None:
                 metadata.tables["documents"].insert().values(
                     id=2,
                     filename="qbr_h2.pptx",
-                    client_name="Acme",
+                    client_id=1,
                     period="H2",
                     status="enhanced",
                     executive_summary="H2 summary",

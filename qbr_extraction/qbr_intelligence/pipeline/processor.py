@@ -13,6 +13,7 @@ import os
 import re
 import zipfile
 import time
+from dataclasses import replace
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -38,12 +39,15 @@ from qbr_intelligence.db.models import (
     Chart,
     ChartType,
     Chunk,
+    Client,
     Document,
     DocumentStatus,
     Entity,
     Image,
     Keyword,
     Metric,
+    MetricAlias,
+    MetricCatalog,
     Period,
     Slide,
     SlideType,
@@ -52,6 +56,7 @@ from qbr_intelligence.llm.modules import (
     MetricDeduplicator,
     MetricRefiner,
     QBREnhancementPipeline,
+    ExecutiveSummarizer,
     create_lm,
     MetricContextExtractor,
 )
@@ -120,6 +125,11 @@ class QBRProcessor:
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
         self._ensure_metric_columns()
+        self._ensure_document_columns()
+        self._seed_clients()
+        self._client_names = self._load_client_names()
+        self._seed_metric_catalog()
+        self._metric_catalog_map = self._load_metric_catalog_map()
 
         # Initialize LLM (will be created when needed)
         self.llm_model = llm_model
@@ -153,9 +163,7 @@ class QBRProcessor:
             return
         existing = {col["name"] for col in inspector.get_columns("metrics")}
         needed = {
-            "is_calculated": "BOOLEAN",
-            "depends_on": "TEXT",
-            "formula": "TEXT",
+            "metric_catalog_id": "INTEGER",
             "period_label": "TEXT",
             "period_start": "TEXT",
             "period_end": "TEXT",
@@ -170,6 +178,24 @@ class QBRProcessor:
         with self.engine.begin() as conn:
             for name, ddl in missing.items():
                 conn.execute(text(f"ALTER TABLE metrics ADD COLUMN {name} {ddl}"))
+
+    def _ensure_document_columns(self) -> None:
+        if self.engine.dialect.name != "sqlite":
+            return
+        inspector = inspect(self.engine)
+        if "documents" not in inspector.get_table_names():
+            return
+        existing = {col["name"] for col in inspector.get_columns("documents")}
+        needed = {
+            "half": "TEXT",
+            "client_id": "INTEGER",
+        }
+        missing = {name: ddl for name, ddl in needed.items() if name not in existing}
+        if not missing:
+            return
+        with self.engine.begin() as conn:
+            for name, ddl in missing.items():
+                conn.execute(text(f"ALTER TABLE documents ADD COLUMN {name} {ddl}"))
 
     def create_extraction_config(self) -> ExtractionConfig:
         """Create Kreuzberg extraction configuration."""
@@ -604,9 +630,8 @@ class QBRProcessor:
             "raw_context": metric.raw_context,
             "slide_number": metric.slide_number,
             "source": metric.source,
-            "is_calculated": metric.is_calculated,
-            "depends_on": metric.depends_on,
-            "formula": metric.formula,
+            "metric_catalog_id": metric.metric_catalog_id,
+            "metric_catalog_slug": metric.metric_catalog_slug,
             "extraction_confidence": metric.extraction_confidence,
             "metadata": metric.metadata,
             "period_label": metric.period_label,
@@ -762,9 +787,6 @@ class QBRProcessor:
                         metric_type=_metric_type_from_unit(unit),
                         source="llm_refined",
                         category=definition.category,
-                        is_calculated=definition.is_calculated,
-                        depends_on=list(definition.depends_on),
-                        formula=definition.formula,
                         extraction_confidence=confidence,
                         metadata=metadata,
                         baseline_text=baseline_text,
@@ -1187,6 +1209,183 @@ Categories:
         return {token for token in cleaned.split() if len(token) > 2}
 
     @staticmethod
+    def _normalize_year(raw_year: str) -> str:
+        year = raw_year.strip()
+        if len(year) == 2:
+            return f"FY{year}"
+        if len(year) == 4:
+            return f"FY{year[-2:]}"
+        return f"FY{year}"
+
+    def _infer_client_name(self, file_stem: str) -> str | None:
+        stem = file_stem.lower()
+        matches: list[tuple[int, str]] = []
+        for name in self._client_names:
+            if not name:
+                continue
+            lower = name.lower()
+            if lower in stem:
+                matches.append((len(lower), name))
+        if not matches:
+            return None
+        matches.sort(reverse=True)
+        return matches[0][1]
+
+    def _seed_clients(self) -> None:
+        with self.SessionLocal() as session:
+            existing = session.query(Client).count()
+            if existing:
+                return
+            session.add(Client(name="Disney+"))
+            session.commit()
+
+    def _load_client_names(self) -> list[str]:
+        with self.SessionLocal() as session:
+            rows = session.query(Client.name).all()
+        return [row[0] for row in rows if row and row[0]]
+
+    def _seed_metric_catalog(self) -> None:
+        with self.SessionLocal() as session:
+            existing = session.query(MetricCatalog).count()
+            if existing:
+                return
+            applicability_notes = {
+                "cost_per_acquisition": (
+                    "Use Spend and Acquisitions only from placements targeting users who have not installed the app. "
+                    "Exclude added value placements when computing CPA."
+                ),
+                "cost_per_install": (
+                    "Use Spend and Installs only from placements targeting users who have not installed the app. "
+                    "Exclude added value placements when computing CPI."
+                ),
+                "click_through_rate": "Clicks / Impressions for Homescreen placements.",
+                "video_completion_rate": "Completes / Impressions for Video placements.",
+            }
+            definitions = build_metric_dictionary().definitions
+            for definition in definitions:
+                if not definition.name:
+                    continue
+                slug = definition.slug or definition.name.lower().replace(" ", "_")
+                metric = MetricCatalog(
+                    name=definition.name,
+                    slug=slug,
+                    category=definition.category,
+                    default_unit=definition.unit_hint,
+                    formula=definition.formula,
+                    description=None,
+                    applicability_notes=applicability_notes.get(slug),
+                )
+                session.add(metric)
+                session.flush()
+                for pattern in definition.patterns:
+                    session.add(
+                        MetricAlias(
+                            metric_id=metric.id,
+                            alias=definition.name,
+                            pattern=pattern,
+                            priority=0,
+                            unit_override=None,
+                        )
+                    )
+            session.commit()
+
+    def _load_metric_catalog_map(self) -> dict[str, tuple[int, str]]:
+        with self.SessionLocal() as session:
+            rows = session.query(MetricCatalog.id, MetricCatalog.name, MetricCatalog.slug).all()
+        return {name: (metric_id, slug) for metric_id, name, slug in rows if name}
+
+    def _apply_metric_catalog(self, metrics: list) -> list:
+        if not metrics:
+            return metrics
+        updated = []
+        for metric in metrics:
+            catalog = self._metric_catalog_map.get(metric.name)
+            if catalog:
+                metric = replace(
+                    metric,
+                    metric_catalog_id=catalog[0],
+                    metric_catalog_slug=catalog[1],
+                )
+            updated.append(metric)
+        return updated
+
+    def _ensure_client(self, session, name: str) -> Client | None:
+        if not name:
+            return None
+        client = session.query(Client).filter(Client.name == name).one_or_none()
+        if client:
+            return client
+        client = Client(name=name)
+        session.add(client)
+        session.flush()
+        return client
+
+    def _infer_period_from_title(
+        self, title: str
+    ) -> tuple[str | None, str | None, str | None, str | None]:
+        text = title.strip()
+        if not text:
+            return (None, None, None, None)
+
+        half_match = re.search(r"\b(?:FY)?\s*'?(?P<year>\d{2,4})\s*H(?P<half>[12])\b", text, re.I)
+        if half_match:
+            fiscal_year = self._normalize_year(half_match.group("year"))
+            half = f"H{half_match.group('half')}"
+            return (f"{half} {fiscal_year}", fiscal_year, None, half)
+
+        half_match = re.search(r"\bH(?P<half>[12])\s*(?:FY)?\s*'?(?P<year>\d{2,4})\b", text, re.I)
+        if half_match:
+            fiscal_year = self._normalize_year(half_match.group("year"))
+            half = f"H{half_match.group('half')}"
+            return (f"{half} {fiscal_year}", fiscal_year, None, half)
+
+        q_match = re.search(r"\b(?:FY)?\s*'?(?P<year>\d{2,4})\s*Q(?P<quarter>[1-4])\b", text, re.I)
+        if q_match:
+            fiscal_year = self._normalize_year(q_match.group("year"))
+            quarter = f"Q{q_match.group('quarter')}"
+            return (f"{quarter} {fiscal_year}", fiscal_year, quarter, None)
+
+        q_match = re.search(r"\bQ(?P<quarter>[1-4])\s*(?:FY)?\s*'?(?P<year>\d{2,4})\b", text, re.I)
+        if q_match:
+            fiscal_year = self._normalize_year(q_match.group("year"))
+            quarter = f"Q{q_match.group('quarter')}"
+            return (f"{quarter} {fiscal_year}", fiscal_year, quarter, None)
+
+        fy_match = re.search(r"\bFY\s*'?(?P<year>\d{2,4})\b", text, re.I)
+        if fy_match:
+            fiscal_year = self._normalize_year(fy_match.group("year"))
+            return (fiscal_year, fiscal_year, None, None)
+
+        return (None, None, None, None)
+
+    def _normalize_period_label(self, label: str | None) -> str | None:
+        if not label:
+            return None
+        period_label, _, _, _ = self._infer_period_from_title(label)
+        return period_label
+
+    def _apply_document_period_defaults(
+        self,
+        metrics: list,
+        *,
+        document_period: str | None,
+    ) -> list:
+        if not metrics:
+            return metrics
+        doc_label = self._normalize_period_label(document_period)
+        if not doc_label:
+            return metrics
+        filtered = []
+        for metric in metrics:
+            metric_label = self._normalize_period_label(getattr(metric, "period_label", None))
+            if metric_label and metric_label != doc_label:
+                continue
+            if getattr(metric, "period_label", None) is None:
+                metric = replace(metric, period_label=doc_label)
+            filtered.append(metric)
+        return filtered
+
+    @staticmethod
     def _load_pptx_slide_texts(file_path: Path) -> list[dict]:
         """Load slide text in PPTX order from the PPTX XML."""
         ns = {
@@ -1265,7 +1464,9 @@ Categories:
         file_path: str | Path,
         client_name: str | None = None,
         report_period: str | None = None,
+        run_llm_metrics: bool = True,
         run_llm_enhancement: bool = True,
+        run_llm_summary: bool = False,
         export_outputs: bool = False,
         output_dir: Path | str | None = None,
         slide_range: tuple[int, int] | None = None,
@@ -1278,7 +1479,9 @@ Categories:
             file_path: Path to the document
             client_name: Optional client name
             report_period: Optional report period
-            run_llm_enhancement: Whether to run LLM enhancement
+            run_llm_metrics: Whether to run LLM metric refinement
+            run_llm_enhancement: Whether to run the full LLM enhancement pipeline
+            run_llm_summary: Whether to run only the LLM executive summary
             slide_range: Optional (start, end) slide range to process
             max_slides: Optional max number of slides to process
 
@@ -1329,6 +1532,15 @@ Categories:
                 content_for_processing = self._build_content_from_pages(selected_pages)
                 pages_override = selected_pages
                 chunks_for_storage = self._build_chunks_from_pages(selected_pages)
+
+        inferred_client = client_name or self._infer_client_name(file_path.stem)
+        inferred_period, inferred_fiscal_year, inferred_quarter, inferred_half = (
+            self._infer_period_from_title(report_period or file_path.stem)
+        )
+        report_period = report_period or inferred_period
+        fiscal_year = inferred_fiscal_year
+        quarter = inferred_quarter
+        half = inferred_half
 
         post_embedding_settings = PostEmbeddingSettings.from_env()
         try:
@@ -1384,7 +1596,7 @@ Categories:
         scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
         llm_deduped_metrics = scanned_metrics
         refined_metrics = None
-        if run_llm_enhancement:
+        if run_llm_metrics:
             llm_deduped_metrics = self._dedupe_metrics_with_llm(scanned_metrics)
             refined_metrics = self._refine_metrics_with_llm(
                 metrics=llm_deduped_metrics,
@@ -1394,29 +1606,54 @@ Categories:
         scanned_metrics = self._apply_metric_context_strategies(
             metrics=scanned_metrics,
             slides=slides_ordered,
-            client_name=client_name,
+            client_name=inferred_client,
             report_period=report_period,
             stage="scanned",
-            allow_llm=run_llm_enhancement,
+            allow_llm=run_llm_metrics,
         )
         llm_deduped_metrics = self._apply_metric_context_strategies(
             metrics=llm_deduped_metrics,
             slides=slides_ordered,
-            client_name=client_name,
+            client_name=inferred_client,
             report_period=report_period,
             stage="deduped",
-            allow_llm=run_llm_enhancement,
+            allow_llm=run_llm_metrics,
         )
         if refined_metrics is not None:
             refined_metrics = self._apply_metric_context_strategies(
                 metrics=refined_metrics,
                 slides=slides_ordered,
-                client_name=client_name,
+                client_name=inferred_client,
                 report_period=report_period,
                 stage="refined",
-                allow_llm=run_llm_enhancement,
+                allow_llm=run_llm_metrics,
             )
         metrics_for_db = refined_metrics or llm_deduped_metrics
+
+        if report_period:
+            scanned_metrics = self._apply_document_period_defaults(
+                scanned_metrics,
+                document_period=report_period,
+            )
+            llm_deduped_metrics = self._apply_document_period_defaults(
+                llm_deduped_metrics,
+                document_period=report_period,
+            )
+            if refined_metrics is not None:
+                refined_metrics = self._apply_document_period_defaults(
+                    refined_metrics,
+                    document_period=report_period,
+                )
+            metrics_for_db = self._apply_document_period_defaults(
+                metrics_for_db,
+                document_period=report_period,
+            )
+
+        scanned_metrics = self._apply_metric_catalog(scanned_metrics)
+        llm_deduped_metrics = self._apply_metric_catalog(llm_deduped_metrics)
+        if refined_metrics is not None:
+            refined_metrics = self._apply_metric_catalog(refined_metrics)
+        metrics_for_db = self._apply_metric_catalog(metrics_for_db)
 
         print(f"  - Slides parsed: {len(slides_ordered)}")
         print(f"  - Metrics found: {len(metrics_ordered)}")
@@ -1469,6 +1706,7 @@ Categories:
         print("=" * 60)
 
         with self.SessionLocal() as session:
+            client = self._ensure_client(session, inferred_client) if inferred_client else None
             # Create document
             document = Document(
                 filename=file_path.name,
@@ -1481,8 +1719,11 @@ Categories:
                 chunk_count=len(chunks_for_storage),
                 extraction_metadata=result.metadata,
                 detected_languages=result.detected_languages,
-                client_name=client_name,
+                client_id=client.id if client else None,
                 report_period=report_period,
+                fiscal_year=fiscal_year,
+                quarter=quarter,
+                half=half,
             )
             session.add(document)
             session.flush()  # Get document ID
@@ -1518,12 +1759,10 @@ Categories:
                     raw_value=m.raw_value,
                     raw_context=m.raw_context,
                     raw_metric_type=m.metric_type,
+                    metric_catalog_id=m.metric_catalog_id,
                     name=m.name,
                     normalized_value=m.normalized_value,
                     unit=m.unit,
-                    is_calculated=m.is_calculated,
-                    depends_on=m.depends_on,
-                    formula=m.formula,
                     category=m.category,
                     extraction_confidence=m.extraction_confidence,
                     period_label=m.period_label,
@@ -1627,6 +1866,22 @@ Categories:
                     encoding="utf-8",
                 )
                 print(f"  - LLM outputs saved: {target_dir / '10_llm_outputs.json'}")
+        elif run_llm_summary:
+            print("\n" + "=" * 60)
+            print("STEP 4: LLM SUMMARY")
+            print("=" * 60)
+            summary_result = self.enhance_summary(
+                doc_id,
+                content_for_processing,
+            )
+            if export_outputs and summary_result is not None:
+                base_dir = Path(output_dir) if output_dir else self.output_dir
+                target_dir = base_dir / file_path.stem
+                (target_dir / "10_llm_outputs.json").write_text(
+                    json.dumps(self._to_jsonable({"executive_summary": summary_result}), indent=2, default=str),
+                    encoding="utf-8",
+                )
+                print(f"  - LLM outputs saved: {target_dir / '10_llm_outputs.json'}")
 
         print("\n" + "=" * 60)
         print("PROCESSING COMPLETE")
@@ -1693,6 +1948,21 @@ Categories:
                 if doc:
                     doc.status = DocumentStatus.EXTRACTED.value  # Keep as extracted
                     session.commit()
+            return None
+
+    def enhance_summary(self, document_id: int, full_content: str):
+        try:
+            print("  Running LLM executive summary...")
+            with self.SessionLocal() as session:
+                doc = session.get(Document, document_id)
+                context = f"Client: {doc.client_name or 'Unknown'}, Period: {doc.report_period or 'Unknown'}"
+            summarizer = ExecutiveSummarizer(lm=self.lm)
+            summary = summarizer(full_content=full_content, document_metadata=context)
+            self._save_enhancements(document_id, {"executive_summary": summary})
+            print("  Summary complete!")
+            return summary
+        except Exception as exc:
+            print(f"  Summary failed: {exc}")
             return None
 
     def _dedupe_metrics_with_llm(
@@ -1821,16 +2091,7 @@ Categories:
                         if hasattr(category, "value")
                         else str(category) if category else "other"
                     )
-                    trend = getattr(nm, "trend", None)
-                    db_metric.trend = (
-                        trend.value
-                        if hasattr(trend, "value")
-                        else str(trend) if trend else "unknown"
-                    )
-                    db_metric.is_positive_trend = getattr(nm, "is_positive", None)
-                    db_metric.change_percentage = getattr(nm, "change_percentage", None)
-                    db_metric.context = getattr(nm, "significance", None)
-                    db_metric.benchmark_comparison = getattr(nm, "benchmark_notes", None)
+                    # Trend/benchmark fields are no longer stored on metrics.
 
             # Update charts with reconstruction data
             chart_results = results.get("charts", [])

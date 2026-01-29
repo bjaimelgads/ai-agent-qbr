@@ -27,11 +27,17 @@ def _setup_db(db_url: str) -> None:
         engine = create_async_engine(db_url)
         metadata = MetaData()
         Table(
+            "clients",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(255), unique=True),
+        )
+        Table(
             "documents",
             metadata,
             Column("id", Integer, primary_key=True),
             Column("filename", String(255)),
-            Column("client_name", String(255)),
+            Column("client_id", Integer),
             Column("period", String(100)),
             Column("status", String(50)),
             Column("executive_summary", Text),
@@ -57,10 +63,16 @@ def _setup_db(db_url: str) -> None:
             provider = HashEmbeddingsProvider()
             embedding = await provider.embed_query("Revenue grew by 10%")
             await conn.execute(
+                metadata.tables["clients"].insert().values(
+                    id=1,
+                    name="Acme",
+                )
+            )
+            await conn.execute(
                 metadata.tables["documents"].insert().values(
                     id=1,
                     filename="qbr.pptx",
-                    client_name="Acme",
+                    client_id=1,
                     period="Q1",
                     status="enhanced",
                     executive_summary="Summary",

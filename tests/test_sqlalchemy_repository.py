@@ -17,11 +17,17 @@ async def test_repository_and_vector_index(tmp_path) -> None:
     metadata = MetaData()
 
     Table(
+        "clients",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("name", String(255), unique=True),
+    )
+    Table(
         "documents",
         metadata,
         Column("id", Integer, primary_key=True),
         Column("filename", String(255)),
-        Column("client_name", String(255)),
+        Column("client_id", Integer),
         Column("period", String(100)),
         Column("status", String(50)),
         Column("executive_summary", Text),
@@ -44,10 +50,16 @@ async def test_repository_and_vector_index(tmp_path) -> None:
     async with engine.begin() as conn:
         await conn.run_sync(metadata.create_all)
         await conn.execute(
+            metadata.tables["clients"].insert().values(
+                id=1,
+                name="Acme",
+            )
+        )
+        await conn.execute(
             metadata.tables["documents"].insert().values(
                 id=1,
                 filename="qbr.pptx",
-                client_name="Acme",
+                client_id=1,
                 period="Q1",
                 status="enhanced",
                 executive_summary="Summary",
@@ -99,11 +111,17 @@ async def test_repository_fts_bm25_ranking(tmp_path) -> None:
     metadata = MetaData()
 
     Table(
+        "clients",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("name", String(255), unique=True),
+    )
+    Table(
         "documents",
         metadata,
         Column("id", Integer, primary_key=True),
         Column("filename", String(255)),
-        Column("client_name", String(255)),
+        Column("client_id", Integer),
         Column("period", String(100)),
         Column("status", String(50)),
         Column("executive_summary", Text),
@@ -136,6 +154,12 @@ async def test_repository_fts_bm25_ranking(tmp_path) -> None:
             await engine.dispose()
             pytest.skip(f"FTS5 not available: {exc}")
 
+        await conn.execute(
+            metadata.tables["clients"].insert().values(
+                id=1,
+                name="Acme",
+            )
+        )
         await conn.execute(
             metadata.tables["chunks"].insert(),
             [
