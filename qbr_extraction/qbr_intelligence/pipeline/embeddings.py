@@ -37,7 +37,7 @@ class EmbeddingSettings(BaseModel):
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> "EmbeddingSettings":
-        source = environ or os.environ
+        source = os.environ if environ is None else environ
         return cls(
             enabled=_parse_bool(source.get("KREUZBERG_EMBEDDINGS_ENABLED"), True),
             preset=source.get("KREUZBERG_EMBEDDINGS_PRESET", "fast").strip(),

@@ -378,7 +378,7 @@ def _apply_update(metric, update: MetricContextUpdate):
         period_label=metric.period_label or update.period_label,
         period_start=metric.period_start or update.period_start,
         period_end=metric.period_end or update.period_end,
-        brand=metric.brand,
+        brand=metric.brand or update.brand,
         baseline_text=metric.baseline_text or update.baseline_text,
         baseline_type=metric.baseline_type or update.baseline_type,
         metadata=metadata,
@@ -406,13 +406,6 @@ def _extract_period(text: str) -> _PeriodMatch | None:
     if not text:
         return None
     text_norm = text.strip()
-
-    match = _MONTH_RANGE_PATTERN.search(text_norm)
-    if match:
-        start = _month_year_to_date(match.group("m1"), match.group("y1"), day=1)
-        end = _month_year_to_date(match.group("m2"), match.group("y2"), day=1, end_of_month=True)
-        label = f"{match.group('m1')} {match.group('y1')} - {match.group('m2')} {match.group('y2')}"
-        return _PeriodMatch(label=label, start=start, end=end, source=match.group(0))
 
     match = _HALF_PATTERN.search(text_norm) or _HALF_PATTERN_REV.search(text_norm)
     if match:

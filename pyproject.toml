@@ -52,6 +52,7 @@ extraction = [
 [project.scripts]
 ai_agent_qbr = "ai_agent_qbr.__main__:main"
 ai_agent_qbr_playground_ui = "ai_agent_qbr.playground_ui:main"
+metrics = "ai_agent_qbr.metrics_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -82,17 +82,20 @@ QBR_POST_EMBEDDINGS_NORMALIZE=true
 ### Processing Documents
 
 ```bash
-# Full pipeline: extraction + LLM enhancement
+# Extraction only (no LLM, default)
 uv run python run_pipeline.py document.pptx
 
-# Extraction only (no LLM, much faster)
-uv run python run_pipeline.py document.pptx --no-llm
+# Full pipeline: extraction + LLM enhancement
+uv run python run_pipeline.py document.pptx --llm
+
+# LLM adjudicator only (low-confidence metric adjudication)
+uv run python run_pipeline.py document.pptx --llm-adjudicator
 
 # Extraction outputs to extraction_output/<pptx-stem>/
 uv run python run_pipeline.py document.pptx --export-extraction
 
 # Process all PPTX files in a folder (top-level only)
-uv run python run_pipeline.py --folder decks --no-llm --export-extraction
+uv run python run_pipeline.py --folder decks --export-extraction
 
 # Query existing data only
 uv run python run_pipeline.py --query-only
@@ -110,12 +113,31 @@ uv run python run_pipeline.py document.pptx --db sqlite:///custom.db
 uv run python run_pipeline.py document.pptx --override
 ```
 
+### Metrics Extraction CLI
+
+```bash
+# Extract metrics with deterministic scoring (no LLM)
+metrics extract qbr_extraction/decks/Disney+\\ US\\ FY24\\ H2.pptx --out /tmp/metrics.json
+
+# Include debug artifact and enable LLM adjudication
+metrics extract qbr_extraction/decks/Disney+\\ US\\ FY24\\ H2.pptx --out /tmp/metrics.json --debug /tmp/metrics_debug.json --llm
+```
+
+Notes:
+- LLM adjudication is gated and cached; set `LEGACY_LLM_METRICS=true` to re-enable the legacy full LLM metric refinement steps.
+- For local runs without the `metrics` console script, use `uv run python scripts/metrics.py extract ...`.
+
 ### Command Line Options
 
 | Option | Description |
 |--------|-------------|
 | `file` | Path to PPTX file to process |
-| `--no-llm` | Skip LLM enhancement (faster) |
+| `--no-llm` | Disable all LLM steps (default) |
+| `--llm` | Enable all LLM steps (metrics + enhancement + summary + adjudicator) |
+| `--llm-metrics` | Enable LLM metric refinement (legacy DSPy pipeline) |
+| `--llm-enhancement` | Enable LLM enhancement pipeline (slides/charts/entities) |
+| `--llm-summary` | Enable LLM executive summary only |
+| `--llm-adjudicator` | Enable LLM adjudication for low-confidence metrics only |
 | `--query-only` | Only run queries, skip processing |
 | `--document-id ID` | Specify document ID for queries |
 | `--export DIR` | Export document data to JSON files |

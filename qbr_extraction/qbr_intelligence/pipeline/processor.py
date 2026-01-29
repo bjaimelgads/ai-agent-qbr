@@ -77,6 +77,11 @@ from qbr_intelligence.pipeline.metric_scanner import (
     _new_metric_id,
     build_metric_dictionary,
 )
+from qbr_intelligence.metrics.adapters import to_metric_candidate
+from qbr_intelligence.metrics.catalog import build_metric_catalog, build_metric_catalog_from_db
+from qbr_intelligence.metrics.pipeline import MetricExtractionPipeline, PipelineConfig
+from qbr_intelligence.metrics.parsing import parse_pptx_deck, compute_deck_hash
+from qbr_intelligence.metrics.adjudicator import LLMAdjudicator
 from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
@@ -154,6 +159,32 @@ class QBRProcessor:
         if self._enhancement_pipeline is None:
             self._enhancement_pipeline = QBREnhancementPipeline(lm=self.lm)
         return self._enhancement_pipeline
+
+    def _call_llm_text(self, prompt: str) -> str:
+        """Best-effort text completion call for lightweight adjudication."""
+        try:
+            lm = self.lm
+        except Exception:
+            return ""
+        for method_name in ("request", "complete", "__call__"):
+            method = getattr(lm, method_name, None)
+            if not callable(method):
+                continue
+            try:
+                response = method(prompt)
+            except Exception:
+                continue
+            if isinstance(response, str):
+                return response
+            for attr in ("text", "completion", "content"):
+                value = getattr(response, attr, None)
+                if isinstance(value, str) and value.strip():
+                    return value
+            try:
+                return str(response)
+            except Exception:
+                continue
+        return ""
 
     def _ensure_metric_columns(self) -> None:
         if self.engine.dialect.name != "sqlite":
@@ -868,7 +899,7 @@ class QBRProcessor:
                 "period_number": None,
                 "fiscal_year": QBRProcessor._parse_year(match.group(1)),
             }
-        return {"period_type": "range", "period_number": None, "fiscal_year": None}
+        return {"period_type": None, "period_number": None, "fiscal_year": None}
 
     @staticmethod
     def _parse_year(value: str) -> int:
@@ -1294,6 +1325,14 @@ Categories:
             rows = session.query(MetricCatalog.id, MetricCatalog.name, MetricCatalog.slug).all()
         return {name: (metric_id, slug) for metric_id, name, slug in rows if name}
 
+    def _load_metric_catalog_entries(self) -> list:
+        try:
+            with self.SessionLocal() as session:
+                entries = build_metric_catalog_from_db(session)
+            return entries if entries else build_metric_catalog()
+        except Exception:
+            return build_metric_catalog()
+
     def _apply_metric_catalog(self, metrics: list) -> list:
         if not metrics:
             return metrics
@@ -1467,6 +1506,7 @@ Categories:
         run_llm_metrics: bool = True,
         run_llm_enhancement: bool = True,
         run_llm_summary: bool = False,
+        run_llm_adjudicator: bool = False,
         export_outputs: bool = False,
         output_dir: Path | str | None = None,
         slide_range: tuple[int, int] | None = None,
@@ -1581,22 +1621,65 @@ Categories:
                 }
             )
 
-        metric_scanner = MetricScanner(build_metric_dictionary())
-        artifacts = MetricScanArtifacts(
-            raw_content=result.content,
-            slides=slides_ordered,
-            metrics=metrics_ordered,
-            charts=charts_ordered,
-            chunks=chunks_for_storage,
-            tables=tables_payload,
-            keywords=business_terms,
-            export_dir=None,
-        )
-        scanned_metrics = metric_scanner.scan(artifacts)
-        scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
+        metric_debug = None
+        scanned_metrics: list[MetricCandidate] = []
+        if file_path.suffix.lower() == ".pptx":
+            deck = parse_pptx_deck(file_path)
+            if slide_range is not None:
+                start, end = slide_range
+                deck = deck.__class__(
+                    deck_id=deck.deck_id,
+                    slides=tuple(
+                        slide for slide in deck.slides if start <= slide.slide_index <= end
+                    ),
+                )
+            elif max_slides is not None:
+                deck = deck.__class__(
+                    deck_id=deck.deck_id,
+                    slides=tuple(deck.slides[:max_slides]),
+                )
+            cache_dir = self.output_dir / ".metric_adjudicator_cache"
+            adjudicator = None
+            if run_llm_adjudicator:
+                adjudicator = LLMAdjudicator(
+                    call_llm=self._call_llm_text,
+                    cache_dir=cache_dir,
+                    enabled=True,
+                )
+            catalog_entries = self._load_metric_catalog_entries()
+            pipeline = MetricExtractionPipeline(
+                config=PipelineConfig(),
+                adjudicator=adjudicator,
+                catalog_entries=catalog_entries,
+            )
+            deck_hash = compute_deck_hash(file_path)
+            extracted_metrics, metric_debug = pipeline.extract_from_deck(
+                deck, deck_hash=deck_hash
+            )
+            scanned_metrics = [to_metric_candidate(metric) for metric in extracted_metrics]
+        else:
+            metric_scanner = MetricScanner(build_metric_dictionary())
+            artifacts = MetricScanArtifacts(
+                raw_content=result.content,
+                slides=slides_ordered,
+                metrics=metrics_ordered,
+                charts=charts_ordered,
+                chunks=chunks_for_storage,
+                tables=tables_payload,
+                keywords=business_terms,
+                export_dir=None,
+            )
+            scanned_metrics = metric_scanner.scan(artifacts)
+            scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
+
         llm_deduped_metrics = scanned_metrics
         refined_metrics = None
-        if run_llm_metrics:
+        use_legacy_llm_metrics = os.getenv("LEGACY_LLM_METRICS", "false").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        if run_llm_metrics and use_legacy_llm_metrics:
             llm_deduped_metrics = self._dedupe_metrics_with_llm(scanned_metrics)
             refined_metrics = self._refine_metrics_with_llm(
                 metrics=llm_deduped_metrics,
@@ -1609,7 +1692,7 @@ Categories:
             client_name=inferred_client,
             report_period=report_period,
             stage="scanned",
-            allow_llm=run_llm_metrics,
+            allow_llm=run_llm_metrics and use_legacy_llm_metrics,
         )
         llm_deduped_metrics = self._apply_metric_context_strategies(
             metrics=llm_deduped_metrics,
@@ -1617,7 +1700,7 @@ Categories:
             client_name=inferred_client,
             report_period=report_period,
             stage="deduped",
-            allow_llm=run_llm_metrics,
+            allow_llm=run_llm_metrics and use_legacy_llm_metrics,
         )
         if refined_metrics is not None:
             refined_metrics = self._apply_metric_context_strategies(
@@ -1626,7 +1709,7 @@ Categories:
                 client_name=inferred_client,
                 report_period=report_period,
                 stage="refined",
-                allow_llm=run_llm_metrics,
+                allow_llm=run_llm_metrics and use_legacy_llm_metrics,
             )
         metrics_for_db = refined_metrics or llm_deduped_metrics
 
@@ -1682,6 +1765,11 @@ Categories:
                 ),
                 encoding="utf-8",
             )
+            if metric_debug is not None:
+                (target_dir / "11b_business_metrics_debug.json").write_text(
+                    json.dumps(metric_debug.to_dict(), indent=2, default=str),
+                    encoding="utf-8",
+                )
             if run_llm_enhancement:
                 (target_dir / "12_business_metrics_deduped.json").write_text(
                     json.dumps(

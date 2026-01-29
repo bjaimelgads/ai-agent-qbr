@@ -39,7 +39,7 @@ htmlcov/
 # Build
 build/
 dist/
-
+extraction_output/
 # MLflow
 mlruns/
 mlartifacts/

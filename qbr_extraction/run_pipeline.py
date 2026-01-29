@@ -11,7 +11,9 @@ Usage:
     python run_pipeline.py disney.pptx
     python run_pipeline.py disney.pptx --llm-metrics  # LLM metrics only
     python run_pipeline.py disney.pptx --llm-summary  # LLM summary only
+    python run_pipeline.py disney.pptx --llm-enhancement  # LLM enhancement only
     python run_pipeline.py disney.pptx --llm  # Full LLM enhancement
+    python run_pipeline.py disney.pptx --no-llm  # Explicitly disable LLM steps
     python run_pipeline.py --query-only          # Query existing data only
     python run_pipeline.py disney.pptx --max-slides 4
     python run_pipeline.py disney.pptx --slide-range 3-6
@@ -55,9 +57,11 @@ load_dotenv()
 async def process_document(
     file_path: str,
     database_url: str,
-    run_llm_metrics: bool = True,
-    run_llm_enhancement: bool = True,
+    run_llm_metrics: bool = False,
+    run_llm_enhancement: bool = False,
     run_llm_summary: bool = False,
+    run_llm_adjudicator: bool = False,
+    run_llm_adjudicator: bool = False,
     export_outputs: bool = False,
     output_dir: str | None = None,
     override_existing: bool = False,
@@ -86,7 +90,7 @@ async def process_document(
 
     # Check LLM config if enhancement enabled
     llm_model = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
-    if run_llm_enhancement or run_llm_metrics or run_llm_summary:
+    if run_llm_enhancement or run_llm_metrics or run_llm_summary or run_llm_adjudicator:
         print("\n[2/4] LLM Enhancement enabled")
         print(f"      Model: {llm_model}")
         print("      LiteLLM picks up provider-specific env vars:")
@@ -100,6 +104,8 @@ async def process_document(
             print("      Mode: summary-only (other LLM steps disabled)")
         if not run_llm_enhancement and run_llm_summary and run_llm_metrics:
             print("      Mode: metrics + summary (other LLM steps disabled)")
+        if run_llm_adjudicator and not run_llm_enhancement and not run_llm_metrics and not run_llm_summary:
+            print("      Mode: metric adjudicator only")
     else:
         print("\n[2/4] Skipping LLM enhancement (default)")
 
@@ -125,6 +131,7 @@ async def process_document(
         run_llm_metrics=run_llm_metrics,
         run_llm_enhancement=run_llm_enhancement,
         run_llm_summary=run_llm_summary,
+        run_llm_adjudicator=run_llm_adjudicator,
         export_outputs=export_outputs,
         output_dir=output_dir,
         slide_range=slide_range,
@@ -145,6 +152,7 @@ async def process_document(
         "finished_at": end_dt.isoformat(),
         "elapsed_seconds": round(elapsed_seconds, 3),
         "llm_enhancement": run_llm_enhancement,
+        "llm_adjudicator": run_llm_adjudicator,
         "llm_model": llm_model,
         "export_outputs": export_outputs,
         "output_dir": str(timing_target_dir),
@@ -338,17 +346,32 @@ def main():
     parser.add_argument(
         "--llm-metrics",
         action="store_true",
-        help="Run only LLM metric refinement (skip other LLM steps)",
+        help="Enable LLM metric refinement",
     )
     parser.add_argument(
         "--llm-summary",
         action="store_true",
-        help="Run only LLM executive summary (skip other LLM steps)",
+        help="Enable LLM executive summary generation",
+    )
+    parser.add_argument(
+        "--llm-enhancement",
+        action="store_true",
+        help="Enable LLM enhancement pipeline (slides/charts/entities/etc.)",
+    )
+    parser.add_argument(
+        "--llm-adjudicator",
+        action="store_true",
+        help="Enable LLM adjudication for low-confidence metrics only",
     )
     parser.add_argument(
         "--llm",
         action="store_true",
-        help="Run full LLM enhancement pipeline",
+        help="Enable all LLM steps (metrics + enhancement + summary)",
+    )
+    parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Disable all LLM steps (default)",
     )
     parser.add_argument(
         "--query-only",
@@ -400,26 +423,20 @@ def main():
             raise ValueError("Use either a single file or --folder, not both.")
         if args.slide_range and args.max_slides:
             raise ValueError("Use either --slide-range or --max-slides, not both.")
+        run_llm_metrics = args.llm_metrics
+        run_llm_enhancement = args.llm_enhancement
+        run_llm_summary = args.llm_summary
+        run_llm_adjudicator = args.llm_adjudicator
         if args.llm:
             run_llm_metrics = True
             run_llm_enhancement = True
             run_llm_summary = True
-        elif args.llm_metrics and args.llm_summary:
-            run_llm_metrics = True
-            run_llm_enhancement = False
-            run_llm_summary = True
-        elif args.llm_metrics:
-            run_llm_metrics = True
-            run_llm_enhancement = False
-            run_llm_summary = False
-        elif args.llm_summary:
-            run_llm_metrics = False
-            run_llm_enhancement = False
-            run_llm_summary = True
-        else:
+            run_llm_adjudicator = True
+        if args.no_llm:
             run_llm_metrics = False
             run_llm_enhancement = False
             run_llm_summary = False
+            run_llm_adjudicator = False
         slide_range = _parse_slide_range(args.slide_range) if args.slide_range else None
         max_slides = args.max_slides
         if max_slides is not None and max_slides <= 0:
@@ -446,6 +463,7 @@ def main():
                     run_llm_metrics=run_llm_metrics,
                     run_llm_enhancement=run_llm_enhancement,
                     run_llm_summary=run_llm_summary,
+                    run_llm_adjudicator=run_llm_adjudicator,
                     export_outputs=args.export_extraction,
                     output_dir=args.extraction_output_dir,
                     override_existing=args.override,
@@ -459,6 +477,7 @@ def main():
                 run_llm_metrics=run_llm_metrics,
                 run_llm_enhancement=run_llm_enhancement,
                 run_llm_summary=run_llm_summary,
+                run_llm_adjudicator=run_llm_adjudicator,
                 export_outputs=args.export_extraction,
                 output_dir=args.extraction_output_dir,
                 override_existing=args.override,
