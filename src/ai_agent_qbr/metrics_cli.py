@@ -3,13 +3,9 @@
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 repo_root = Path(__file__).resolve().parents[2]
-qbr_path = repo_root / "qbr_extraction"
-if str(qbr_path) not in sys.path:
-    sys.path.insert(0, str(qbr_path))
 
 from qbr_intelligence.llm.modules import create_lm
 from qbr_intelligence.metrics.adjudicator import LLMAdjudicator

@@ -132,6 +132,11 @@ class Config:
     llm_cache_enabled: bool = True
     region_verify_model_name: str = "databricks-gpt-5-mini"
     region_verify_max_tokens: int = 256
+    llm_intent_enabled: bool = True
+    llm_answer_enabled: bool = False
+    llm_max_calls_per_query: int = 1
+    metric_router_enabled: bool = True
+    region_verifier_enabled: bool = False
 
     # Flag to use stub LLM (for testing)
     use_stub_llm: bool = True
@@ -265,6 +270,11 @@ class Config:
                 "databricks-gpt-5-mini",
             ),
             region_verify_max_tokens=_env_int("REGION_VERIFY_MAX_TOKENS", 256),
+            llm_intent_enabled=_env_flag("LLM_INTENT_ENABLED", True),
+            llm_answer_enabled=_env_flag("LLM_ANSWER_ENABLED", False),
+            llm_max_calls_per_query=_env_int("LLM_MAX_CALLS_PER_QUERY", 1),
+            metric_router_enabled=_env_flag("METRIC_ROUTER_ENABLED", True),
+            region_verifier_enabled=_env_flag("REGION_VERIFIER_ENABLED", False),
             use_stub_llm=_env_flag("USE_STUB_LLM", True),
             mlflow_enabled=_env_flag("MLFLOW_ENABLED", False),
             mlflow_tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),

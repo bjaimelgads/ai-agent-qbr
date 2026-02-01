@@ -215,9 +215,10 @@ def test_legacy_websocket_contract_and_rerank(tmp_path):
     db_url = f"sqlite+aiosqlite:///{tmp_path / 'qbr_legacy_e2e.db'}"
     _setup_db(db_url)
 
+    use_stub_llm = os.getenv("USE_STUB_LLM", "true").lower() in {"1", "true", "yes", "on"}
     config = Config(
         output_protocol="websocket",
-        use_stub_llm=True,
+        use_stub_llm=use_stub_llm,
         database_url=db_url,
         embeddings_backend="hash",
         embeddings_model="ignored",

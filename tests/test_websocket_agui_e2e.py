@@ -103,14 +103,16 @@ def test_agui_websocket_streams_context(tmp_path):
     db_url = f"sqlite+aiosqlite:///{tmp_path / 'qbr_e2e.db'}"
     _setup_db(db_url)
 
+    use_stub_llm = os.getenv("USE_STUB_LLM", "true").lower() in {"1", "true", "yes", "on"}
     config = Config(
         output_protocol="agui",
-        use_stub_llm=True,
+        use_stub_llm=use_stub_llm,
         database_url=db_url,
         embeddings_backend="hash",
         embeddings_model="ignored",
         storage_backend="sqlite",
         vector_backend="sqlite_embeddings",
+        rerank_backend="none",
     )
 
     def orchestrator_factory(telemetry):

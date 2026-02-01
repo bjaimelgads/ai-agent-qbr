@@ -1,0 +1,368 @@
+{
+  "total": 1,
+  "results": [
+    {
+      "id": "metric_then_followup_compare",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "CPA for Disney+ in FY24 H2 US",
+          "router_matched": true,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request.",
+          "planner_metadata": {
+            "reason": "answer_complete",
+            "thought": "guardrail_stop:slm-router",
+            "steps": [],
+            "step_count": 0,
+            "artifacts": {},
+            "sources": [],
+            "llm_context": {
+              "conscious_memories": [],
+              "conversation_memory": {
+                "recent_turns": []
+              },
+              "qbr_context": "[1] Doc 2 (slide 14): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 14 -->\n<table><tr><th></th><th>ACCOMPLISHED</th><th>UNDERWAY</th></tr><tr><td>Reporting Enhancements</td><td>Streamlined daily delivery + app reporting into  single global report Integrated Kochava, CPI, CPA, &amp; CPE metrics into weekly reportingLaunched Global Dashboard </td><td>Automated Daily Delivery reporting to AWS S3 bucket</td></tr><tr><td>Kochava Integration </td><td>Kochava tags applied across all paid media + matching on IPsUser Journey Testing for US CompleteKochava data added to weekly reporting</td><td>ADID Letter of Consent kicked off 1/11/24 - awaiting Disney signature User Journey Testing for UK, AU, KR, JP in progress</td></tr><tr><td>Bundle Support </td><td>ESPN App Live on LG TVs  on 11/16Campaign supporting Bundle Duo + Trio (screensaver beta)Launched Hulu on Disney+ &amp; International Rebrand Supported EMEA Ad Tier across: EU5 &amp; Nordics </td><td>Pending DPA: Enhanced targeting, leveraging LiveRamp to onboard D+ 1P data for targeting and attribution </td></tr></table>\n- FY\u201924 Partnership Scorecard\n- \n![rId3](slide_23_image_rId3.jpg)\n- \n![rId4](slide_23_image_rId4.jpg)\n![rId5](slide_23_image_rId5.jpg)\n\n### Notes:\n, breaking  down RB performance by user groups to report out on Disney\u2019s ACQ and ENG metrics\n\n\n[2] Doc 2 (slide 1): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 1 -->\n![rId3](slide_8_image_rId3.jpg)\n![rId4](slide_8_image_rId4.jpg)\n- FY24 H1\n- Business Review\n\n\n[3] Doc 2 (slide 6): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 6 -->\n- LG and Samsung TVs Make Up the Majority of the US Market\n- Percentage of TVs in Household for \u2b24 LG, \u2b24 Samsung, and \u2b24 Others (US)\n- \n- \n![rId3](slide_47_image_rId3.jpg)\n- Source: MRI-Simmons November 2023. Question: Net Any Purchase of TVs by Brand. Note: Numbers do not add up to 100% because of multiple TVs within individual households.\n",
+              "region_verification": null,
+              "qbr_citations": [
+                {
+                  "chunk_id": 95,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 14,
+                  "end_slide": 14
+                },
+                {
+                  "chunk_id": 80,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 1,
+                  "end_slide": 1
+                },
+                {
+                  "chunk_id": 85,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 6,
+                  "end_slide": 6
+                }
+              ]
+            },
+            "tool_context": {},
+            "cost": {
+              "total_cost_usd": 0.0,
+              "main_llm_calls": 0,
+              "reflection_llm_calls": 0,
+              "summarizer_llm_calls": 0
+            },
+            "constraints": {
+              "deadline_at": null,
+              "deadline_remaining_s": null,
+              "hop_budget": null,
+              "hops_used": 0,
+              "deadline_triggered": false,
+              "hop_exhausted": false
+            },
+            "trajectory_metadata": {
+              "artifact_registry": {
+                "counter": 0,
+                "records": []
+              }
+            },
+            "validation_failures_count": 0,
+            "repair_attempts": 0,
+            "salvage_used": false,
+            "args_invalid_count": 0,
+            "args_suspect_count": 0,
+            "consecutive_arg_failures": 0,
+            "autofill_rejection_count": 0,
+            "arg_fill_success_count": 0,
+            "arg_fill_failure_count": 0,
+            "finish_repair_success_count": 0,
+            "finish_repair_failure_count": 0,
+            "answer_action_seq": 1
+          }
+        },
+        {
+          "turn": 2,
+          "query": "and in H1?",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request.",
+          "planner_metadata": {
+            "reason": "answer_complete",
+            "thought": "guardrail_stop:slm-router",
+            "steps": [],
+            "step_count": 0,
+            "artifacts": {},
+            "sources": [],
+            "llm_context": {
+              "conscious_memories": [],
+              "conversation_memory": {
+                "recent_turns": [
+                  {
+                    "user": "CPA for Disney+ in FY24 H2 US",
+                    "assistant": "I'm unable to complete that request."
+                  }
+                ]
+              },
+              "qbr_context": "[1] Doc 2 (slide 3): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 3 -->\n- Disney FY24 Partnership Highlights\n- Global XLOB Partnership renewed at $15M commitment\n- Disney Streaming has invested $6.1M with LG Ads in FY24 across 17 active markets including net new paid media in Taiwan\n- Successfully launched Hulu on Disney+ & International Rebrand\n- ESPN App Live now for Bundle TRIO support\n- TLAMP agreement signed unlocking deeper measurement for Untargeted Roadblocks\n- Streamlined creative asset requirements & optimized campaigns to run on best performing placements globally\n- Launched first iteration of Global Dashboard putting performance insights at your fingertips\n-\n\n### Notes:\nFY24 H1: $4.4M vs. FY23 H1: $4.3M FY24 Q1-Q3 (Booked): $6.1M vs. FY23 Q1-Q3: $5.9M Asset scalability HUGE PROGRESS! # of assets needed reduced from 10 to 3 \u2013 thank you!! This first iteration of the  Global dashboard  gives you the opportunity to toggle insights between markets, which will allow you to have access to the data at your fingertips when working with the local teams. Huge win and hopefully a possibility to reactivate within markets that have been dark for a while.\n\n\n[2] Doc 2 (slide 21): File: Disney+ US FY24 H1.pptx\nTu</td><td>We</td><td>Th</td><td>Fr</td><td>Sa</td><td>Sun</td></tr><tr><td></td><td></td><td></td><td></td><td>1</td><td>2</td><td>3</td></tr><tr><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr><tr><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td></tr><tr><td>18</td><td>19</td><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td></tr><tr><td>25</td><td>26</td><td>27</td><td>28</td><td>29</td><td>30</td><td>31</td></tr></table>\n\n<table><tr><th>November 2023</th><th></th><th></th><th></th><th></th><th></th><th></th></tr><tr><td>Mo</td><td>Tu</td><td>We</td><td>Th</td><td>Fr</td><td>Sa</td><td>Sun</td></tr><tr><td></td><td></td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr><tr><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr><tr><td>13</td><td>14</td><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td></tr><tr><td>20</td><td>21</td><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td></tr><tr><td>27</td><td>28</td><td>29</td><td>30</td><td></td><td></td><td></td></tr></table>\n- FY24-H1 Flighting\n- Disney+ was only live with paid media 8 days in H1, focusing exclusively on Roadblocks\n- \n- Source: LG Ads data, October 23-March 24  & LG Ads x Disney+ Campaign data\n- AV Native ROS  Live 10/21 - 10/31; 3/29-3/31\n\n### Notes:\nOctober and March each accounted for 18% - 19% of total monthly installs. Back into Value for the AV lines\n\n\n[3] Doc 2 (slide 12): File: Disney+ US FY24 H1.pptx\ndata. Timing:  Alpha within Q1 \u201824 Limited Applications outside of US Note: Global, but minimal use cases outside the US as it relates to identity matching Clean Rooms can be global but only certain use cases will work in the US. For example, if we place impression files for non US, the company accessing the IP will need an identity table and this isn't available for most non US. If it's just receiving aggregated reports or processed data then the receiver may be non US and won't be accessing the log level, in this case it's global.\n",
+              "region_verification": null,
+              "qbr_citations": [
+                {
+                  "chunk_id": 82,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 3,
+                  "end_slide": 3
+                },
+                {
+                  "chunk_id": 104,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 21,
+                  "end_slide": 21
+                },
+                {
+                  "chunk_id": 93,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 12,
+                  "end_slide": 12
+                }
+              ]
+            },
+            "tool_context": {},
+            "cost": {
+              "total_cost_usd": 0.0,
+              "main_llm_calls": 0,
+              "reflection_llm_calls": 0,
+              "summarizer_llm_calls": 0
+            },
+            "constraints": {
+              "deadline_at": null,
+              "deadline_remaining_s": null,
+              "hop_budget": null,
+              "hops_used": 0,
+              "deadline_triggered": false,
+              "hop_exhausted": false
+            },
+            "trajectory_metadata": {
+              "artifact_registry": {
+                "counter": 0,
+                "records": []
+              }
+            },
+            "validation_failures_count": 0,
+            "repair_attempts": 0,
+            "salvage_used": false,
+            "args_invalid_count": 0,
+            "args_suspect_count": 0,
+            "consecutive_arg_failures": 0,
+            "autofill_rejection_count": 0,
+            "arg_fill_success_count": 0,
+            "arg_fill_failure_count": 0,
+            "finish_repair_success_count": 0,
+            "finish_repair_failure_count": 0,
+            "answer_action_seq": 2
+          }
+        },
+        {
+          "turn": 3,
+          "query": "compare them",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request.",
+          "planner_metadata": {
+            "reason": "answer_complete",
+            "thought": "guardrail_stop:slm-router",
+            "steps": [],
+            "step_count": 0,
+            "artifacts": {},
+            "sources": [],
+            "llm_context": {
+              "conscious_memories": [],
+              "conversation_memory": {
+                "recent_turns": [
+                  {
+                    "user": "CPA for Disney+ in FY24 H2 US",
+                    "assistant": "I'm unable to complete that request."
+                  },
+                  {
+                    "user": "and in H1?",
+                    "assistant": "I'm unable to complete that request."
+                  }
+                ]
+              },
+              "qbr_context": "[1] Doc 4 (slide 34): File: Disney+ US FY25 H1.pptx\n<!-- PAGE 34 -->\n![rId4](slide_7_image_rId4.jpg)\n- Top Performing Global Creative Groups (Carousel)\n- Romance and drama-themed creatives like Rivals and Las Sabinas led performance with CPAs under $11 and strong cost per engagement. While blockbuster titles like Deadpool & Wolverine drew attention, they came at higher acquisition costs\n- \n- CPA $12.99\n- CPE $3.44\n- CPE $3.02\n- CPA $13.03\n![rId6](slide_7_image_rId6.jpg)\n![rId5](slide_7_image_rId5.jpg)\n- Source: LG Ad Solutions TV Campaigns Data Disney+ FY25-H1 2024. | CPA based on ROS Not Installed Targeting and RB. CPE based on lapsed\n![rId7](slide_7_image_rId7.jpg)\n-\n\n### Notes:\n* Global Titles vs Local Titles Global: The Bear, Inside Out 2, Agatha, Deadpool & Wolverine, Star Wars: Skeleton Crew, Christmas 2024, Paradise, Alien Romulus, Moana 2, Daredevil: Born Again, Mufasa  Local: Rivals (UK), Las Sabinas (ES), Umami (TR), Bref 2 (FR), The Kardashians (UK)\n\n\n[2] Doc 5 (slide 7): File: Disney+ US FY25 H2.pptx\netrics to Your Fingertips \u2013 Through our living Global Dashboard, you now have on-demand access to the app usage and exposure metrics that support all global activation needs \u2014 whether you\u2019re planning by market, audience, proxy conversions, or custom date ranges. 1. App Data by Market (New MENA markets) We\u2019ve added MAUs and % Installed (Active vs. Lapsed) into the Global Dashboard, giving you hands-on visibility into app health and audience composition for each market. Purpose: Modernize planning by anchoring targeting decisions directly to device-level activity. 2. Date Range Comparisons (New Module) A redesigned panel with two independent charts, each with its own date-range selector: Compare any two custom periods side-by-side Toggle metrics (Proxy Conversions, Engagement, Acquired Users, etc.) Use the Drill-Down feature to select aggregation level (daily, weekly, monthly) A yellow arrow toggle will sit next to the Optional Metrics selector This comparison flexibility is not possible on the primary page \u2014 making it a powerful new analysis layer. 3. New Metrics Added To deepen measurement sophistication, we\u2019ve added two new KPIs: Acquired Users \u2013 users who meet the full acquisition criteria (Not Installed)  Engaged Users \u2013 users completing 2\u00d730-minute sessions within 7 days These metrics allow for more nuanced performance evaluation beyond clicks. Dashboard Access: https://lookerstudio.google.com/u/0/reporting/7afe07ea-4d66-4a33-a021-f92050add678/page/p_xa5mpjs9ud\n\n\n[3] Doc 5 (slide 18): File: Disney+ US FY25 H2.pptx\n<!-- PAGE 18 -->\n- \n![rId3](slide_17_image_rId3.jpg)\n- Disney+ App User Profile on LG TVs\n- Of TVs with Disney+ Installed in EMEA, 67%+ are Lapsed (+1ppt vs last half) providing significant opportunity to target this audience and bring them back into Disney+ to subscribe.\n- \n![rId6](slide_17_image_rId6.jpg)\n![rId4](slide_17_image_rId4.jpg)\n- Not\n- Installed\n- Lapsed Users\n- 24%\n- 67%\n- +1 ppt HoH\n- Installers\n- 76%\n- +2 ppt HoH\n- Active Users\n- 33%\n- Installed: All active LG TV users who had the app installed at some point. Not Installed: All active LG TV users who do not have the app installed.\n- Lapsed: All active LG TV users who did not use the app within the last 60 days. Active: All active LG TV users who used the app within the last 60 days.\n- Source: LG Ad Solutions proprietary data, Disney FY25 H2 | Confidential\n![rId5](slide_17_image_rId5.jpg)\n\n### Notes:\nSpeaker: Megan Installed +2 HoH Lapsed +1 HoH ROS Tactics - in Q4 we only were suppressing heavy active  ROADBLOCKS - lighter in Roadblocks which run untargeted and reach all audiences and drive that high reach promoting tentpole content\n\n\n[4] Doc 2 (slide 37): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 37 -->\n<table><tr><th></th><th>Static</th><th>Video</th></tr><tr><td>CPE</td><td>$3.49</td><td>$0.49</td></tr><tr><td>CPA</td><td>$42.96</td><td>$30.44</td></tr><tr><td>Launch Rate</td><td>5.27%</td><td>30.65%</td></tr><tr><td>CTR</td><td>0.13%</td><td>0.28%</td></tr></table>\n- Carousel Static vs Video\n- Carousel videos drove higher levels of engagement and were more efficient vs. all KPIs when compared to static across EMEA. We recommend leveraging Carousel Video whenever possible.\n- \n- Carousel Static\n![rId3](slide_7_image_rId3.jpg)\n- Carousel Video\n![rId4](slide_7_image_rId4.jpg)\n- Source: LG Ad Solutions Campaigns Data H1\u201924; Carousel Units only\n\n### Notes:\nAs for some optimizations, video again did outperform static. Video achieved more than  double  the cTR as static, and much lower CPEs and CPAs. Let\u2019s leverage video more when we can as I believe we only did for Christmas and Taylor Swift.\n\n\n[5] Doc 5 (slide 13): File: Disney+ US FY25 H2.pptx\n<!-- PAGE 13 -->\n![rId3](slide_26_image_rId3.jpg)\n- \n- \n- Product Innovation: Content Notification\n- Product Innovation: Content Notifications\n- Content Notifications Beta\n- Content Notifications on LG Smart TVs allow Disney+ to reach users in real time when they turn on their TV and direct them straight into the app, turning attention into immediate viewing.\n- Disney XLOB will own the Beta in key global markets:\n- Australia \u2192 December\n  - Content Alignment: Taylor Swift | The Eras Tour: The End of an Era\n- US \u2192 Domestic \u2192  December to March\n  - Content Alignment:\n    - Percy Jackson, Pole 2 Pole, Paradise S2 & ABC Show TBC\n- \n- \n-\n\n### Notes:\nSpeaker: Laura Continuing to improve taking feedback, but wanted to showcase the AU BETA Pop-Up Notification:  A notification message automatically appears on the Home Screen (visible for 5 seconds) along with an alert indicated by a bell icon in the top of the navigation bar  Appears once when the user powers on their LG TV during a 7-day flight. Shows for ~5 seconds. No hover state; purely a visual alert prompting interest. Designed to drive awareness and quick re-engagement. Panel Notification:  User can click on the message pop-up to be directed to app or navigate to the bell icon and be taken to the panel notification. The  panel notification  lives within the  Notification Center  (the bell icon). Once a user clicks the bell icon, the full panel notification appears. Lives persistently in the Notification Center for the full 7-day",
+              "region_verification": null,
+              "qbr_citations": [
+                {
+                  "chunk_id": 256,
+                  "document_id": 4,
+                  "score": 0.0,
+                  "start_slide": 34,
+                  "end_slide": 34
+                },
+                {
+                  "chunk_id": 302,
+                  "document_id": 5,
+                  "score": 0.0,
+                  "start_slide": 7,
+                  "end_slide": 7
+                },
+                {
+                  "chunk_id": 319,
+                  "document_id": 5,
+                  "score": 0.0,
+                  "start_slide": 18,
+                  "end_slide": 18
+                },
+                {
+                  "chunk_id": 124,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 37,
+                  "end_slide": 37
+                },
+                {
+                  "chunk_id": 310,
+                  "document_id": 5,
+                  "score": 0.0,
+                  "start_slide": 13,
+                  "end_slide": 13
+                }
+              ]
+            },
+            "tool_context": {},
+            "cost": {
+              "total_cost_usd": 0.0,
+              "main_llm_calls": 0,
+              "reflection_llm_calls": 0,
+              "summarizer_llm_calls": 0
+            },
+            "constraints": {
+              "deadline_at": null,
+              "deadline_remaining_s": null,
+              "hop_budget": null,
+              "hops_used": 0,
+              "deadline_triggered": false,
+              "hop_exhausted": false
+            },
+            "trajectory_metadata": {
+              "artifact_registry": {
+                "counter": 0,
+                "records": []
+              }
+            },
+            "validation_failures_count": 0,
+            "repair_attempts": 0,
+            "salvage_used": false,
+            "args_invalid_count": 0,
+            "args_suspect_count": 0,
+            "consecutive_arg_failures": 0,
+            "autofill_rejection_count": 0,
+            "arg_fill_success_count": 0,
+            "arg_fill_failure_count": 0,
+            "finish_repair_success_count": 0,
+            "finish_repair_failure_count": 0,
+            "answer_action_seq": 3
+          }
+        },
+        {
+          "turn": 4,
+          "query": "what about CPE too?",
+          "router_matched": true,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request.",
+          "planner_metadata": {
+            "reason": "answer_complete",
+            "thought": "guardrail_stop:slm-router",
+            "steps": [],
+            "step_count": 0,
+            "artifacts": {},
+            "sources": [],
+            "llm_context": {
+              "conscious_memories": [],
+              "conversation_memory": {
+                "recent_turns": [
+                  {
+                    "user": "CPA for Disney+ in FY24 H2 US",
+                    "assistant": "I'm unable to complete that request."
+                  },
+                  {
+                    "user": "and in H1?",
+                    "assistant": "I'm unable to complete that request."
+                  },
+                  {
+                    "user": "compare them",
+                    "assistant": "I'm unable to complete that request."
+                  }
+                ]
+              },
+              "qbr_context": "[1] Doc 2 (slide 23): File: Disney+ US FY24 H1.pptx\nn. We back that acquisition number into your TOTAL spend to get the CPA. This does inflate the CPA since the roadblocks are untargeted. We are reaching those with Disney+, lapsed,  active .. Everyone!  With enhanced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous. We also have  TLAMP  now which helps us get a bit closer to the most accurate cost here. Otherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given  subscription  fees and your customer  lifetime  value.  There is DEFINITELY opportunity to leverage ROS in the future. CPA prior was $27.29 with the 5 minute window instead of the 30 minutes Roadblocks this half alone generated more than 21,000 installs vs last half.  -what is your goal CPA?\n\n\n[2] Doc 2 (slide 24): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 24 -->\n<table><tr><th></th><th>Static</th><th>Video</th></tr><tr><td>CTR</td><td>0.22%</td><td>0.27%</td></tr><tr><td>Install Rate</td><td>0.17%</td><td>0.30%</td></tr><tr><td>Launch Rate</td><td>20.97%</td><td>26.40%</td></tr><tr><td>CPI</td><td>$6.45</td><td>$4.05</td></tr><tr><td>CPA</td><td>$42.96</td><td>$30.44</td></tr></table>\n- Carousel Static\n- Carousel Static vs Video\n![rId3](slide_15_image_rId3.jpg)\n- Carousel videos proved to drive higher levels of engagement, lower CPIs, and much lower CPAs versus static. We recommend leveraging additional video when possible.\n- \n- Carousel Video\n![rId4](slide_15_image_rId4.jpg)\n![rId5](slide_15_image_rId5.jpg)\n![rId6](slide_15_image_rId6.jpg)\n-\n\n### Notes:\nNow, let\u2019s get into ways to drive lower cost-pers with creative. When we look at Carousel static and video creatives, we do see major opportunity to increase video into the rotation. Video outperforms on every single performance metric and cost efficiency metric. Video achieves about \u2154 the CPI of static and drives a $12 more efficient CPA.\n\n\n[3] Doc 2 (slide 14): File: Disney+ US FY24 H1.pptx\n<!-- PAGE 14 -->\n<table><tr><th></th><th>ACCOMPLISHED</th><th>UNDERWAY</th></tr><tr><td>Reporting Enhancements</td><td>Streamlined daily delivery + app reporting into  single global report Integrated Kochava, CPI, CPA, &amp; CPE metrics into weekly reportingLaunched Global Dashboard </td><td>Automated Daily Delivery reporting to AWS S3 bucket</td></tr><tr><td>Kochava Integration </td><td>Kochava tags applied across all paid media + matching on IPsUser Journey Testing for US CompleteKochava data added to weekly reporting</td><td>ADID Letter of Consent kicked off 1/11/24 - awaiting Disney signature User Journey Testing for UK, AU, KR, JP in progress</td></tr><tr><td>Bundle Support </td><td>ESPN App Live on LG TVs  on 11/16Campaign supporting Bundle Duo + Trio (screensaver beta)Launched Hulu on Disney+ &amp; International Rebrand Supported EMEA Ad Tier across: EU5 &amp; Nordics </td><td>Pending DPA: Enhanced targeting, leveraging LiveRamp to onboard D+ 1P data for targeting and attribution </td></tr></table>\n- FY\u201924 Partnership Scorecard\n- \n![rId3](slide_23_image_rId3.jpg)\n- \n![rId4](slide_23_image_rId4.jpg)\n![rId5](slide_23_image_rId5.jpg)\n\n### Notes:\n, breaking  down RB performance by user groups to report out on Disney\u2019s ACQ and ENG metrics\n",
+              "region_verification": null,
+              "qbr_citations": [
+                {
+                  "chunk_id": 107,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 23,
+                  "end_slide": 23
+                },
+                {
+                  "chunk_id": 108,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 24,
+                  "end_slide": 24
+                },
+                {
+                  "chunk_id": 95,
+                  "document_id": 2,
+                  "score": 0.0,
+                  "start_slide": 14,
+                  "end_slide": 14
+                }
+              ]
+            },
+            "tool_context": {},
+            "cost": {
+              "total_cost_usd": 0.0,
+              "main_llm_calls": 0,
+              "reflection_llm_calls": 0,
+              "summarizer_llm_calls": 0
+            },
+            "constraints": {
+              "deadline_at": null,
+              "deadline_remaining_s": null,
+              "hop_budget": null,
+              "hops_used": 0,
+              "deadline_triggered": false,
+              "hop_exhausted": false
+            },
+            "trajectory_metadata": {
+              "artifact_registry": {
+                "counter": 0,
+                "records": []
+              }
+            },
+            "validation_failures_count": 0,
+            "repair_attempts": 0,
+            "salvage_used": false,
+            "args_invalid_count": 0,
+            "args_suspect_count": 0,
+            "consecutive_arg_failures": 0,
+            "autofill_rejection_count": 0,
+            "arg_fill_success_count": 0,
+            "arg_fill_failure_count": 0,
+            "finish_repair_success_count": 0,
+            "finish_repair_failure_count": 0,
+            "answer_action_seq": 4
+          }
+        }
+      ]
+    }
+  ]
+}

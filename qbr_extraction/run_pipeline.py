@@ -34,10 +34,16 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+repo_root = Path(__file__).resolve().parents[1]
+src_root = repo_root / "src"
+if str(src_root) not in sys.path:
+    sys.path.insert(0, str(src_root))
 
 from qbr_intelligence import QBRProcessor, QBRQueryInterface, init_db
 from qbr_intelligence.db.models import Document

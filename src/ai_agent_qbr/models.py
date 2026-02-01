@@ -74,3 +74,10 @@ class RegionFilterVerificationResult(BaseModel):
     needs_clarification: bool = False
     reason: str | None = None
     confidence: float | None = None
+
+
+class MetricQueryArgs(BaseModel):
+    """Arguments for metric query tool."""
+
+    question: str
+    debug: bool = False

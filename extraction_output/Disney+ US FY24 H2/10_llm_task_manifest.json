@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-01-29T16:49:19.919438",
+  "generated_at": "2026-01-31T07:36:23.107692",
   "document": "qbr_extraction/decks/Disney+ US FY24 H2.pptx",
   "total_slides": 69,
   "total_metrics_found": 301,
-  "total_charts_detected": 42,
+  "total_charts_detected": 30,
   "llm_tasks": {
     "slide_analysis": {
       "description": "Analyze each slide to extract structured insights",
@@ -35,7 +35,7 @@
     "chart_reconstruction": {
       "description": "Reconstruct chart data from text elements",
       "task_type": "per_chart",
-      "count": 42,
+      "count": 30,
       "expected_output": {
         "chart_type": "string",
         "title": "string",
@@ -98,7 +98,7 @@
   "estimated_llm_calls": {
     "slide_analysis": 69,
     "metric_normalization": 1,
-    "chart_reconstruction": 42,
+    "chart_reconstruction": 30,
     "executive_summary": 1,
     "entity_extraction": 1,
     "image_analysis": "depends on image count"
