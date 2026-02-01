@@ -520,6 +520,7 @@ class Metric(Base):
     brand: Mapped[str | None] = mapped_column(String(200), nullable=True)
     baseline_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     baseline_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    llm_context_label: Mapped[str | None] = mapped_column(String(200), nullable=True)
     period_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
     )

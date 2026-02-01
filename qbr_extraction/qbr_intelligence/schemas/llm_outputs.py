@@ -198,9 +198,6 @@ class MetricDeduplicationOutput(BaseModel):
 class MetricReviewResult(BaseModel):
     """Review outcome for a single metric candidate group."""
 
-    chosen_index: int = Field(
-        description="Index of the best candidate in the provided list (0-based). Use -1 to keep current."
-    )
     normalized_value: float | None = Field(
         default=None, description="Corrected normalized value if needed"
     )
@@ -213,6 +210,13 @@ class MetricReviewResult(BaseModel):
     )
     source_snippet: str | None = Field(
         default=None, description="Exact snippet supporting the choice"
+    )
+    context_label: str = Field(
+        description=(
+            "Required. 1-2 lines describing what this metric value represents "
+            "(e.g., 'US H1 FY24', 'EMEA Lapsed Users', 'Carousel Video vs Static')."
+        ),
+        min_length=3,
     )
 
 

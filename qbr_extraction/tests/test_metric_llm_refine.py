@@ -42,7 +42,6 @@ def test_build_metric_review_context_includes_sources():
     )
     assert "raw_context:" in context
     assert "slide_text:" in context
-    assert "speaker_notes:" in context
 
 
 def test_refine_metrics_with_llm_uses_metric_groups(monkeypatch, tmp_path):
@@ -50,15 +49,15 @@ def test_refine_metrics_with_llm_uses_metric_groups(monkeypatch, tmp_path):
         def __init__(self, lm=None):
             pass
 
-        def __call__(self, metric_catalog, context_snippets, candidates):
+        def __call__(self, metric_catalog, metric, context_snippets):
             return SimpleNamespace(
                 review=SimpleNamespace(
-                    chosen_index=1,
                     normalized_value=123.0,
                     unit="currency",
                     notes="ok",
                     confidence=0.9,
                     source_snippet="picked",
+                    context_label="US FY24 H1",
                 )
             )
 
@@ -107,7 +106,81 @@ def test_refine_metrics_with_llm_uses_metric_groups(monkeypatch, tmp_path):
         metric_dictionary=build_metric_dictionary(),
     )
 
-    assert len(refined) == 1
-    assert refined[0].normalized_value == 123.0
-    assert refined[0].unit == "currency"
-    assert refined[0].metadata["llm_review"]["chosen_index"] == 1
+    assert len(refined) == 2
+    assert all(m.normalized_value == 123.0 for m in refined)
+    assert all(m.unit == "currency" for m in refined)
+    assert all(m.llm_context_label == "US FY24 H1" for m in refined)
+
+
+def test_select_metrics_for_llm_refine_allowlist(monkeypatch, tmp_path):
+    monkeypatch.setenv("LLM_METRIC_NAME_ALLOWLIST", "Cost per Acquisition")
+    processor = QBRProcessor(
+        database_url="sqlite:///:memory:",
+        output_dir=tmp_path,
+        llm_model="openai/gpt-4o-mini",
+    )
+
+    metrics = [
+        MetricCandidate(
+            metric_id="m1",
+            name="Cost per Acquisition",
+            raw_value="$12.00",
+            normalized_value=12.0,
+            unit="currency",
+            raw_context="CPA $12.00",
+            slide_number=1,
+            metric_type="currency",
+            source="slide_text",
+            category="cost",
+        ),
+        MetricCandidate(
+            metric_id="m1b",
+            name="Cost per Acquisition",
+            raw_value="$11.50",
+            normalized_value=11.5,
+            unit="currency",
+            raw_context="CPA $11.50",
+            slide_number=1,
+            metric_type="currency",
+            source="slide_text",
+            category="cost",
+        ),
+        MetricCandidate(
+            metric_id="m2",
+            name="Click Through Rate",
+            raw_value="2.0%",
+            normalized_value=2.0,
+            unit="percent",
+            raw_context="CTR 2.0%",
+            slide_number=1,
+            metric_type="percent",
+            source="slide_text",
+            category="performance",
+        ),
+    ]
+
+    selected = processor._select_metrics_for_llm_refine(metrics)
+    assert [m.metric_id for m in selected] == ["m1", "m1b"]
+
+
+def test_allowlist_metric_can_be_skipped_without_gate(monkeypatch, tmp_path):
+    monkeypatch.setenv("LLM_METRIC_NAME_ALLOWLIST", "Cost per Acquisition")
+    processor = QBRProcessor(
+        database_url="sqlite:///:memory:",
+        output_dir=tmp_path,
+        llm_model="openai/gpt-4o-mini",
+    )
+    metric = MetricCandidate(
+        metric_id="m1",
+        name="Cost per Acquisition",
+        raw_value="$12.00",
+        normalized_value=12.0,
+        unit="currency",
+        raw_context="CPA $12.00",
+        slide_number=1,
+        metric_type="currency",
+        source="slide_text",
+        category="cost",
+    )
+    selected = processor._select_metrics_for_llm_refine([metric])
+    assert [m.metric_id for m in selected] == ["m1"]

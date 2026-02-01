@@ -154,6 +154,7 @@ class QBRProcessor:
         # Enhancement pipeline (lazy loaded)
         self._enhancement_pipeline: QBREnhancementPipeline | None = None
         self._adjudicator_debug_count = 0
+        self._llm_metric_timing: dict | None = None
 
     @property
     def lm(self):
@@ -255,6 +256,7 @@ class QBRProcessor:
             "brand": "TEXT",
             "baseline_text": "TEXT",
             "baseline_type": "TEXT",
+            "llm_context_label": "TEXT",
             "period_id": "INTEGER",
             "region_id": "INTEGER",
             "country": "TEXT",
@@ -332,6 +334,12 @@ class QBRProcessor:
         print(f"  - Images: {len(result.images) if result.images else 0}")
         print(f"  - Chunks: {result.get_chunk_count()}")
 
+        # Strip Notes blocks immediately after extraction to keep downstream metrics clean.
+        try:
+            result.content = self._strip_notes_blocks(result.content)
+        except Exception:
+            pass
+
         return result
 
     @staticmethod
@@ -365,6 +373,7 @@ class QBRProcessor:
     def parse_slides(self, content: str) -> list[dict]:
         """Parse content into individual slides."""
         slides = []
+        content = content.replace("\r\n", "\n")
         pattern = r"<!-- PAGE (\d+) -->"
         parts = re.split(pattern, content)
 
@@ -373,11 +382,19 @@ class QBRProcessor:
                 slide_num = int(parts[i])
                 slide_content = parts[i + 1].strip()
 
-                # Extract speaker notes
-                notes_match = re.search(
-                    r"### Notes:\s*(.*?)(?=\n\n|$)", slide_content, re.DOTALL
-                )
-                speaker_notes = notes_match.group(1).strip() if notes_match else None
+                # Extract speaker notes (robust split + regex fallback)
+                speaker_notes = None
+                if "### Notes:" in slide_content:
+                    head, tail = slide_content.split("### Notes:", 1)
+                    slide_content = head.rstrip()
+                    speaker_notes = tail.strip() or None
+                else:
+                    notes_match = re.search(
+                        r"### Notes:\s*(.*?)(?=(?:\n\n)|$)", slide_content, re.DOTALL
+                    )
+                    speaker_notes = notes_match.group(1).strip() if notes_match else None
+                    if notes_match:
+                        slide_content = slide_content[:notes_match.start()].rstrip()
 
                 # Count images
                 image_refs = re.findall(r"!\[.*?\]\(.*?\)", slide_content)
@@ -445,6 +462,29 @@ class QBRProcessor:
 
         return metrics
 
+    @staticmethod
+    def _strip_notes_blocks(content: str) -> str:
+        """Remove ### Notes: blocks up to the next page marker."""
+        if not content:
+            return content
+        content = content.replace("\r\n", "\n")
+        removed = 0
+        out_parts: list[str] = []
+        idx = 0
+        while True:
+            start = content.find("### Notes:", idx)
+            if start == -1:
+                out_parts.append(content[idx:])
+                break
+            out_parts.append(content[idx:start])
+            end = content.find("<!-- PAGE", start)
+            removed += 1
+            if end == -1:
+                idx = len(content)
+                break
+            idx = end
+        return "".join(out_parts)
+
     def detect_charts(self, slides: list[dict]) -> list[dict]:
         """Detect chart patterns in slides."""
         charts = []
@@ -511,6 +551,7 @@ class QBRProcessor:
         chunks_source = chunks if chunks is not None else (result.chunks or [])
 
         raw_content_export = content_override or result.content
+        raw_content_export = self._strip_notes_blocks(raw_content_export)
         pages = pages_override or self._split_pages(raw_content_export)
         slide_texts = (
             self._load_pptx_slide_texts(file_path)
@@ -728,6 +769,7 @@ class QBRProcessor:
             "brand": metric.brand,
             "baseline_text": metric.baseline_text,
             "baseline_type": metric.baseline_type,
+            "llm_context_label": metric.llm_context_label,
         }
 
     @staticmethod
@@ -762,6 +804,13 @@ class QBRProcessor:
         return None
 
     @staticmethod
+    def _estimate_tokens(text: str) -> int:
+        if not text:
+            return 0
+        # Rough heuristic: ~1 token per 4 characters.
+        return max(1, len(text) // 4)
+
+    @staticmethod
     def _build_metric_review_context(
         *,
         metric: MetricCandidate,
@@ -782,16 +831,95 @@ class QBRProcessor:
         if slide_snippet:
             snippets.append(("slide_text", slide_snippet))
 
-        notes_text = slide.get("speaker_notes") or ""
-        notes_snippet = QBRProcessor._extract_context_window(notes_text, anchors)
-        if notes_snippet:
-            snippets.append(("speaker_notes", notes_snippet))
-
         if not snippets and slide_text:
             fallback = slide_text.replace("\n", " ").strip()
             snippets.append(("slide_text", fallback[:320]))
 
         return "\n".join(f"{label}: {text}" for label, text in snippets if text)
+
+    @staticmethod
+    def _augment_duplicate_metric_context(
+        metrics: list[MetricCandidate],
+        slides: list[dict],
+    ) -> list[MetricCandidate]:
+        if not metrics:
+            return metrics
+        slide_lookup = {s.get("slide_number"): s for s in slides}
+        groups: dict[str, list[MetricCandidate]] = {}
+        for metric in metrics:
+            name = metric.name or metric.metric_catalog_slug or metric.metric_type or ""
+            name_key = name.strip().lower()
+            groups.setdefault(name_key, []).append(metric)
+
+        updated: list[MetricCandidate] = []
+        for metric in metrics:
+            name = metric.name or metric.metric_catalog_slug or metric.metric_type or ""
+            key = name.strip().lower()
+            group = groups.get(key, [])
+            if len(group) < 2:
+                updated.append(metric)
+                continue
+
+            slide_text = ""
+            if metric.slide_number is not None:
+                slide_text = (slide_lookup.get(metric.slide_number) or {}).get(
+                    "raw_text", ""
+                )
+            anchors = [metric.name, metric.raw_value]
+            slide_snippet = QBRProcessor._extract_context_window(
+                slide_text or "", anchors, line_window=2, max_chars=400
+            )
+            if not slide_snippet and slide_text:
+                slide_snippet = slide_text.replace("\n", " ").strip()[:400]
+
+            parts: list[str] = []
+            if metric.raw_context:
+                cleaned_context = re.sub(r"<[^>]+>", " ", metric.raw_context)
+                cleaned_context = re.sub(r"\s+", " ", cleaned_context).strip()
+                if cleaned_context:
+                    parts.append(cleaned_context)
+            if slide_snippet:
+                cleaned = re.sub(r"<[^>]+>", " ", slide_snippet)
+                cleaned = re.sub(r"\s+", " ", cleaned).strip()
+                candidate = cleaned
+                if candidate and candidate not in parts:
+                    parts.append(candidate)
+
+            if not parts:
+                updated.append(metric)
+                continue
+
+            combined = " | ".join(parts)
+            updated.append(replace(metric, raw_context=combined[:400]))
+
+        return updated
+
+    @staticmethod
+    def _log_duplicate_metric_context(metrics: list[MetricCandidate]) -> None:
+        if not metrics:
+            print("    (no metrics)")
+            return
+        groups: dict[str, list[MetricCandidate]] = {}
+        for metric in metrics:
+            name = metric.name or metric.metric_catalog_slug or metric.metric_type or ""
+            name_key = name.strip().lower()
+            groups.setdefault(name_key, []).append(metric)
+
+        duplicate_groups = [g for g in groups.values() if len(g) > 1]
+        print(f"    duplicate_groups={len(duplicate_groups)}")
+        sample_limit = 3
+        shown = 0
+        for group in duplicate_groups:
+            if shown >= sample_limit:
+                break
+            sample = group[0]
+            raw_preview = (sample.raw_context or "").replace("\n", " ").strip()[:160]
+            print(
+                "    - "
+                f"{sample.name} value={sample.normalized_value} unit={sample.unit} "
+                f"count={len(group)} raw_context='{raw_preview}'"
+            )
+            shown += 1
 
     def _refine_metrics_with_llm(
         self,
@@ -822,15 +950,21 @@ class QBRProcessor:
         catalog_by_name = {entry.name: entry for entry in catalog_entries}
         dictionary_by_name = {definition.name: definition for definition in metric_dictionary.definitions}
 
-        metrics_by_group: dict[tuple[int | None, str], list] = {}
+        metrics_by_group: dict[str, list] = {}
         for metric in metrics:
-            metrics_by_group.setdefault((metric.slide_number, metric.name), []).append(metric)
+            metrics_by_group[metric.metric_id] = [metric]
 
         reviewer = MetricReviewer(lm=self.lm)
         refined: list = []
         processed = 0
         total_groups = len(metrics_by_group)
-        for (slide_number, metric_name), group in metrics_by_group.items():
+        total_llm_tokens = 0
+        total_llm_time = 0.0
+        metric_timings: list[dict] = []
+        for metric_id, group in metrics_by_group.items():
+            metric = group[0]
+            slide_number = metric.slide_number
+            metric_name = metric.name
             if slide_number is None:
                 refined.extend(group)
                 continue
@@ -849,18 +983,31 @@ class QBRProcessor:
                 catalog_entry=catalog_entry,
             )
 
-            candidates = [
-                {
-                    "id": m.metric_id,
-                    "raw_value": m.raw_value,
-                    "normalized_value": m.normalized_value,
-                    "unit": m.unit,
-                    "source": m.source,
-                    "context": (m.raw_context or "")[:240],
-                    "confidence": m.extraction_confidence,
-                }
-                for m in group
-            ]
+            chosen = max(
+                group,
+                key=lambda m: (
+                    m.extraction_confidence if m.extraction_confidence is not None else -1,
+                    len(m.raw_context or ""),
+                ),
+            )
+            metric_payload = {
+                "id": chosen.metric_id,
+                "name": chosen.name,
+                "raw_value": chosen.raw_value,
+                "normalized_value": chosen.normalized_value,
+                "unit": chosen.unit,
+                "raw_context": (chosen.raw_context or "")[:400],
+                "slide_number": chosen.slide_number,
+                "source": chosen.source,
+                "category": chosen.category,
+                "period_label": chosen.period_label,
+                "period_start": chosen.period_start,
+                "period_end": chosen.period_end,
+                "brand": chosen.brand,
+                "baseline_text": chosen.baseline_text,
+                "baseline_type": chosen.baseline_type,
+                "extraction_confidence": chosen.extraction_confidence,
+            }
             catalog_payload = {
                 "name": metric_name,
                 "expected_unit": getattr(catalog_entry, "expected_unit", None)
@@ -870,30 +1017,47 @@ class QBRProcessor:
                 "metric_id": getattr(catalog_entry, "metric_id", None),
             }
             try:
+                llm_start = time.perf_counter()
                 result = reviewer(
                     metric_catalog=catalog_payload,
+                    metric=metric_payload,
                     context_snippets=context_snippets,
-                    candidates=candidates,
                 )
+                llm_elapsed = time.perf_counter() - llm_start
             except Exception as exc:
                 print(f"  [Metric Refine] LLM failed on slide {slide_number}: {exc}")
                 refined.extend(group)
                 continue
             processed += 1
+            prompt_tokens = (
+                self._estimate_tokens(json.dumps(catalog_payload))
+                + self._estimate_tokens(json.dumps(metric_payload))
+                + self._estimate_tokens(context_snippets)
+            )
+            total_llm_tokens += prompt_tokens
+            total_llm_time += llm_elapsed
+            metric_timings.append(
+                {
+                    "metric_name": metric_name,
+                    "slide_number": slide_number,
+                    "candidates": len(group),
+                    "time_seconds": round(llm_elapsed, 4),
+                    "tokens_estimate": prompt_tokens,
+                }
+            )
+            print(
+                "  [Metric Refine] "
+                f"metric={metric_name} slide={slide_number} "
+                f"time={llm_elapsed:.2f}s tokens~{prompt_tokens}"
+            )
 
             review = getattr(result, "review", None)
-            chosen_index = getattr(review, "chosen_index", 0) if review is not None else 0
-            if chosen_index is None or not isinstance(chosen_index, int):
-                chosen_index = 0
-            if chosen_index < 0 or chosen_index >= len(group):
-                chosen_index = 0
-            chosen = group[chosen_index]
-
             unit = getattr(review, "unit", None) if review is not None else None
             value = getattr(review, "normalized_value", None) if review is not None else None
             notes = getattr(review, "notes", None) if review is not None else None
             confidence = getattr(review, "confidence", None) if review is not None else None
             source_snippet = getattr(review, "source_snippet", None) if review is not None else None
+            context_label = getattr(review, "context_label", None) if review is not None else None
 
             final_unit = unit or chosen.unit or (definition.unit_hint if definition else None)
             final_value = value if value is not None else chosen.normalized_value
@@ -907,10 +1071,10 @@ class QBRProcessor:
 
             metadata = dict(chosen.metadata or {})
             metadata["llm_review"] = {
-                "chosen_index": chosen_index,
                 "notes": notes,
                 "confidence": confidence,
                 "source_snippet": source_snippet,
+                "context_label": context_label,
             }
 
             refined.append(
@@ -935,12 +1099,22 @@ class QBRProcessor:
                     brand=chosen.brand,
                     metric_catalog_id=chosen.metric_catalog_id,
                     metric_catalog_slug=chosen.metric_catalog_slug,
+                    llm_context_label=context_label,
                 )
             )
 
         elapsed = time.perf_counter() - start_time
+        self._llm_metric_timing = {
+            "total_groups": total_groups,
+            "processed_groups": processed,
+            "total_time_seconds": round(total_llm_time, 4),
+            "total_tokens_estimate": total_llm_tokens,
+            "per_metric": metric_timings,
+        }
         print(
-            f"  [Metric Refine] groups={total_groups} processed={processed} completed={elapsed:.2f}s"
+            "  [Metric Refine] "
+            f"groups={total_groups} processed={processed} completed={elapsed:.2f}s "
+            f"llm_time={total_llm_time:.2f}s tokens~{total_llm_tokens}"
         )
         return refined or metrics
 
@@ -1546,9 +1720,52 @@ Categories:
             return actual == "ratio"
         return True
 
+    def _metric_llm_selection_reasons(
+        self,
+        metric: MetricCandidate,
+        *,
+        unit_map: dict[str, str],
+        conflicting: set[str],
+    ) -> list[str]:
+        expected_unit = unit_map.get(metric.name)
+        unit_mismatch = not self._unit_matches_expected(metric.unit, expected_unit)
+        raw_value = (metric.raw_value or "").strip()
+        raw_unit_mismatch = (
+            ("%" in raw_value and metric.unit != "percent")
+            or ("$" in raw_value and metric.unit != "currency")
+        )
+        ambiguous_label = metric.name.lower() in {"rate", "ratio", "value", "index"}
+        reach_ambiguity = metric.name == "Reach" and any(
+            token in (metric.raw_context or "").lower()
+            for token in ("unique", "deduplicated", "unduplicated")
+        )
+        weak_source = metric.source == "speaker_notes"
+        conflict = metric.metric_id in conflicting
+
+        reasons = []
+        if unit_mismatch:
+            reasons.append("unit_mismatch")
+        if raw_unit_mismatch:
+            reasons.append("raw_unit_mismatch")
+        if ambiguous_label:
+            reasons.append("ambiguous_label")
+        if reach_ambiguity:
+            reasons.append("reach_ambiguity")
+        if weak_source:
+            reasons.append("weak_source")
+        if conflict:
+            reasons.append("conflict")
+        return reasons
+
     def _select_metrics_for_llm_refine(self, metrics: list[MetricCandidate]) -> list[MetricCandidate]:
         if not metrics:
             return []
+        allow_env = (os.getenv("LLM_METRIC_NAME_ALLOWLIST") or "").strip()
+        allowlist = {
+            name.strip().lower()
+            for name in allow_env.split(",")
+            if name.strip()
+        }
         unit_map = self._load_metric_unit_map()
         by_slide_name: dict[tuple[int | None, str], list[MetricCandidate]] = {}
         for metric in metrics:
@@ -1563,22 +1780,19 @@ Categories:
 
         selected: list[MetricCandidate] = []
         for metric in metrics:
-            expected_unit = unit_map.get(metric.name)
-            unit_mismatch = not self._unit_matches_expected(metric.unit, expected_unit)
-            raw_value = (metric.raw_value or "").strip()
-            raw_unit_mismatch = (
-                ("%" in raw_value and metric.unit != "percent")
-                or ("$" in raw_value and metric.unit != "currency")
-            )
-            ambiguous_label = metric.name.lower() in {"rate", "ratio", "value", "index"}
-            reach_ambiguity = metric.name == "Reach" and any(
-                token in (metric.raw_context or "").lower()
-                for token in ("unique", "deduplicated", "unduplicated")
-            )
-            weak_source = metric.source == "speaker_notes"
-            conflict = metric.metric_id in conflicting
+            if allowlist and metric.name.lower() not in allowlist:
+                continue
+            # Allowlist means always include matching metrics.
+            if allowlist:
+                selected.append(metric)
+                continue
 
-            if unit_mismatch or raw_unit_mismatch or ambiguous_label or reach_ambiguity or weak_source or conflict:
+            reasons = self._metric_llm_selection_reasons(
+                metric,
+                unit_map=unit_map,
+                conflicting=conflicting,
+            )
+            if reasons:
                 selected.append(metric)
         return selected
 
@@ -1784,6 +1998,7 @@ Categories:
         print("STEP 1: EXTRACTION")
         print("=" * 60)
 
+        self._llm_metric_timing = None
         result = self.extract_document(file_path)
 
         pages = self._split_pages(result.content)
@@ -1941,9 +2156,8 @@ Categories:
         if run_llm_metrics and use_legacy_llm_metrics:
             llm_candidates = self._select_metrics_for_llm_refine(scanned_metrics)
             if llm_candidates:
-                llm_deduped_subset = self._dedupe_metrics_with_llm(llm_candidates)
                 refined_subset = self._refine_metrics_with_llm(
-                    metrics=llm_deduped_subset,
+                    metrics=llm_candidates,
                     slides=slides_ordered,
                     metric_dictionary=build_metric_dictionary(),
                 )
@@ -2005,6 +2219,13 @@ Categories:
         if refined_metrics is not None:
             refined_metrics = self._apply_metric_catalog(refined_metrics)
         metrics_for_db = self._apply_metric_catalog(metrics_for_db)
+        print("  - Augmenting duplicate metric context (before):")
+        self._log_duplicate_metric_context(metrics_for_db)
+        metrics_for_db = self._augment_duplicate_metric_context(
+            metrics_for_db, slides_ordered
+        )
+        print("  - Augmenting duplicate metric context (after):")
+        self._log_duplicate_metric_context(metrics_for_db)
 
         print(f"  - Slides parsed: {len(slides_ordered)}")
         print(f"  - Metrics found: {len(metrics_ordered)}")
@@ -2142,10 +2363,35 @@ Categories:
                         else None,
                         region_id=region_id,
                         country=country,
+                        llm_context_label=m.llm_context_label,
                     )
                 )
             session.add_all(metrics_to_add)
             print(f"  - Metrics created: {len(metrics_to_add)}")
+
+            # Remove metrics whose raw_context is sourced from speaker notes only.
+            deleted = session.execute(
+                text(
+                    """
+                    DELETE FROM metrics
+                    WHERE document_id = :document_id
+                      AND raw_context IS NOT NULL
+                      AND TRIM(raw_context) != ''
+                      AND slide_id IN (
+                        SELECT id
+                        FROM slides
+                        WHERE document_id = :document_id
+                          AND speaker_notes IS NOT NULL
+                          AND TRIM(speaker_notes) != ''
+                          AND instr(speaker_notes, raw_context) > 0
+                          AND (raw_text IS NULL OR instr(raw_text, raw_context) = 0)
+                      )
+                    """
+                ),
+                {"document_id": document.id},
+            ).rowcount
+            if deleted:
+                print(f"  - Metrics removed (speaker notes cleanup): {deleted}")
 
             # Create charts (bulk insert)
             charts_to_add = [
@@ -2200,6 +2446,32 @@ Categories:
 
             session.commit()
             doc_id = document.id
+
+        if self._llm_metric_timing and export_outputs:
+            base_dir = Path(output_dir) if output_dir else self.output_dir
+            target_dir = base_dir / file_path.stem
+            run_payload = {
+                "document_id": doc_id,
+                "file_path": str(file_path.absolute()),
+                "created_at": datetime.utcnow().isoformat(),
+                "llm_model": self.llm_model,
+                "legacy_llm_metrics": use_legacy_llm_metrics,
+                "llm_metric_allowlist": os.getenv("LLM_METRIC_NAME_ALLOWLIST"),
+                "timing": self._llm_metric_timing,
+            }
+            timing_path = target_dir / "14_llm_metric_timing.json"
+            timing_path.write_text(json.dumps(run_payload, indent=2), encoding="utf-8")
+            history_path = base_dir / "llm_metric_timing_history.json"
+            history_payload = []
+            if history_path.exists():
+                try:
+                    history_payload = json.loads(history_path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    history_payload = []
+            if not isinstance(history_payload, list):
+                history_payload = []
+            history_payload.append(run_payload)
+            history_path.write_text(json.dumps(history_payload, indent=2), encoding="utf-8")
 
         # Step 4: LLM Enhancement (optional)
         if run_llm_enhancement:

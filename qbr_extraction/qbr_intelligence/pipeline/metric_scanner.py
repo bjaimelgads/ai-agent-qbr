@@ -58,6 +58,7 @@ class MetricCandidate:
     baseline_type: str | None = None
     metric_catalog_id: int | None = None
     metric_catalog_slug: str | None = None
+    llm_context_label: str | None = None
 
     def dedupe_key(self) -> tuple[str, float | None, str | None]:
         norm = None if self.normalized_value is None else round(self.normalized_value, 6)
@@ -264,14 +265,6 @@ class MetricScanner:
                     "source": "slides_parsed",
                 }
             )
-            if slide.get("speaker_notes"):
-                sources.append(
-                    {
-                        "text": slide.get("speaker_notes", ""),
-                        "slide_number": slide.get("slide_number"),
-                        "source": "speaker_notes",
-                    }
-                )
         return sources
 
 
