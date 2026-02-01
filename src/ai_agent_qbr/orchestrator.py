@@ -20,6 +20,7 @@ from ai_agent_qbr.infrastructure.region_filter import (
     filter_items_by_region,
 )
 from ai_agent_qbr.infrastructure.region_verifier import RegionVerifier
+from ai_agent_qbr.infrastructure.metric_router import MetricQueryRouter
 from ai_agent_qbr.observability.mlflow_logger import (
     MlflowConfig,
     MlflowTrace,
@@ -32,6 +33,9 @@ from ai_agent_qbr.tools.region_verifier import verify_region_filter
 from ai_agent_qbr.models import RegionFilterVerificationArgs
 from qbr_agent.application.use_cases import AnswerQuestion, HybridSearchKnowledge
 from qbr_agent.infrastructure.factory import InfrastructureBundle, build_infrastructure
+from qbr_intelligence.metric_qa import MetricQueryEngine
+from qbr_intelligence.metric_qa.intent_llm import build_intent_llm
+from qbr_intelligence.schemas.metric_qa import MetricAnswer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +49,29 @@ def _is_greeting(text: str) -> bool:
     if not text:
         return False
     return bool(_GREETING_RE.match(text))
+
+
+_FOLLOWUP_MARKERS = {
+    "and",
+    "also",
+    "compare",
+    "vs",
+    "versus",
+    "what about",
+    "same",
+    "that",
+    "those",
+    "it",
+}
+
+
+def _looks_like_followup(query: str) -> bool:
+    if not query:
+        return False
+    lowered = query.strip().lower()
+    if len(lowered.split()) <= 4:
+        return True
+    return any(marker in lowered for marker in _FOLLOWUP_MARKERS)
 
 
 
@@ -155,6 +182,45 @@ def _extract_answer_from_mapping(payload: Mapping[str, Any]) -> str | None:
     return None
 
 
+def _format_metric_answer(answer: MetricAnswer) -> str:
+    text = answer.summary_text.strip()
+    details_rows = answer.table_data
+    if not details_rows and answer.data:
+        details_rows = [row.model_dump() if hasattr(row, "model_dump") else dict(row) for row in answer.data]
+    if details_rows:
+        lines = ["", "Details:"]
+        for row in details_rows[:5]:
+            metric = row.get("metric") or "metric"
+            period = row.get("period") or "period"
+            value = row.get("value")
+            unit = row.get("unit") or ""
+            context_label = row.get("llm_context_label")
+            context_text = f" — {context_label}" if context_label else ""
+            lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
+        text = f"{text}\n" + "\n".join(lines)
+    if answer.citations:
+        sources = ", ".join(
+            f"doc {c.document_id} slide {c.slide_number}"
+            if c.slide_number is not None
+            else (
+                f"doc {c.document_id} slide {c.slide_id}"
+                if c.slide_id is not None
+                else f"doc {c.document_id}"
+            )
+            for c in answer.citations
+        )
+        text = f"{text}\n\nSources: {sources}"
+    return text
+
+
+def _make_tool_context(payload: dict[str, Any]) -> Any:
+    """Create a tool context compatible with PenguiFlow Protocols."""
+    try:
+        return ToolContext(tool_context=payload)
+    except TypeError:
+        return type("ToolContext", (), {"tool_context": payload})()
+
+
 class AiAgentQbrOrchestrator:
     """Orchestrator that coordinates planner execution and QBR retrieval."""
 
@@ -193,6 +259,8 @@ class AiAgentQbrOrchestrator:
         self._infra_bundle = infrastructure
         self._infra_lock = asyncio.Lock()
         self._region_verifier: RegionVerifier | None = None
+        self._metric_router = MetricQueryRouter()
+        self._metric_query_engine: MetricQueryEngine | None = None
         self._mlflow_tracer = MlflowTracer(
             MlflowConfig(
                 enabled=config.mlflow_enabled,
@@ -228,6 +296,34 @@ class AiAgentQbrOrchestrator:
                     faiss_normalize=self._config.faiss_normalize,
                 )
         return self._infra_bundle
+
+    async def _get_metric_query_engine(self) -> MetricQueryEngine:
+        if self._metric_query_engine is not None:
+            return self._metric_query_engine
+        infra = await self._get_infrastructure()
+        intent_llm = None
+        if self._config.llm_intent_enabled and not self._config.use_stub_llm:
+            model_name = self._config.llm_model
+            if not model_name or model_name == "stub-llm":
+                if self._config.llm_model_name:
+                    model_name = f"databricks/{self._config.llm_model_name}"
+                else:
+                    model_name = None
+            if model_name and model_name != "stub-llm":
+                intent_llm = build_intent_llm(
+                    model=model_name,
+                    max_tokens=min(512, self._config.llm_max_tokens),
+                    temperature=0.0,
+                )
+        self._metric_query_engine = MetricQueryEngine(
+            database_url=self._config.database_url,
+            embeddings_provider=infra.embeddings,
+            llm_intent_enabled=self._config.llm_intent_enabled,
+            llm_answer_enabled=self._config.llm_answer_enabled,
+            llm_max_calls_per_query=self._config.llm_max_calls_per_query,
+            intent_llm=intent_llm,
+        )
+        return self._metric_query_engine
 
     def _append_recent_turn(
         self,
@@ -307,6 +403,7 @@ class AiAgentQbrOrchestrator:
                     session_id=session_id,
                     user_prompt=query,
                     agent_response=answer_text,
+                    metadata={},
                 )
                 self._append_recent_turn(
                     tenant_id=tenant_id,
@@ -330,19 +427,21 @@ class AiAgentQbrOrchestrator:
                     metadata={},
                 )
 
-            if self._region_verifier is None:
-                self._region_verifier = RegionVerifier(self._config)
-
-            region_result = await verify_region_filter(
-                RegionFilterVerificationArgs(question=query),
-                ToolContext(
-                    tool_context={
-                        "status_publisher": self._telemetry.publish_status,
-                        "region_verifier": self._region_verifier,
-                    }
-                ),
-            )
-            region_focus = region_result.region_focus
+            region_result = None
+            region_focus = None
+            if self._config.region_verifier_enabled:
+                if self._region_verifier is None:
+                    self._region_verifier = RegionVerifier(self._config)
+                region_result = await verify_region_filter(
+                    RegionFilterVerificationArgs(question=query),
+                    _make_tool_context(
+                        {
+                            "status_publisher": self._telemetry.publish_status,
+                            "region_verifier": self._region_verifier,
+                        }
+                    ),
+                )
+                region_focus = region_result.region_focus
 
             infra = await self._get_infrastructure()
             search_use_case = HybridSearchKnowledge(
@@ -466,7 +565,9 @@ class AiAgentQbrOrchestrator:
                     "recent_turns": list(self._recent_turns.get(session_key, []))
                 },
                 "qbr_context": filtered_context,
-                "region_verification": region_result.model_dump(),
+                "region_verification": (
+                    region_result.model_dump() if region_result is not None else None
+                ),
                 "qbr_citations": [
                     {
                         "chunk_id": result.chunk.chunk_id.value,
@@ -495,6 +596,9 @@ class AiAgentQbrOrchestrator:
                 "comparison_top_docs": self._config.comparison_top_docs,
                 "comparison_per_doc_k": self._config.comparison_per_doc_k,
             }
+            interaction_metadata: dict[str, Any] = {}
+            tool_context["interaction_metadata"] = interaction_metadata
+            tool_context["metric_query_engine"] = await self._get_metric_query_engine()
             if self._config.comparison_stage1_top_k is not None:
                 tool_context["comparison_stage1_top_k"] = self._config.comparison_stage1_top_k
 
@@ -529,6 +633,7 @@ class AiAgentQbrOrchestrator:
                     session_id=session_id,
                     user_prompt=query,
                     agent_response=answer_text,
+                    metadata=interaction_metadata,
                 )
                 self._append_recent_turn(
                     tenant_id=tenant_id,

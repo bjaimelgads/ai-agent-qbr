@@ -47,6 +47,8 @@ env:
     value: '0.5'
   - name: 'RETRIEVAL_MAX_CHUNKS_PER_DOC'
     value: '3'
+  - name: 'METRIC_QA_RETRIEVAL_LOG'
+    value: 'true'
   - name: 'COMPARISON_TOP_DOCS'
     value: '3'
   - name: 'COMPARISON_PER_DOC_K'
