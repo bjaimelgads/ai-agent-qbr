@@ -42,11 +42,16 @@ async def _legacy_roundtrip(
     message: str,
     metadata: dict[str, Any] | None,
     raw: bool,
+    timeout_seconds: float | None,
 ) -> int:
     await ws.send(json.dumps({"message": message, "metadata": metadata or {}}))
     printed_prefix = False
     while True:
-        payload = json.loads(await ws.recv())
+        try:
+            payload = json.loads(await asyncio.wait_for(ws.recv(), timeout=timeout_seconds))
+        except asyncio.TimeoutError:
+            print("[error] timed out waiting for server response", file=sys.stderr)
+            return 1
         if isinstance(payload, dict) and payload.get("type") == "ping":
             await ws.send(json.dumps({"type": "pong"}))
             continue
@@ -94,6 +99,7 @@ async def _agui_roundtrip(
     message: str,
     metadata: dict[str, Any] | None,
     raw: bool,
+    timeout_seconds: float | None,
 ) -> int:
     payload = {"message": message}
     if metadata:
@@ -102,7 +108,11 @@ async def _agui_roundtrip(
     await ws.send(json.dumps(payload))
     printed_prefix = False
     while True:
-        event = json.loads(await ws.recv())
+        try:
+            event = json.loads(await asyncio.wait_for(ws.recv(), timeout=timeout_seconds))
+        except asyncio.TimeoutError:
+            print("[error] timed out waiting for server response", file=sys.stderr)
+            return 1
         if isinstance(event, dict) and event.get("type") == "ping":
             await ws.send(json.dumps({"type": "pong"}))
             continue
@@ -141,8 +151,8 @@ async def _run(args: argparse.Namespace) -> int:
 
     async def send_once(ws: websockets.WebSocketClientProtocol, text: str) -> int:
         if args.protocol == "legacy":
-            return await _legacy_roundtrip(ws, text, metadata or None, args.raw)
-        return await _agui_roundtrip(ws, text, metadata or None, args.raw)
+            return await _legacy_roundtrip(ws, text, metadata or None, args.raw, args.timeout)
+        return await _agui_roundtrip(ws, text, metadata or None, args.raw, args.timeout)
 
     if args.repl or not args.message:
         async with websockets.connect(url, ping_interval=None) as ws:
@@ -189,6 +199,12 @@ def main() -> None:
     )
     parser.add_argument("--message", help="Message to send (or provide via stdin)")
     parser.add_argument("--repl", action="store_true", help="Interactive chat mode")
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=30.0,
+        help="Seconds to wait for each server response (default: 30)",
+    )
     parser.add_argument("--tenant-id", help="Tenant ID metadata")
     parser.add_argument("--user-id", help="User ID metadata")
     parser.add_argument("--document-id", help="Document ID metadata")

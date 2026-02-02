@@ -10,6 +10,7 @@ from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.schemas.metric_qa import MetricAnswer
 
 import logging
+import time
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,8 +34,10 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
             followups=["Please try again later."],
         )
 
-    _LOGGER.info("Metric query: %s", args.question)
+    _LOGGER.info("Metric query start: %s", args.question)
+    start = time.perf_counter()
     result = await engine.query(args.question, debug=args.debug)
+    _LOGGER.info("Metric query done: %.2fs rows=%s", time.perf_counter() - start, len(result.answer.data or []))
     interaction_metadata = ctx.tool_context.get("interaction_metadata")
     if isinstance(interaction_metadata, dict):
         interaction_metadata["metric_intent"] = result.intent.model_dump()
