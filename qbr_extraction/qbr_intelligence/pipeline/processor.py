@@ -2089,20 +2089,26 @@ Categories:
         metric_debug = None
         scanned_metrics: list[MetricCandidate] = []
         if file_path.suffix.lower() == ".pptx":
-            deck = parse_pptx_deck(file_path)
+            try:
+                deck = parse_pptx_deck(file_path)
+            except Exception as exc:
+                print(f"[Metrics] PPTX parse failed, falling back to text scan: {exc}")
+                deck = None
             if slide_range is not None:
                 start, end = slide_range
-                deck = deck.__class__(
-                    deck_id=deck.deck_id,
-                    slides=tuple(
-                        slide for slide in deck.slides if start <= slide.slide_index <= end
-                    ),
-                )
+                if deck is not None:
+                    deck = deck.__class__(
+                        deck_id=deck.deck_id,
+                        slides=tuple(
+                            slide for slide in deck.slides if start <= slide.slide_index <= end
+                        ),
+                    )
             elif max_slides is not None:
-                deck = deck.__class__(
-                    deck_id=deck.deck_id,
-                    slides=tuple(deck.slides[:max_slides]),
-                )
+                if deck is not None:
+                    deck = deck.__class__(
+                        deck_id=deck.deck_id,
+                        slides=tuple(deck.slides[:max_slides]),
+                    )
             cache_dir = self.output_dir / ".metric_adjudicator_cache"
             adjudicator = None
             if run_llm_adjudicator:
@@ -2111,26 +2117,41 @@ Categories:
                     cache_dir=cache_dir,
                     enabled=True,
                 )
-            catalog_entries = self._load_metric_catalog_entries()
-            pipeline = MetricExtractionPipeline(
-                config=PipelineConfig(),
-                adjudicator=adjudicator,
-                catalog_entries=catalog_entries,
-            )
-            deck_hash = compute_deck_hash(file_path)
-            extracted_metrics, metric_debug = pipeline.extract_from_deck(
-                deck, deck_hash=deck_hash
-            )
-            scanned_metrics = [to_metric_candidate(metric) for metric in extracted_metrics]
-            if adjudicator is not None:
-                print(
-                    "  [Metric Adjudicator] "
-                    f"requests={adjudicator.total_requests} "
-                    f"cache_hits={adjudicator.cache_hits} "
-                    f"llm_calls={adjudicator.llm_calls} "
-                    f"parse_failures={adjudicator.parse_failures} "
-                    f"empty_responses={adjudicator.empty_responses}"
+            if deck is not None:
+                catalog_entries = self._load_metric_catalog_entries()
+                pipeline = MetricExtractionPipeline(
+                    config=PipelineConfig(),
+                    adjudicator=adjudicator,
+                    catalog_entries=catalog_entries,
                 )
+                deck_hash = compute_deck_hash(file_path)
+                extracted_metrics, metric_debug = pipeline.extract_from_deck(
+                    deck, deck_hash=deck_hash
+                )
+                scanned_metrics = [to_metric_candidate(metric) for metric in extracted_metrics]
+                if adjudicator is not None:
+                    print(
+                        "  [Metric Adjudicator] "
+                        f"requests={adjudicator.total_requests} "
+                        f"cache_hits={adjudicator.cache_hits} "
+                        f"llm_calls={adjudicator.llm_calls} "
+                        f"parse_failures={adjudicator.parse_failures} "
+                        f"empty_responses={adjudicator.empty_responses}"
+                    )
+            else:
+                metric_scanner = MetricScanner(build_metric_dictionary())
+                artifacts = MetricScanArtifacts(
+                    raw_content=result.content,
+                    slides=slides_ordered,
+                    metrics=metrics_ordered,
+                    charts=charts_ordered,
+                    chunks=chunks_for_storage,
+                    tables=tables_payload,
+                    keywords=business_terms,
+                    export_dir=None,
+                )
+                scanned_metrics = metric_scanner.scan(artifacts)
+                scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
         else:
             metric_scanner = MetricScanner(build_metric_dictionary())
             artifacts = MetricScanArtifacts(

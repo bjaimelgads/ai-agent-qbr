@@ -35,7 +35,7 @@ from qbr_agent.application.use_cases import AnswerQuestion, HybridSearchKnowledg
 from qbr_agent.infrastructure.factory import InfrastructureBundle, build_infrastructure
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.metric_qa.intent_llm import build_intent_llm
-from qbr_intelligence.schemas.metric_qa import MetricAnswer
+from qbr_intelligence.schemas.metric_qa import AnswerCitation, MetricAnswer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -199,16 +199,17 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
             lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
         text = f"{text}\n" + "\n".join(lines)
     if answer.citations:
-        sources = ", ".join(
-            f"doc {c.document_id} slide {c.slide_number}"
-            if c.slide_number is not None
-            else (
-                f"doc {c.document_id} slide {c.slide_id}"
-                if c.slide_id is not None
-                else f"doc {c.document_id}"
-            )
-            for c in answer.citations
-        )
+        def _format_source(citation: AnswerCitation) -> str:
+            doc_label = citation.document_name or f"doc {citation.document_id}"
+            if citation.slide_number is not None:
+                doc_label = f"{doc_label} slide {citation.slide_number}"
+            elif citation.slide_id is not None:
+                doc_label = f"{doc_label} slide {citation.slide_id}"
+            if citation.document_url:
+                return f"{doc_label} ({citation.document_url})"
+            return doc_label
+
+        sources = ", ".join(_format_source(c) for c in answer.citations)
         text = f"{text}\n\nSources: {sources}"
     return text
 

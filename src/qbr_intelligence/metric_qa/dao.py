@@ -27,6 +27,8 @@ SELECT
     p.period_type AS period_granularity,
     COALESCE(m.period_label, p.period_label) AS period_label,
     m.document_id AS document_id,
+    d.filename AS document_name,
+    d.file_path AS document_url,
     m.slide_id AS slide_id,
     s.slide_number AS slide_number,
     m.extraction_confidence AS confidence,
@@ -60,6 +62,8 @@ class MetricFactRow:
     period_granularity: str | None
     period_label: str | None
     document_id: int
+    document_name: str | None
+    document_url: str | None
     slide_id: int | None
     slide_number: int | None
     confidence: float | None

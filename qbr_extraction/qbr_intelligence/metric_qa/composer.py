@@ -185,7 +185,10 @@ def _collect_citations(rows: Iterable[MetricFactRow]) -> list[AnswerCitation]:
         citations.append(
             AnswerCitation(
                 document_id=row.document_id,
+                document_name=row.document_name,
+                document_url=row.document_url,
                 slide_id=row.slide_id,
+                slide_number=row.slide_number,
                 snippet=row.snippet,
             )
         )

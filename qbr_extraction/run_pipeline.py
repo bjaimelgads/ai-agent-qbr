@@ -55,6 +55,7 @@ from qbr_intelligence.query.tools import (
     get_top_metrics,
     list_documents,
 )
+from qbr_agent.infrastructure.faiss_builder import FaissBuildConfig, build_faiss_index
 
 # Load environment variables from .env file
 load_dotenv()
@@ -167,6 +168,27 @@ async def process_document(
     print(f"      Elapsed time: {timing_payload['elapsed_seconds']}s")
 
     print(f"\n[4/4] Processing complete. Document ID: {doc_id}")
+
+    if os.getenv("FAISS_AUTO_BUILD", "").lower() in {"1", "true", "yes"}:
+        try:
+            config = FaissBuildConfig(
+                database_url=database_url,
+                base_dir=Path(os.getenv("FAISS_DIR", "./data/faiss")),
+                normalize=os.getenv("FAISS_NORMALIZE", "true").lower()
+                in {"1", "true", "yes"},
+                index_type=os.getenv("FAISS_INDEX_TYPE", "Flat"),
+                metric=os.getenv("FAISS_METRIC", "ip"),
+                embedding_model_filter=os.getenv("FAISS_EMBEDDING_MODEL_FILTER", "").strip()
+                or None,
+                force=os.getenv("FAISS_FORCE_REBUILD", "").lower() in {"1", "true", "yes"},
+            )
+            built = await build_faiss_index(config)
+            if built:
+                print(f"  [FAISS] Index built at {config.base_dir}")
+            else:
+                print("  [FAISS] Index already exists or no embeddings found.")
+        except Exception as exc:
+            print(f"  [FAISS] Auto-build failed: {exc}")
 
     return doc_id
 

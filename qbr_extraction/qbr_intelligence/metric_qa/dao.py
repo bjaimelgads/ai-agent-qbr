@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 
 _VIEW_SQL = """
-CREATE VIEW IF NOT EXISTS metric_fact AS
+CREATE VIEW metric_fact AS
 SELECT
     m.id AS fact_id,
     COALESCE(mc.slug, m.name) AS metric_id,
@@ -27,7 +27,10 @@ SELECT
     p.period_type AS period_granularity,
     COALESCE(m.period_label, p.period_label) AS period_label,
     m.document_id AS document_id,
+    d.filename AS document_name,
+    d.file_path AS document_url,
     m.slide_id AS slide_id,
+    s.slide_number AS slide_number,
     m.extraction_confidence AS confidence,
     COALESCE(m.name, mc.name) AS label_text,
     m.raw_value AS raw_value_text,
@@ -38,7 +41,8 @@ LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
 LEFT JOIN documents d ON d.id = m.document_id
 LEFT JOIN clients c ON c.id = d.client_id
 LEFT JOIN regions r ON r.id = m.region_id
-LEFT JOIN periods p ON p.id = m.period_id;
+LEFT JOIN periods p ON p.id = m.period_id
+LEFT JOIN slides s ON s.id = m.slide_id;
 """
 
 
@@ -58,7 +62,10 @@ class MetricFactRow:
     period_granularity: str | None
     period_label: str | None
     document_id: int
+    document_name: str | None
+    document_url: str | None
     slide_id: int | None
+    slide_number: int | None
     confidence: float | None
     label_text: str | None
     raw_value_text: str | None
@@ -83,6 +90,7 @@ class MetricFactStore:
         if self._view_ready:
             return
         async with self._engine.begin() as conn:
+            await conn.execute(text("DROP VIEW IF EXISTS metric_fact;"))
             await conn.execute(text(_VIEW_SQL))
         self._view_ready = True
 

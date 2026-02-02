@@ -53,7 +53,10 @@ class AnswerCitation(BaseModel):
     """Citation for metric answers."""
 
     document_id: int
+    document_name: str | None = None
+    document_url: str | None = None
     slide_id: int | None = None
+    slide_number: int | None = None
     snippet: str | None = None
 
 

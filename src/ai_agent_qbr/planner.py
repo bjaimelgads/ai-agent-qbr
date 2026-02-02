@@ -41,6 +41,7 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - If the user asks about capabilities, what you can do, or how you can help, call `agent_capabilities`.
 - For questions that ask for specific metrics, KPI values, or period comparisons, you MUST call
   `query_metrics` first and use its result. Do not answer directly without the tool.
+- When citations include `document_url`, include those links in the Sources section.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
 
