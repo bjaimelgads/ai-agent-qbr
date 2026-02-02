@@ -17,6 +17,16 @@ from typing import Any
 import websockets
 
 
+def _supports_color() -> bool:
+    return sys.stdout.isatty()
+
+
+def _style(text: str, code: str, enabled: bool) -> str:
+    if not enabled:
+        return text
+    return f"\033[{code}m{text}\033[0m"
+
+
 def _build_ws_url(base_url: str, session_id: str) -> str:
     base = base_url.rstrip("/")
     return f"{base}/ws/chat/{session_id}"
@@ -43,6 +53,8 @@ async def _legacy_roundtrip(
     metadata: dict[str, Any] | None,
     raw: bool,
     timeout_seconds: float | None,
+    color: bool,
+    compact: bool,
 ) -> int:
     await ws.send(json.dumps({"message": message, "metadata": metadata or {}}))
     printed_prefix = False
@@ -51,7 +63,7 @@ async def _legacy_roundtrip(
         try:
             payload = json.loads(await asyncio.wait_for(ws.recv(), timeout=timeout_seconds))
         except asyncio.TimeoutError:
-            print("[error] timed out waiting for server response", file=sys.stderr)
+            print(_style("[error] timed out waiting for server response", "31", color), file=sys.stderr)
             return 1
         if isinstance(payload, dict) and payload.get("type") == "ping":
             await ws.send(json.dumps({"type": "pong"}))
@@ -65,7 +77,8 @@ async def _legacy_roundtrip(
         if status == "thinking":
             msg = payload.get("message")
             if msg:
-                print(f"[thinking] {msg}")
+                prefix = _style("thinking", "33", color)
+                print(f"{prefix}> {msg}")
         elif status == "partial":
             data = payload.get("data") or {}
             text = data.get("content") or ""
@@ -76,7 +89,7 @@ async def _legacy_roundtrip(
                     delta = text
                 last_partial_len = len(text)
                 if not printed_prefix:
-                    sys.stdout.write("assistant> ")
+                    sys.stdout.write(_style("assistant", "32", color) + "> ")
                     printed_prefix = True
                 sys.stdout.write(delta)
                 sys.stdout.flush()
@@ -85,15 +98,17 @@ async def _legacy_roundtrip(
             text = data.get("content") or ""
             if text:
                 if not printed_prefix:
-                    sys.stdout.write("assistant> ")
+                    sys.stdout.write(_style("assistant", "32", color) + "> ")
                 print(text)
             else:
-                print("assistant> ")
+                print(_style("assistant", "32", color) + "> ")
+            if not compact:
+                print(_style("-" * 60, "90", color))
             return 0
         elif status == "error":
             msg = payload.get("message")
             if msg:
-                print(f"[error] {msg}", file=sys.stderr)
+                print(_style(f"[error] {msg}", "31", color), file=sys.stderr)
             return 1
         else:
             if payload:
@@ -106,6 +121,8 @@ async def _agui_roundtrip(
     metadata: dict[str, Any] | None,
     raw: bool,
     timeout_seconds: float | None,
+    color: bool,
+    compact: bool,
 ) -> int:
     payload = {"message": message}
     if metadata:
@@ -117,7 +134,7 @@ async def _agui_roundtrip(
         try:
             event = json.loads(await asyncio.wait_for(ws.recv(), timeout=timeout_seconds))
         except asyncio.TimeoutError:
-            print("[error] timed out waiting for server response", file=sys.stderr)
+            print(_style("[error] timed out waiting for server response", "31", color), file=sys.stderr)
             return 1
         if isinstance(event, dict) and event.get("type") == "ping":
             await ws.send(json.dumps({"type": "pong"}))
@@ -130,7 +147,7 @@ async def _agui_roundtrip(
             text = _extract_text_from_agui(event if isinstance(event, dict) else {})
             if text:
                 if not printed_prefix:
-                    sys.stdout.write("assistant> ")
+                    sys.stdout.write(_style("assistant", "32", color) + "> ")
                     printed_prefix = True
                 sys.stdout.write(text)
                 sys.stdout.flush()
@@ -140,6 +157,8 @@ async def _agui_roundtrip(
                 return 1
             if not raw and printed_prefix:
                 sys.stdout.write("\n")
+            if not compact:
+                print(_style("-" * 60, "90", color))
             return 0
 
 
@@ -157,15 +176,21 @@ async def _run(args: argparse.Namespace) -> int:
 
     async def send_once(ws: websockets.WebSocketClientProtocol, text: str) -> int:
         if args.protocol == "legacy":
-            return await _legacy_roundtrip(ws, text, metadata or None, args.raw, args.timeout)
-        return await _agui_roundtrip(ws, text, metadata or None, args.raw, args.timeout)
+            return await _legacy_roundtrip(
+                ws, text, metadata or None, args.raw, args.timeout, args.color, args.compact
+            )
+        return await _agui_roundtrip(
+            ws, text, metadata or None, args.raw, args.timeout, args.color, args.compact
+        )
 
     if args.repl or not args.message:
         async with websockets.connect(url, ping_interval=None) as ws:
-            print(f"Connected to {url}")
-            print("Type 'exit' or 'quit' to stop.")
+            color = args.color
+            print(_style(f"Connected to {url}", "90", color))
+            print(_style("Type 'exit' or 'quit' to stop.", "90", color))
             while True:
-                user_text = await asyncio.to_thread(lambda: input("user> ").strip())
+                prompt = _style("user", "36", color) + "> "
+                user_text = await asyncio.to_thread(lambda: input(prompt).strip())
                 if not user_text:
                     continue
                 if user_text.lower() in {"exit", "quit"}:
@@ -211,6 +236,9 @@ def main() -> None:
         default=30.0,
         help="Seconds to wait for each server response (default: 30)",
     )
+    parser.add_argument("--no-color", dest="color", action="store_false", help="Disable ANSI colors")
+    parser.add_argument("--compact", action="store_true", help="Disable separators between turns")
+    parser.set_defaults(color=_supports_color())
     parser.add_argument("--tenant-id", help="Tenant ID metadata")
     parser.add_argument("--user-id", help="User ID metadata")
     parser.add_argument("--document-id", help="Document ID metadata")
