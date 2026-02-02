@@ -473,6 +473,7 @@ class QBRQueryInterface:
             {
                 "id": s.id,
                 "slide_number": s.slide_number,
+                "google_slide_id": s.google_slide_id,
                 "slide_type": s.slide_type if s.slide_type else None,
                 "title": s.title,
                 "key_message": s.key_message,
@@ -535,6 +536,7 @@ class QBRQueryInterface:
             "id": slide.id,
             "document_id": slide.document_id,
             "slide_number": slide.slide_number,
+            "google_slide_id": slide.google_slide_id,
             "slide_type": slide.slide_type if slide.slide_type else None,
             "title": slide.title,
             "raw_text": slide.raw_text,

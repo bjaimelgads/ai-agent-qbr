@@ -356,6 +356,7 @@ class Slide(Base):
 
     # Slide position
     slide_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    google_slide_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     # Raw content
     raw_text: Mapped[str] = mapped_column(Text, nullable=False)

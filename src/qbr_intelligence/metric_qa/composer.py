@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from statistics import mean
 from typing import Iterable
+import re
 
 from qbr_intelligence.schemas.metric_qa import AnswerCitation, MetricAnswer, QueryIntent
 
@@ -28,6 +29,22 @@ class AnswerComposer:
         assumptions: list[str],
     ) -> MetricAnswer:
         if not rows:
+            if intent.metric_ids:
+                metric_label = ", ".join(intent.metric_ids[:3])
+                if len(intent.metric_ids) > 3:
+                    metric_label = f"{metric_label}, and {len(intent.metric_ids) - 3} more"
+                summary = (
+                    "I recognize the metric from the catalog, but there are no values available "
+                    "for the current filters."
+                )
+                return MetricAnswer(
+                    summary=summary,
+                    summary_text=f"{summary} (Matched: {metric_label}.)",
+                    citations=[],
+                    confidence=0.0,
+                    assumptions=assumptions,
+                    followups=["Try specifying a different client, region, or time period."],
+                )
             return MetricAnswer(
                 summary="I couldn't find any metrics that match those filters.",
                 summary_text="I couldn't find any metrics that match those filters.",
@@ -193,6 +210,22 @@ def _format_value(value: float | None, unit: str | None) -> str:
     return f"{value:,.2f}"
 
 
+def _build_google_slide_url(document_url: str | None, slide_google_id: str | None) -> str | None:
+    if not document_url or not slide_google_id:
+        return None
+    match = re.search(
+        r"https?://docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)",
+        document_url,
+    )
+    if not match:
+        return None
+    presentation_id = match.group(1)
+    return (
+        f"https://docs.google.com/presentation/d/{presentation_id}/edit#slide=id."
+        f"{slide_google_id}"
+    )
+
+
 def _collect_citations(rows: Iterable[MetricFactRow]) -> list[AnswerCitation]:
     seen: set[tuple[int, int | None]] = set()
     citations: list[AnswerCitation] = []
@@ -201,6 +234,7 @@ def _collect_citations(rows: Iterable[MetricFactRow]) -> list[AnswerCitation]:
         if key in seen:
             continue
         seen.add(key)
+        slide_url = _build_google_slide_url(row.document_url, row.google_slide_id)
         citations.append(
             AnswerCitation(
                 document_id=row.document_id,
@@ -208,6 +242,8 @@ def _collect_citations(rows: Iterable[MetricFactRow]) -> list[AnswerCitation]:
                 document_url=row.document_url,
                 slide_id=row.slide_id,
                 slide_number=row.slide_number,
+                slide_google_id=row.google_slide_id,
+                slide_url=slide_url,
                 snippet=row.snippet,
             )
         )

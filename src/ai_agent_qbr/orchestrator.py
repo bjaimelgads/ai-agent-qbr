@@ -6,6 +6,7 @@ import asyncio
 import logging
 import re
 import secrets
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -205,8 +206,9 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 doc_label = f"{doc_label} slide {citation.slide_number}"
             elif citation.slide_id is not None:
                 doc_label = f"{doc_label} slide {citation.slide_id}"
-            if citation.document_url:
-                return f"{doc_label} ({citation.document_url})"
+            doc_url = citation.slide_url or citation.document_url
+            if doc_url:
+                return f"{doc_label} ({doc_url})"
             return doc_label
 
         sources = ", ".join(_format_source(c) for c in answer.citations)
@@ -428,6 +430,7 @@ class AiAgentQbrOrchestrator:
                     metadata={},
                 )
 
+
             region_result = None
             region_focus = None
             if self._config.region_verifier_enabled:
@@ -612,10 +615,18 @@ class AiAgentQbrOrchestrator:
                     "qbr_citations": llm_context["qbr_citations"],
                 },
             ) as planner_span:
+                planner_started = time.perf_counter()
+                _LOGGER.info("Planner start trace_id=%s session_id=%s", trace_id, session_id)
                 result = await self._planner.run(
                     query=query,
                     llm_context=llm_context,
                     tool_context=tool_context,
+                )
+                _LOGGER.info(
+                    "Planner finished trace_id=%s session_id=%s elapsed_s=%.2f",
+                    trace_id,
+                    session_id,
+                    time.perf_counter() - planner_started,
                 )
 
             if isinstance(result, PlannerPause):

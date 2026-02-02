@@ -9,6 +9,9 @@ from ai_agent_qbr.models import MetricQueryArgs
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.schemas.metric_qa import MetricAnswer
 
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 @tool(desc="Query structured metric facts with deterministic filters", side_effects="read", tags=["planner"])
 async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer:
@@ -18,6 +21,10 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
 
     engine = ctx.tool_context.get("metric_query_engine")
     if not isinstance(engine, MetricQueryEngine):
+        _LOGGER.warning(
+            "Metric query engine missing in tool_context (keys=%s)",
+            sorted(ctx.tool_context.keys()) if isinstance(ctx.tool_context, dict) else "unknown",
+        )
         return MetricAnswer(
             summary_text="Metric query engine is not available.",
             citations=[],
@@ -26,6 +33,7 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
             followups=["Please try again later."],
         )
 
+    _LOGGER.info("Metric query: %s", args.question)
     result = await engine.query(args.question, debug=args.debug)
     interaction_metadata = ctx.tool_context.get("interaction_metadata")
     if isinstance(interaction_metadata, dict):

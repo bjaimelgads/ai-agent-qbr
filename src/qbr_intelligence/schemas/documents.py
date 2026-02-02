@@ -218,6 +218,7 @@ class SlideRead(BaseSchema):
     document_id: int
     section_id: int | None = None
     slide_number: int
+    google_slide_id: str | None = None
     raw_text: str
     speaker_notes: str | None = None
 

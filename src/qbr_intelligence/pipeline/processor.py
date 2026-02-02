@@ -95,6 +95,7 @@ from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
 )
+from qbr_intelligence.infrastructure.google_slides import GoogleSlidesClient
 
 
 class QBRProcessor:
@@ -140,6 +141,7 @@ class QBRProcessor:
         self.SessionLocal = sessionmaker(bind=self.engine)
         self._ensure_metric_columns()
         self._ensure_document_columns()
+        self._ensure_slide_columns()
         self._seed_clients()
         self._client_names = self._load_client_names()
         self._seed_metric_catalog()
@@ -284,6 +286,101 @@ class QBRProcessor:
         with self.engine.begin() as conn:
             for name, ddl in missing.items():
                 conn.execute(text(f"ALTER TABLE documents ADD COLUMN {name} {ddl}"))
+
+    def _ensure_slide_columns(self) -> None:
+        if self.engine.dialect.name != "sqlite":
+            return
+        inspector = inspect(self.engine)
+        if "slides" not in inspector.get_table_names():
+            return
+        existing = {col["name"] for col in inspector.get_columns("slides")}
+        needed = {
+            "google_slide_id": "TEXT",
+        }
+        missing = {name: ddl for name, ddl in needed.items() if name not in existing}
+        if not missing:
+            return
+        with self.engine.begin() as conn:
+            for name, ddl in missing.items():
+                conn.execute(text(f"ALTER TABLE slides ADD COLUMN {name} {ddl}"))
+
+    @staticmethod
+    def _extract_google_presentation_id(value: str | None) -> str | None:
+        if not value:
+            return None
+        match = re.search(
+            r"https?://docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)",
+            value,
+        )
+        return match.group(1) if match else None
+
+    def _resolve_google_presentation_id(
+        self,
+        *,
+        file_path: Path,
+        result: ExtractionResult | None = None,
+    ) -> str | None:
+        env_value = (os.getenv("GOOGLE_SLIDES_PRESENTATION_ID") or "").strip()
+        if env_value:
+            return env_value
+        candidates: list[str] = [str(file_path)]
+        if result and result.metadata:
+            source_url = result.metadata.get("source_url")
+            if isinstance(source_url, str):
+                candidates.append(source_url)
+        for candidate in candidates:
+            presentation_id = self._extract_google_presentation_id(candidate)
+            if presentation_id:
+                return presentation_id
+        return None
+
+    def _attach_google_slide_ids(
+        self,
+        *,
+        slides_ordered: list[dict],
+        slides_raw: list[dict],
+        remap: list[dict] | None,
+        file_path: Path,
+        result: ExtractionResult,
+    ) -> None:
+        presentation_id = self._resolve_google_presentation_id(
+            file_path=file_path,
+            result=result,
+        )
+        if not presentation_id:
+            return
+        client = GoogleSlidesClient.from_env(base_dir=self.output_dir)
+        if client is None:
+            return
+        try:
+            slide_ids = client.list_slide_ids(presentation_id)
+        except Exception as exc:
+            print(f"[Google Slides] Failed to fetch slide IDs: {exc}")
+            return
+        if not slide_ids:
+            return
+        ids_by_number = {idx + 1: slide_id for idx, slide_id in enumerate(slide_ids)}
+
+        for slide in slides_ordered:
+            slide_num = slide.get("slide_number")
+            if isinstance(slide_num, int):
+                slide["google_slide_id"] = ids_by_number.get(slide_num)
+
+        if remap:
+            slides_by_num = {slide.get("slide_number"): slide for slide in slides_raw}
+            for entry in remap:
+                source_num = entry.get("source_page_number")
+                new_num = entry.get("slide_number")
+                if not isinstance(source_num, int) or not isinstance(new_num, int):
+                    continue
+                target = slides_by_num.get(source_num)
+                if target is not None:
+                    target["google_slide_id"] = ids_by_number.get(new_num)
+        else:
+            for slide in slides_raw:
+                slide_num = slide.get("slide_number")
+                if isinstance(slide_num, int):
+                    slide["google_slide_id"] = ids_by_number.get(slide_num)
 
     def create_extraction_config(self) -> ExtractionConfig:
         """Create Kreuzberg extraction configuration."""
@@ -1907,6 +2004,13 @@ Categories:
             charts=charts,
             remap=remap_for_parsing,
         )
+        self._attach_google_slide_ids(
+            slides_ordered=slides_ordered,
+            slides_raw=slides,
+            remap=remap_for_parsing,
+            file_path=file_path,
+            result=result,
+        )
         business_terms = self._extract_business_terms(content_for_processing)
 
         tables_payload: list[dict] = []
@@ -2176,6 +2280,7 @@ Categories:
                     slide_number=s["slide_number"],
                     raw_text=s["raw_text"],
                     speaker_notes=s.get("speaker_notes"),
+                    google_slide_id=s.get("google_slide_id"),
                     has_images=s["has_images"],
                     image_count=s["image_count"],
                 )

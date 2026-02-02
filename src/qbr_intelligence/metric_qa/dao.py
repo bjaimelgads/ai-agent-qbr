@@ -31,6 +31,43 @@ SELECT
     d.file_path AS document_url,
     m.slide_id AS slide_id,
     s.slide_number AS slide_number,
+    s.google_slide_id AS google_slide_id,
+    m.extraction_confidence AS confidence,
+    COALESCE(m.name, mc.name) AS label_text,
+    m.raw_value AS raw_value_text,
+    m.raw_context AS snippet,
+    m.llm_context_label AS llm_context_label
+FROM metrics m
+LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
+LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN clients c ON c.id = d.client_id
+LEFT JOIN regions r ON r.id = m.region_id
+LEFT JOIN periods p ON p.id = m.period_id
+LEFT JOIN slides s ON s.id = m.slide_id;
+"""
+
+_VIEW_SQL_NO_GOOGLE = """
+CREATE VIEW metric_fact AS
+SELECT
+    m.id AS fact_id,
+    COALESCE(mc.slug, m.name) AS metric_id,
+    COALESCE(mc.name, m.name) AS metric_name,
+    m.normalized_value AS value,
+    m.unit AS unit,
+    'ones' AS scale,
+    d.client_id AS client_id,
+    c.name AS client_name,
+    r.code AS region,
+    COALESCE(m.period_start, p.start_date) AS period_start,
+    COALESCE(m.period_end, p.end_date) AS period_end,
+    p.period_type AS period_granularity,
+    COALESCE(m.period_label, p.period_label) AS period_label,
+    m.document_id AS document_id,
+    d.filename AS document_name,
+    d.file_path AS document_url,
+    m.slide_id AS slide_id,
+    s.slide_number AS slide_number,
+    NULL AS google_slide_id,
     m.extraction_confidence AS confidence,
     COALESCE(m.name, mc.name) AS label_text,
     m.raw_value AS raw_value_text,
@@ -66,6 +103,7 @@ class MetricFactRow:
     document_url: str | None
     slide_id: int | None
     slide_number: int | None
+    google_slide_id: str | None
     confidence: float | None
     label_text: str | None
     raw_value_text: str | None
@@ -91,7 +129,14 @@ class MetricFactStore:
             return
         async with self._engine.begin() as conn:
             await conn.execute(text("DROP VIEW IF EXISTS metric_fact;"))
-            await conn.execute(text(_VIEW_SQL))
+            has_google_slide_id = False
+            try:
+                result = await conn.execute(text("PRAGMA table_info('slides');"))
+                columns = {row[1] for row in result.fetchall()}
+                has_google_slide_id = "google_slide_id" in columns
+            except Exception:
+                has_google_slide_id = False
+            await conn.execute(text(_VIEW_SQL if has_google_slide_id else _VIEW_SQL_NO_GOOGLE))
         self._view_ready = True
 
     async def fetch_metric_catalog(self) -> list[dict[str, Any]]:
