@@ -228,7 +228,7 @@ def main() -> int:
     _setup_db(db_url)
 
     config = Config(
-        output_protocol="websocket",
+        output_protocol="legacy",
         use_stub_llm=True,
         database_url=db_url,
         embeddings_backend="hash",

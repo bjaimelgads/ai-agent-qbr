@@ -51,6 +51,13 @@ def _env_str(name: str, default: str) -> str:
     return raw if raw is not None else default
 
 
+def _normalize_output_protocol(raw: str) -> str:
+    normalized = raw.strip().lower()
+    if normalized == "websocket":
+        return "legacy"
+    return normalized
+
+
 def _env_optional_str(name: str, default: str | None) -> str | None:
     """Parse optional string from environment variable."""
     raw = os.getenv(name)
@@ -87,7 +94,7 @@ class Config:
 
     memory_base_url: str = "http://localhost:8000"
     llm_model: str = "stub-llm"
-    output_protocol: str = "websocket"
+    output_protocol: str = "legacy"
     planner_stream_final_response: bool = False
     keepalive_interval_seconds: float = 20.0
     receive_timeout_seconds: float = 60.0
@@ -197,19 +204,22 @@ class Config:
     @classmethod
     def from_env(cls) -> "Config":
         """Load configuration from environment variables."""
+        output_protocol = _normalize_output_protocol(
+            os.getenv("OUTPUT_PROTOCOL", "legacy")
+        )
         return cls(
             memory_base_url=os.getenv("MEMORY_BASE_URL", "http://localhost:8000"),
             llm_model=os.getenv("LLM_MODEL", "stub-llm"),
-            output_protocol=os.getenv("OUTPUT_PROTOCOL", "websocket").lower(),
+            output_protocol=output_protocol,
             planner_stream_final_response=_env_flag(
                 "PLANNER_STREAM_FINAL_RESPONSE",
-                os.getenv("OUTPUT_PROTOCOL", "websocket").lower() == "agui",
+                output_protocol == "agui",
             ),
             keepalive_interval_seconds=_env_float("WS_KEEPALIVE_SECONDS", 20.0),
             receive_timeout_seconds=_env_float("WS_RECEIVE_TIMEOUT_SECONDS", 60.0),
             rich_output_enabled=_env_flag(
                 "RICH_OUTPUT_ENABLED",
-                os.getenv("OUTPUT_PROTOCOL", "websocket").lower() == "agui",
+                output_protocol == "agui",
             ),
             rich_output_allowlist=_env_csv(
                 "RICH_OUTPUT_ALLOWLIST",
@@ -341,8 +351,8 @@ class Config:
 
     def validate(self) -> None:
         """Validate required configuration and raise ValueError when missing."""
-        if self.output_protocol not in {"websocket", "agui"}:
-            raise ValueError("OUTPUT_PROTOCOL must be one of: websocket, agui")
+        if self.output_protocol not in {"legacy", "agui"}:
+            raise ValueError("OUTPUT_PROTOCOL must be one of: legacy, agui")
         if self.storage_backend not in {"sqlite"}:
             raise ValueError("STORAGE_BACKEND must be one of: sqlite")
         if self.vector_backend not in {"sqlite_embeddings", "faiss"}:

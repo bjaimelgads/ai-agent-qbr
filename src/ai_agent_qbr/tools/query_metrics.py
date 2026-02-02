@@ -41,4 +41,6 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
     interaction_metadata = ctx.tool_context.get("interaction_metadata")
     if isinstance(interaction_metadata, dict):
         interaction_metadata["metric_intent"] = result.intent.model_dump()
+        interaction_metadata["metric_answer"] = result.answer.model_dump()
+        interaction_metadata["metric_answer_row_count"] = len(result.answer.data or [])
     return result.answer

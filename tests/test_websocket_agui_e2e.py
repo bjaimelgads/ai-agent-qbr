@@ -19,7 +19,11 @@ from qbr_agent.infrastructure.embeddings import HashEmbeddingsProvider
 class FakePlanner:
     async def run(self, *, query, llm_context, tool_context):
         answer = f"Answer: {query}\n\n{llm_context.get('qbr_context', '')}"
-        return PlannerFinish(payload={"answer": answer}, metadata={})
+        return PlannerFinish(
+            reason="answer_complete",
+            payload={"answer": answer},
+            metadata={},
+        )
 
 
 def _setup_db(db_url: str) -> None:

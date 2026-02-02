@@ -350,7 +350,7 @@ def _create_llm_client(config: Config) -> Any:
         return ScriptedLLM()
 
     # Native streaming path for WebSocket/AG-UI when streaming final response
-    if config.output_protocol in {"agui", "websocket"} and config.planner_stream_final_response:
+    if config.output_protocol in {"agui", "legacy"} and config.planner_stream_final_response:
         api_base = config.databricks_api_base or ""
         resolved_host = _resolve_databricks_host(config)
         if not api_base and resolved_host:

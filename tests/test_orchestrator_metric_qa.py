@@ -17,7 +17,7 @@ from qbr_agent.infrastructure.vector_index import SqliteEmbeddingVectorIndex
 async def test_orchestrator_routes_metric_queries(metric_db, monkeypatch):
     monkeypatch.setenv("FISCAL_YEAR_START_MONTH", "1")
     config = Config(
-        output_protocol="websocket",
+        output_protocol="legacy",
         use_stub_llm=True,
         database_url=metric_db,
         embeddings_backend="hash",

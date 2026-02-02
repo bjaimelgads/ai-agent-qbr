@@ -217,7 +217,7 @@ def test_legacy_websocket_contract_and_rerank(tmp_path):
 
     use_stub_llm = os.getenv("USE_STUB_LLM", "true").lower() in {"1", "true", "yes", "on"}
     config = Config(
-        output_protocol="websocket",
+        output_protocol="legacy",
         use_stub_llm=use_stub_llm,
         database_url=db_url,
         embeddings_backend="hash",

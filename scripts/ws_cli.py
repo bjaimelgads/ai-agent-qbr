@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """CLI for interacting with ai-agent-qbr over WebSockets.
 
-Supports legacy (OUTPUT_PROTOCOL=websocket) and AG-UI (OUTPUT_PROTOCOL=agui)
+Supports legacy (OUTPUT_PROTOCOL=legacy) and AG-UI (OUTPUT_PROTOCOL=agui)
 message formats over the same /ws/chat/{session_id} endpoint.
 """
 
@@ -46,6 +46,7 @@ async def _legacy_roundtrip(
 ) -> int:
     await ws.send(json.dumps({"message": message, "metadata": metadata or {}}))
     printed_prefix = False
+    last_partial_len = 0
     while True:
         try:
             payload = json.loads(await asyncio.wait_for(ws.recv(), timeout=timeout_seconds))
@@ -69,10 +70,15 @@ async def _legacy_roundtrip(
             data = payload.get("data") or {}
             text = data.get("content") or ""
             if text:
+                if len(text) >= last_partial_len:
+                    delta = text[last_partial_len:]
+                else:
+                    delta = text
+                last_partial_len = len(text)
                 if not printed_prefix:
                     sys.stdout.write("assistant> ")
                     printed_prefix = True
-                sys.stdout.write(text)
+                sys.stdout.write(delta)
                 sys.stdout.flush()
         elif status == "final":
             data = payload.get("data") or {}

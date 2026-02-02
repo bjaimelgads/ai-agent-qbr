@@ -7,7 +7,7 @@ This document captures how the existing base agent streams output (AG-UI + legac
 
 ### What it is
 A FastAPI WebSocket server that hosts a PenguiFlow-based agent. It supports two output protocols over the same WebSocket connection:
-- `OUTPUT_PROTOCOL=websocket` for legacy message DTOs.
+- `OUTPUT_PROTOCOL=legacy` for legacy message DTOs.
 - `OUTPUT_PROTOCOL=agui` for AG-UI event streams.
 
 ### Streaming flow and AG-UI structure
@@ -32,7 +32,7 @@ Adapter behavior:
 
 ### Configuration surface
 - `src/config.py` loads environment vars. Key ones:
-  - `OUTPUT_PROTOCOL` (`websocket` or `agui`).
+  - `OUTPUT_PROTOCOL` (`legacy` or `agui`).
   - `PLANNER_STREAM_FINAL_RESPONSE` for native streaming.
   - LLM provider configuration (`LLM_MODEL`, Databricks settings).
   - Memory store knobs for short-term memory and platform-backed memory.

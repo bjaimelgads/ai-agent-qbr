@@ -110,7 +110,7 @@ async def _run() -> int:
     _load_dotenv(DOTENV_PATH)
     os.environ.setdefault("REGION_VERIFY_MODEL_NAME", "databricks-gpt-5-mini")
     os.environ.setdefault("REGION_VERIFY_MAX_TOKENS", "256")
-    os.environ.setdefault("OUTPUT_PROTOCOL", "websocket")
+    os.environ.setdefault("OUTPUT_PROTOCOL", "legacy")
     os.environ.setdefault("PLANNER_STREAM_FINAL_RESPONSE", "false")
     os.environ.setdefault("FAISS_AUTO_BUILD", "false")
     os.environ.setdefault("FAISS_REBUILD_ON_STARTUP", "false")

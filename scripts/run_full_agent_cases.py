@@ -112,7 +112,7 @@ def main() -> int:
     base_config = Config.from_env()
     # Keep LLMs enabled but avoid heavy local embeddings/rerankers.
     config = Config(
-        output_protocol="websocket",
+        output_protocol="legacy",
         use_stub_llm=False,
         database_url=base_config.database_url,
         embeddings_backend="hash",

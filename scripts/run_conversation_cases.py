@@ -205,7 +205,7 @@ def main() -> int:
 
     base_config = Config.from_env()
     config = Config(
-        output_protocol="websocket",
+        output_protocol="legacy",
         use_stub_llm=False,
         database_url=base_config.database_url,
         guardrails_enabled=False,
