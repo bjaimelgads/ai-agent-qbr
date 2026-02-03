@@ -126,8 +126,11 @@ def _build_metric_grid_artifact(answer: MetricAnswer | None) -> dict[str, Any] |
     if len(rows) <= 1:
         return None
     grid_rows: list[dict[str, Any]] = []
+    metric_title = None
     for row in rows:
         metric = row.get("metric") or "metric"
+        if metric_title is None and metric:
+            metric_title = str(metric)
         value = _format_metric_value(row.get("value"), row.get("unit"))
         period = row.get("period")
         region = row.get("region")
@@ -135,19 +138,17 @@ def _build_metric_grid_artifact(answer: MetricAnswer | None) -> dict[str, Any] |
         metric_url = row.get("slide_url") or row.get("document_url")
         grid_rows.append(
             {
-                "metric": metric,
-                "metric_url": metric_url,
                 "value": value,
                 "period": period,
                 "region": region,
                 "client": client,
+                "metric_url": metric_url,
             }
         )
     return {
         "type": "datagrid",
-        "title": "Metric Results",
+        "title": metric_title or "Metric Results",
         "columns": [
-            {"field": "metric", "header": "Metric", "format": "link"},
             {"field": "value", "header": "Value", "format": "text"},
             {"field": "period", "header": "Time Period", "format": "text"},
             {"field": "region", "header": "Region", "format": "text"},
