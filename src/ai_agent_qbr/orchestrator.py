@@ -93,6 +93,68 @@ class AgentResponse:
     answer: str | None
     trace_id: str
     metadata: dict[str, Any] | None = None
+    artifacts: dict[str, Any] | None = None
+
+
+def _coerce_metric_answer(payload: Any) -> MetricAnswer | None:
+    if payload is None:
+        return None
+    if isinstance(payload, MetricAnswer):
+        return payload
+    if isinstance(payload, Mapping):
+        try:
+            return MetricAnswer.model_validate(payload)
+        except Exception:
+            return None
+    return None
+
+
+def _format_metric_value(value: float | None, unit: str | None) -> str:
+    if value is None:
+        return "unknown"
+    if unit == "percent":
+        return f"{value:.2f}%"
+    if unit == "currency":
+        return f"${value:,.2f}"
+    return f"{value:,.2f}"
+
+
+def _build_metric_grid_artifact(answer: MetricAnswer | None) -> dict[str, Any] | None:
+    if answer is None:
+        return None
+    rows = answer.table_data or []
+    if len(rows) <= 1:
+        return None
+    grid_rows: list[dict[str, Any]] = []
+    for row in rows:
+        metric = row.get("metric") or "metric"
+        value = _format_metric_value(row.get("value"), row.get("unit"))
+        period = row.get("period")
+        region = row.get("region")
+        client = row.get("client")
+        metric_url = row.get("slide_url") or row.get("document_url")
+        grid_rows.append(
+            {
+                "metric": metric,
+                "metric_url": metric_url,
+                "value": value,
+                "period": period,
+                "region": region,
+                "client": client,
+            }
+        )
+    return {
+        "type": "datagrid",
+        "title": "Metric Results",
+        "columns": [
+            {"field": "metric", "header": "Metric", "format": "link"},
+            {"field": "value", "header": "Value", "format": "text"},
+            {"field": "period", "header": "Time Period", "format": "text"},
+            {"field": "region", "header": "Region", "format": "text"},
+            {"field": "client", "header": "Client", "format": "text"},
+        ],
+        "rows": grid_rows,
+    }
 
 
 def _extract_answer(payload: Any) -> str | None:
@@ -683,10 +745,39 @@ class AiAgentQbrOrchestrator:
                         payload,
                     )
 
+            metric_answer = None
+            if isinstance(interaction_metadata, dict):
+                metric_payload = interaction_metadata.get("metric_answer")
+                metric_answer = _coerce_metric_answer(metric_payload)
+            if metric_answer is None:
+                metric_answer = _coerce_metric_answer(payload)
+            if metric_answer is None:
+                _LOGGER.info("metric_grid trace_id=%s status=missing_metric_answer", trace_id)
+            else:
+                table_len = len(metric_answer.table_data or [])
+                data_len = len(metric_answer.data or [])
+                _LOGGER.info(
+                    "metric_grid trace_id=%s status=answer_loaded table_len=%s data_len=%s",
+                    trace_id,
+                    table_len,
+                    data_len,
+                )
+            artifacts = _build_metric_grid_artifact(metric_answer)
+            if artifacts is None:
+                _LOGGER.info("metric_grid trace_id=%s status=no_artifact", trace_id)
+            else:
+                _LOGGER.info(
+                    "metric_grid trace_id=%s status=artifact type=%s rows=%s",
+                    trace_id,
+                    artifacts.get("type") if isinstance(artifacts, dict) else None,
+                    len(artifacts.get("rows") or []) if isinstance(artifacts, dict) else None,
+                )
+
             return AgentResponse(
                 answer=answer_text,
                 trace_id=trace_id,
                 metadata=dict(result.metadata),
+                artifacts=artifacts,
             )
 
     async def start_session(

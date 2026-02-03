@@ -84,7 +84,7 @@ env:
   - name: 'PLATFORM_URL'
     value: 'https://dev-ai-platform-backend-185296477739056.aws.databricksapps.com'
   - name: 'OUTPUT_PROTOCOL'
-    value: 'legacy'
+    value: 'agui'
   - name: 'PLANNER_STREAM_FINAL_RESPONSE'
     value: 'true'
   - name: 'LOG_LEVEL'

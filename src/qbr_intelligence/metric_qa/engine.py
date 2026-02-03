@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
+import logging
 import re
 from typing import Any, Callable
 import os
@@ -20,6 +21,7 @@ from .intent import DeterministicIntentExtractor, IntentDebug, classify_intent_t
 from .resolvers import ClientResolver, MetricResolver, PeriodResolver, RegionResolver
 from .planner import build_plan
 
+_LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class MetricQueryResult:
@@ -99,7 +101,13 @@ class MetricQueryEngine:
             ]
         self._clients = await self._store.fetch_clients()
 
-    async def query(self, query: str, *, debug: bool = False) -> MetricQueryResult:
+    async def query(
+        self,
+        query: str,
+        *,
+        debug: bool = False,
+        trace_id: str | None = None,
+    ) -> MetricQueryResult:
         await self._load_catalogs()
         anchor_date = await self._select_anchor_date(query)
 
@@ -117,6 +125,9 @@ class MetricQueryEngine:
             if debug:
                 answer.debug = {"intent": intent.model_dump(), "intent_type": intent_type}
             return MetricQueryResult(answer=answer, intent=intent, debug=answer.debug)
+
+        if intent.aggregation == "latest":
+            intent.aggregation = "all"
 
         plan = build_plan(intent)
         assumptions: list[str] = []
@@ -136,14 +147,29 @@ class MetricQueryEngine:
         )
         debug_payload.update({"sql": sql, "params": params, "row_count": len(rows)})
         if (os.getenv("METRIC_QA_RETRIEVAL_LOG") or "").lower() in {"1", "true", "yes"}:
-            print("\n[Metric QA] Retrieved rows (context preview):")
-            for row in rows:
+            _LOGGER.info(
+                "metric_qa_select trace_id=%s sql=%s params=%s row_count=%s",
+                trace_id,
+                sql,
+                params,
+                len(rows),
+            )
+            for row in rows[:20]:
                 snippet = (row.snippet or "").replace("\n", " ").strip()[:240]
                 context_label = row.llm_context_label or ""
-                print(
-                    f"- metric={row.metric_name} value={row.value} unit={row.unit} "
-                    f"period={row.period_label or row.period_end} "
-                    f"context_label={context_label!r} snippet={snippet!r}"
+                _LOGGER.info(
+                    "metric_qa_row trace_id=%s metric=%s value=%s unit=%s period=%s client=%s region=%s "
+                    "slide_id=%s context_label=%r snippet=%r",
+                    trace_id,
+                    row.metric_name,
+                    row.value,
+                    row.unit,
+                    row.period_label or row.period_end,
+                    row.client_name,
+                    row.region,
+                    row.slide_id,
+                    context_label,
+                    snippet,
                 )
 
         if not rows:

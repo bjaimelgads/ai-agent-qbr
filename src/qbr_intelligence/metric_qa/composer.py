@@ -175,6 +175,7 @@ def _compare_summary(first: MetricFactRow, second: MetricFactRow, delta: float |
 
 
 def _row_to_table(row: MetricFactRow) -> dict:
+    slide_url = _build_google_slide_url(row.document_url, row.google_slide_id)
     return {
         "metric": row.metric_name,
         "value": row.value,
@@ -183,6 +184,11 @@ def _row_to_table(row: MetricFactRow) -> dict:
         "client": row.client_name,
         "region": row.region,
         "llm_context_label": row.llm_context_label,
+        "document_id": row.document_id,
+        "document_url": row.document_url,
+        "slide_id": row.slide_id,
+        "slide_number": row.slide_number,
+        "slide_url": slide_url or row.document_url,
     }
 
 

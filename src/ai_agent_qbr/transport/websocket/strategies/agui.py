@@ -102,6 +102,35 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             if run_result is not None and getattr(run_result, "answer", None) and not adapter.streamed_answer:
                 for event in adapter.emit_text_block(run_result.answer):
                     yield event
+            if run_result is not None and getattr(run_result, "artifacts", None):
+                self._logger.info(
+                    "AG-UI artifact emit session_id=%s artifact_type=%s keys=%s",
+                    session_id,
+                    run_result.artifacts.get("type") if isinstance(run_result.artifacts, dict) else None,
+                    sorted(run_result.artifacts.keys()) if isinstance(run_result.artifacts, dict) else None,
+                )
+                if isinstance(run_result.artifacts, dict) and run_result.artifacts.get("type") == "datagrid":
+                    yield adapter.custom(
+                        "artifact_chunk",
+                        {
+                            "stream_id": "artifact",
+                            "seq": 0,
+                            "done": True,
+                            "artifact_type": "ui_component",
+                            "chunk": {
+                                "component": "datagrid",
+                                "title": run_result.artifacts.get("title"),
+                                "props": run_result.artifacts,
+                            },
+                            "meta": {"source": "metric_grid"},
+                        },
+                    )
+                yield adapter.custom("artifact", {"artifact": run_result.artifacts})
+            elif run_result is not None:
+                self._logger.info(
+                    "AG-UI artifact missing session_id=%s",
+                    session_id,
+                )
 
         with telemetry.subscribe(status_callback=status_callback, event_callback=event_callback):
             try:

@@ -21,11 +21,16 @@ def _row(value: float, period_end: str, doc_id: int, slide_id: int) -> MetricFac
         period_granularity="quarter",
         period_label=None,
         document_id=doc_id,
+        document_name=None,
+        document_url=None,
         slide_id=slide_id,
+        slide_number=None,
+        google_slide_id=None,
         confidence=0.9,
         label_text="CPA",
         raw_value_text=None,
         snippet="snippet",
+        llm_context_label=None,
     )
 
 
