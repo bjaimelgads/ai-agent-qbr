@@ -105,7 +105,8 @@ CLIENT_SECRET=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
 # GOOGLE_SLIDES_TOKEN_PATH=.google_slides_token.json
 
 # Database URL
-DATABASE_URL=sqlite+aiosqlite:////home/brunojaime/Documents/Projects/mcp-projects/LGAds/ai-agent-qbr/qbr_intelligence.db
+DATABASE_URL=sqlite+aiosqlite:////workspaces/ai-agent-qbr/qbr_intelligence.db
+
 LOG_SQLITE_STATUS=false
 
 # =============================================================================
@@ -172,7 +173,7 @@ Keep this running.
 
 ## 4) Start the CLI
 
-Open a **second** terminal and run:
+After the agent is fully up, open a **second** terminal and run:
 ```
 python scripts/ws_cli.py --protocol legacy --base-url ws://localhost:8000 --repl --timeout 120
 ```
