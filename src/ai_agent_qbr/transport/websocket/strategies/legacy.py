@@ -92,7 +92,10 @@ class LegacyWebsocketOutputStrategy(WebsocketOutputStrategy):
             return
 
         self._partial_buffers.pop(session_id, None)
-        await self._send_payload(session_id, OutputFinal(data={"content": response.answer or ""}))
+        final_data = {"content": response.answer or ""}
+        if response.artifacts:
+            final_data["artifacts"] = response.artifacts
+        await self._send_payload(session_id, OutputFinal(data=final_data))
 
     async def on_disconnect(self, session_id: str) -> None:
         self._partial_buffers.pop(session_id, None)

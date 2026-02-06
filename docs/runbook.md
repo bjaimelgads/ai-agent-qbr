@@ -24,7 +24,7 @@
 ### AG-UI payload shape mismatch
 - Confirm `OUTPUT_PROTOCOL=agui`.
 - Verify client supports AG-UI event types (`RUN_STARTED`, `TEXT_MESSAGE_CONTENT`, etc.).
-- For legacy consumers, set `OUTPUT_PROTOCOL=websocket`.
+- For legacy consumers, set `OUTPUT_PROTOCOL=legacy`.
 
 ## Debugging Tips
 - Enable logs: `LOG_LEVEL=debug`.

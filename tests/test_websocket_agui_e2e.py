@@ -19,7 +19,11 @@ from qbr_agent.infrastructure.embeddings import HashEmbeddingsProvider
 class FakePlanner:
     async def run(self, *, query, llm_context, tool_context):
         answer = f"Answer: {query}\n\n{llm_context.get('qbr_context', '')}"
-        return PlannerFinish(payload={"answer": answer}, metadata={})
+        return PlannerFinish(
+            reason="answer_complete",
+            payload={"answer": answer},
+            metadata={},
+        )
 
 
 def _setup_db(db_url: str) -> None:
@@ -27,11 +31,17 @@ def _setup_db(db_url: str) -> None:
         engine = create_async_engine(db_url)
         metadata = MetaData()
         Table(
+            "clients",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(255), unique=True),
+        )
+        Table(
             "documents",
             metadata,
             Column("id", Integer, primary_key=True),
             Column("filename", String(255)),
-            Column("client_name", String(255)),
+            Column("client_id", Integer),
             Column("period", String(100)),
             Column("status", String(50)),
             Column("executive_summary", Text),
@@ -57,10 +67,16 @@ def _setup_db(db_url: str) -> None:
             provider = HashEmbeddingsProvider()
             embedding = await provider.embed_query("Revenue grew by 10%")
             await conn.execute(
+                metadata.tables["clients"].insert().values(
+                    id=1,
+                    name="Acme",
+                )
+            )
+            await conn.execute(
                 metadata.tables["documents"].insert().values(
                     id=1,
                     filename="qbr.pptx",
-                    client_name="Acme",
+                    client_id=1,
                     period="Q1",
                     status="enhanced",
                     executive_summary="Summary",
@@ -91,14 +107,16 @@ def test_agui_websocket_streams_context(tmp_path):
     db_url = f"sqlite+aiosqlite:///{tmp_path / 'qbr_e2e.db'}"
     _setup_db(db_url)
 
+    use_stub_llm = os.getenv("USE_STUB_LLM", "true").lower() in {"1", "true", "yes", "on"}
     config = Config(
         output_protocol="agui",
-        use_stub_llm=True,
+        use_stub_llm=use_stub_llm,
         database_url=db_url,
         embeddings_backend="hash",
         embeddings_model="ignored",
         storage_backend="sqlite",
         vector_backend="sqlite_embeddings",
+        rerank_backend="none",
     )
 
     def orchestrator_factory(telemetry):

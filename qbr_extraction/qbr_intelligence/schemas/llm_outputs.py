@@ -173,6 +173,149 @@ class MetricNormalizationOutput(BaseModel):
 
 
 # =============================================================================
+# Metric Deduplication Output
+# =============================================================================
+
+
+class MetricDeduplicationOutput(BaseModel):
+    """Structured output for metric deduplication."""
+
+    remove_ids: list[str] = Field(
+        default_factory=list,
+        description="List of metric ids that should be removed as duplicates",
+    )
+    summary: str = Field(
+        default="",
+        description="Short explanation of duplicate removal decisions",
+    )
+
+
+# =============================================================================
+# Metric Review Output (per-candidate)
+# =============================================================================
+
+
+class MetricReviewResult(BaseModel):
+    """Review outcome for a single metric candidate group."""
+
+    normalized_value: float | None = Field(
+        default=None, description="Corrected normalized value if needed"
+    )
+    unit: str | None = Field(default=None, description="Corrected unit if needed")
+    notes: str | None = Field(
+        default=None, description="Short reasoning or qualifiers"
+    )
+    confidence: float | None = Field(
+        default=None, description="Confidence in the decision (0-1)"
+    )
+    source_snippet: str | None = Field(
+        default=None, description="Exact snippet supporting the choice"
+    )
+    context_label: str = Field(
+        description=(
+            "Required. 1-2 lines describing what this metric value represents "
+            "(e.g., 'US H1 FY24', 'EMEA Lapsed Users', 'Carousel Video vs Static')."
+        ),
+        min_length=3,
+    )
+
+
+class MetricReviewOutput(BaseModel):
+    """Structured output for per-metric review."""
+
+    review: MetricReviewResult = Field(description="Review decision for the metric")
+
+
+# =============================================================================
+# Metric Refinement Output
+# =============================================================================
+
+
+class RefinedMetric(BaseModel):
+    """Refined metric extracted from slide context."""
+
+    metric_name: str = Field(description="Canonical metric name from the provided dictionary")
+    value: float | None = Field(default=None, description="Primary metric value")
+    unit: str | None = Field(default=None, description="Unit of measurement")
+    delta_abs: float | None = Field(
+        default=None, description="Absolute change value if present (e.g., $0.83 cheaper)"
+    )
+    delta_pct: float | None = Field(
+        default=None, description="Percent change if present (e.g., -32%)"
+    )
+    baseline_text: str | None = Field(
+        default=None, description="Baseline description (e.g., vs last half)"
+    )
+    notes: str | None = Field(
+        default=None, description="Short explanation or qualifiers"
+    )
+    confidence: float | None = Field(
+        default=None, description="Confidence in the refinement (0-1)"
+    )
+    source_ids: list[str] = Field(
+        default_factory=list,
+        description="IDs of the candidate metrics used to derive this metric",
+    )
+    source_snippet: str | None = Field(
+        default=None,
+        description="Exact text snippet the value was taken from",
+    )
+
+
+class MetricRefinementOutput(BaseModel):
+    """Structured output for per-slide metric refinement."""
+
+    metrics: list[RefinedMetric] = Field(
+        default_factory=list,
+        description="Refined metrics for the slide",
+    )
+
+
+# =============================================================================
+# Metric Context Output
+# =============================================================================
+
+
+class MetricContextItem(BaseModel):
+    """Context fields for a metric (period/brand/baseline)."""
+
+    metric_id: str = Field(description="Metric candidate ID")
+    period_label: str | None = Field(
+        default=None, description="Period label (e.g., H2 FY25, Q1 2025)"
+    )
+    period_start: str | None = Field(
+        default=None, description="Period start date (ISO-8601), if available"
+    )
+    period_end: str | None = Field(
+        default=None, description="Period end date (ISO-8601), if available"
+    )
+    brand: str | None = Field(
+        default=None, description="Brand or client associated with the metric"
+    )
+    baseline_text: str | None = Field(
+        default=None, description="Baseline text (e.g., vs last quarter)"
+    )
+    baseline_type: str | None = Field(
+        default=None, description="Baseline type (e.g., yoy, qoq, mom, target)"
+    )
+    source_snippet: str | None = Field(
+        default=None, description="Text snippet supporting the context"
+    )
+    confidence: float | None = Field(
+        default=None, description="Confidence for the context extraction (0-1)"
+    )
+
+
+class MetricContextOutput(BaseModel):
+    """Structured output for per-slide metric context."""
+
+    contexts: list[MetricContextItem] = Field(
+        default_factory=list,
+        description="Context items for metrics on the slide",
+    )
+
+
+# =============================================================================
 # Chart Reconstruction Output
 # =============================================================================
 

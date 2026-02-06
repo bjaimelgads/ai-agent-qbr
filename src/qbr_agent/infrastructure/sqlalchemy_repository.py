@@ -21,6 +21,7 @@ _METADATA = MetaData()
 _DOCUMENTS: Table | None = None
 _CHUNKS: Table | None = None
 _SLIDES: Table | None = None
+_CLIENTS: Table | None = None
 _CHUNKS_FTS: Table | None = None
 _WARNED_MISSING_TABLES = False
 _WARNED_MISSING_FTS = False
@@ -35,7 +36,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
     fts_table: str = "chunks_fts"
 
     async def _ensure_reflection(self, session: AsyncSession) -> None:
-        global _DOCUMENTS, _CHUNKS, _SLIDES, _CHUNKS_FTS, _WARNED_MISSING_TABLES
+        global _DOCUMENTS, _CHUNKS, _SLIDES, _CLIENTS, _CHUNKS_FTS, _WARNED_MISSING_TABLES
         if (
             _DOCUMENTS is not None
             and _CHUNKS is not None
@@ -49,6 +50,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
         _DOCUMENTS = _METADATA.tables.get("documents")
         _CHUNKS = _METADATA.tables.get("chunks")
         _SLIDES = _METADATA.tables.get("slides")
+        _CLIENTS = _METADATA.tables.get("clients")
         _CHUNKS_FTS = _METADATA.tables.get(self.fts_table)
         if not _WARNED_MISSING_TABLES and (
             _DOCUMENTS is None or _CHUNKS is None or _SLIDES is None
@@ -77,6 +79,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             if _DOCUMENTS is None:
                 return []
             documents = _DOCUMENTS
+            clients = _CLIENTS
             file_path_col = documents.c.get("file_path")
             if file_path_col is None:
                 file_path_col = literal(None).label("file_path")
@@ -85,17 +88,29 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 period_col = documents.c.get("report_period")
             if period_col is None:
                 period_col = literal(None).label("period")
+            client_name_col = None
+            if clients is not None:
+                client_name_col = clients.c.get("name")
+            if client_name_col is None:
+                client_name_col = documents.c.get("client_name")
+            if client_name_col is None:
+                client_name_col = literal(None).label("client_name")
             query = select(
                 documents.c.id,
                 documents.c.filename,
                 file_path_col,
-                documents.c.client_name,
+                client_name_col.label("client_name"),
                 period_col,
                 documents.c.status,
                 documents.c.executive_summary,
             )
+            if clients is not None and documents.c.get("client_id") is not None:
+                query = query.outerjoin(
+                    clients,
+                    clients.c.id == documents.c.client_id,
+                )
             if client_name:
-                query = query.where(documents.c.client_name.ilike(f"%{client_name}%"))
+                query = query.where(client_name_col.ilike(f"%{client_name}%"))
             if status:
                 query = query.where(documents.c.status == status)
             query = query.limit(limit)
@@ -127,6 +142,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             if _DOCUMENTS is None:
                 return []
             documents = _DOCUMENTS
+            clients = _CLIENTS
             file_path_col = documents.c.get("file_path")
             if file_path_col is None:
                 file_path_col = literal(None).label("file_path")
@@ -135,15 +151,27 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 period_col = documents.c.get("report_period")
             if period_col is None:
                 period_col = literal(None).label("period")
+            client_name_col = None
+            if clients is not None:
+                client_name_col = clients.c.get("name")
+            if client_name_col is None:
+                client_name_col = documents.c.get("client_name")
+            if client_name_col is None:
+                client_name_col = literal(None).label("client_name")
             query = select(
                 documents.c.id,
                 documents.c.filename,
                 file_path_col,
-                documents.c.client_name,
+                client_name_col.label("client_name"),
                 period_col,
                 documents.c.status,
                 documents.c.executive_summary,
             ).where(documents.c.id.in_(ids))
+            if clients is not None and documents.c.get("client_id") is not None:
+                query = query.outerjoin(
+                    clients,
+                    clients.c.id == documents.c.client_id,
+                )
             result = await session.execute(query)
             rows = result.fetchall()
             return [

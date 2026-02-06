@@ -5,6 +5,7 @@ from __future__ import annotations
 from penguiflow.catalog import tool
 from penguiflow.planner import ToolContext
 
+from ai_agent_qbr.infrastructure.region_filter import filter_items_by_region
 from ai_agent_qbr.models import Query, SearchResult, SearchResults
 from qbr_agent.application.use_cases import HybridSearchKnowledge
 from qbr_agent.domain.value_objects import DocumentId
@@ -40,6 +41,10 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
             top_k=top_k,
             min_score=min_score,
         )
+
+    region_focus = ctx.tool_context.get("region_focus")
+    if isinstance(region_focus, str):
+        results = filter_items_by_region(results, region_focus)
 
     include_path = bool(ctx.tool_context.get("retrieval_include_document_path", False))
     return await _format_results(results, use_case, include_path)

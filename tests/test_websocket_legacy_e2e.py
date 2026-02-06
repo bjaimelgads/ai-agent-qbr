@@ -77,11 +77,17 @@ def _setup_db(db_url: str) -> None:
         engine = create_async_engine(db_url)
         metadata = MetaData()
         Table(
+            "clients",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(255), unique=True),
+        )
+        Table(
             "documents",
             metadata,
             Column("id", Integer, primary_key=True),
             Column("filename", String(255)),
-            Column("client_name", String(255)),
+            Column("client_id", Integer),
             Column("period", String(100)),
             Column("status", String(50)),
             Column("executive_summary", Text),
@@ -134,10 +140,16 @@ def _setup_db(db_url: str) -> None:
             ]
 
             await conn.execute(
+                metadata.tables["clients"].insert().values(
+                    id=1,
+                    name="Acme",
+                )
+            )
+            await conn.execute(
                 metadata.tables["documents"].insert().values(
                     id=1,
                     filename="qbr_h1.pptx",
-                    client_name="Acme",
+                    client_id=1,
                     period="H1",
                     status="enhanced",
                     executive_summary="H1 summary",
@@ -147,7 +159,7 @@ def _setup_db(db_url: str) -> None:
                 metadata.tables["documents"].insert().values(
                     id=2,
                     filename="qbr_h2.pptx",
-                    client_name="Acme",
+                    client_id=1,
                     period="H2",
                     status="enhanced",
                     executive_summary="H2 summary",
@@ -203,9 +215,10 @@ def test_legacy_websocket_contract_and_rerank(tmp_path):
     db_url = f"sqlite+aiosqlite:///{tmp_path / 'qbr_legacy_e2e.db'}"
     _setup_db(db_url)
 
+    use_stub_llm = os.getenv("USE_STUB_LLM", "true").lower() in {"1", "true", "yes", "on"}
     config = Config(
-        output_protocol="websocket",
-        use_stub_llm=True,
+        output_protocol="legacy",
+        use_stub_llm=use_stub_llm,
         database_url=db_url,
         embeddings_backend="hash",
         embeddings_model="ignored",

@@ -12,7 +12,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "bash ./setup.sh",
+	"postCreateCommand": "bash ./qbr_extraction/setup.sh",
 
 	// Configure tool-specific properties.
 	"customizations": {
@@ -27,24 +27,10 @@
 		"UV_PYTHON": "3.12"
 	},
 
-	// Allow access to host files (Windows). These mounts are best-effort.
-	"mounts": [
-		"source=${localEnv:USERPROFILE},target=/host/user,type=bind,consistency=cached",
-		"source=${localEnv:SystemDrive}\\,target=/host/c,type=bind,consistency=cached"
-	],
+	// Windows-only mounts removed for Linux compatibility.
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
-	"forwardPorts": [1455, 1456],
-	"portsAttributes": {
-		"1455": {
-			"label": "Codex Auth Callback",
-			"onAutoForward": "notify"
-		},
-		"1456": {
-			"label": "Codex Auth Proxy",
-			"onAutoForward": "notify"
-		}
-	},
-	"runArgs": ["-p", "1455:1455", "-p", "1456:1456"]
+	"forwardPorts": [1455, 1456]
+
 }

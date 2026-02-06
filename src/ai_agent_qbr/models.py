@@ -59,3 +59,25 @@ class ComparisonIntentResult(BaseModel):
 
     comparison_intent: bool
     reason: str | None = None
+
+
+class RegionFilterVerificationArgs(BaseModel):
+    """Arguments for region filter verification."""
+
+    question: str
+
+
+class RegionFilterVerificationResult(BaseModel):
+    """Region filter verification result."""
+
+    region_focus: str | None = None
+    needs_clarification: bool = False
+    reason: str | None = None
+    confidence: float | None = None
+
+
+class MetricQueryArgs(BaseModel):
+    """Arguments for metric query tool."""
+
+    question: str
+    debug: bool = False

@@ -12,6 +12,8 @@ import json
 import os
 import re
 import zipfile
+import time
+from dataclasses import replace
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -29,7 +31,7 @@ from kreuzberg import (
     OcrConfig,
     PageConfig,
 )
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker
 
 from qbr_intelligence.db.models import (
@@ -37,20 +39,58 @@ from qbr_intelligence.db.models import (
     Chart,
     ChartType,
     Chunk,
+    Client,
     Document,
     DocumentStatus,
     Entity,
     Image,
     Keyword,
     Metric,
+    MetricAlias,
+    MetricCatalog,
+    Region,
+    RegionCountry,
+    Period,
     Slide,
     SlideType,
 )
 from qbr_intelligence.llm.modules import (
+    MetricDeduplicator,
+    MetricReviewer,
     QBREnhancementPipeline,
+    ExecutiveSummarizer,
     create_lm,
+    MetricContextExtractor,
 )
 from qbr_intelligence.pipeline.embeddings import EmbeddingSettings
+from qbr_intelligence.pipeline.metric_context import (
+    DocumentContext,
+    HybridMetricContextStrategy,
+    LLMMetricsContextStrategy,
+    RuleBasedMetricContextStrategy,
+    apply_context_strategies,
+    infer_baseline_type,
+)
+from qbr_intelligence.pipeline.metric_scanner import (
+    MetricCandidate,
+    MetricScanArtifacts,
+    MetricScanner,
+    _metric_type_from_unit,
+    _new_metric_id,
+    build_metric_dictionary,
+)
+from qbr_intelligence.metrics.adapters import to_metric_candidate
+from qbr_intelligence.metrics.catalog import build_metric_catalog, build_metric_catalog_from_db
+from qbr_intelligence.metrics.pipeline import MetricExtractionPipeline, PipelineConfig
+from qbr_intelligence.metrics.parsing import parse_pptx_deck, compute_deck_hash
+from qbr_intelligence.metrics.adjudicator import LLMAdjudicator
+from qbr_intelligence.metrics.regions import (
+    EMEA_COUNTRIES,
+    REGION_EMEA,
+    REGION_US,
+    infer_country_from_text,
+    infer_region_from_text,
+)
 from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
@@ -66,6 +106,7 @@ class QBRProcessor:
 
     CHUNK_MAX_CHARS = 1500
     CHUNK_OVERLAP = 200
+    DOCUMENT_URLS_FILENAME = "document_urls.json"
 
     def __init__(
         self,
@@ -98,6 +139,14 @@ class QBRProcessor:
         self.engine = create_engine(database_url, echo=False)
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
+        self._ensure_metric_columns()
+        self._ensure_document_columns()
+        self._seed_clients()
+        self._client_names = self._load_client_names()
+        self._seed_metric_catalog()
+        self._seed_regions()
+        self._region_map = self._load_region_map()
+        self._metric_catalog_map = self._load_metric_catalog_map()
 
         # Initialize LLM (will be created when needed)
         self.llm_model = llm_model
@@ -105,6 +154,8 @@ class QBRProcessor:
 
         # Enhancement pipeline (lazy loaded)
         self._enhancement_pipeline: QBREnhancementPipeline | None = None
+        self._adjudicator_debug_count = 0
+        self._llm_metric_timing: dict | None = None
 
     @property
     def lm(self):
@@ -122,6 +173,120 @@ class QBRProcessor:
         if self._enhancement_pipeline is None:
             self._enhancement_pipeline = QBREnhancementPipeline(lm=self.lm)
         return self._enhancement_pipeline
+
+    def _call_llm_text(self, prompt: str) -> str:
+        """Best-effort text completion call for lightweight adjudication."""
+        try:
+            lm = self.lm
+        except Exception:
+            return ""
+        debug_enabled = (os.getenv("METRIC_ADJUDICATOR_DEBUG") or "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        def _extract_text(response) -> str:
+            if isinstance(response, str):
+                return response
+            if isinstance(response, (list, tuple)) and response:
+                if isinstance(response[0], str):
+                    return response[0]
+            if isinstance(response, dict):
+                choices = response.get("choices")
+                if choices:
+                    choice = choices[0]
+                    if isinstance(choice, dict):
+                        message = choice.get("message") or {}
+                        if isinstance(message, dict) and message.get("content"):
+                            return message["content"]
+                        if choice.get("text"):
+                            return choice["text"]
+                if response.get("content"):
+                    return response["content"]
+            choices = getattr(response, "choices", None)
+            if choices:
+                choice = choices[0]
+                message = getattr(choice, "message", None)
+                if message is not None:
+                    content = getattr(message, "content", None)
+                    if isinstance(content, str):
+                        return content
+                text = getattr(choice, "text", None)
+                if isinstance(text, str):
+                    return text
+            for attr in ("text", "completion", "content", "output_text"):
+                value = getattr(response, attr, None)
+                if isinstance(value, str) and value.strip():
+                    return value
+            return ""
+        for method_name in ("request", "complete", "__call__"):
+            method = getattr(lm, method_name, None)
+            if not callable(method):
+                continue
+            try:
+                response = method(prompt)
+            except Exception:
+                continue
+            if debug_enabled and self._adjudicator_debug_count < 3:
+                summary = f"type={type(response).__name__}"
+                if isinstance(response, dict):
+                    summary += f" keys={list(response.keys())}"
+                print(f"  [Metric Adjudicator Debug] response {summary}")
+                self._adjudicator_debug_count += 1
+            text = _extract_text(response)
+            if text:
+                return text
+            try:
+                return str(response)
+            except Exception:
+                continue
+        return ""
+
+    def _ensure_metric_columns(self) -> None:
+        if self.engine.dialect.name != "sqlite":
+            return
+        inspector = inspect(self.engine)
+        if "metrics" not in inspector.get_table_names():
+            return
+        existing = {col["name"] for col in inspector.get_columns("metrics")}
+        needed = {
+            "metric_catalog_id": "INTEGER",
+            "period_label": "TEXT",
+            "period_start": "TEXT",
+            "period_end": "TEXT",
+            "brand": "TEXT",
+            "baseline_text": "TEXT",
+            "baseline_type": "TEXT",
+            "llm_context_label": "TEXT",
+            "period_id": "INTEGER",
+            "region_id": "INTEGER",
+            "country": "TEXT",
+        }
+        missing = {name: ddl for name, ddl in needed.items() if name not in existing}
+        if not missing:
+            return
+        with self.engine.begin() as conn:
+            for name, ddl in missing.items():
+                conn.execute(text(f"ALTER TABLE metrics ADD COLUMN {name} {ddl}"))
+
+    def _ensure_document_columns(self) -> None:
+        if self.engine.dialect.name != "sqlite":
+            return
+        inspector = inspect(self.engine)
+        if "documents" not in inspector.get_table_names():
+            return
+        existing = {col["name"] for col in inspector.get_columns("documents")}
+        needed = {
+            "half": "TEXT",
+            "client_id": "INTEGER",
+            "region_id": "INTEGER",
+        }
+        missing = {name: ddl for name, ddl in needed.items() if name not in existing}
+        if not missing:
+            return
+        with self.engine.begin() as conn:
+            for name, ddl in missing.items():
+                conn.execute(text(f"ALTER TABLE documents ADD COLUMN {name} {ddl}"))
 
     def create_extraction_config(self) -> ExtractionConfig:
         """Create Kreuzberg extraction configuration."""
@@ -170,11 +335,46 @@ class QBRProcessor:
         print(f"  - Images: {len(result.images) if result.images else 0}")
         print(f"  - Chunks: {result.get_chunk_count()}")
 
+        # Strip Notes blocks immediately after extraction to keep downstream metrics clean.
+        try:
+            result.content = self._strip_notes_blocks(result.content)
+        except Exception:
+            pass
+
         return result
+
+    @staticmethod
+    def _build_content_from_pages(pages: list[dict]) -> str:
+        """Rebuild raw content from page blocks."""
+        blocks: list[str] = []
+        for page in pages:
+            page_num = page.get("page_number")
+            page_text = (page.get("content") or "").strip()
+            blocks.append(f"<!-- PAGE {page_num} -->\n{page_text}\n")
+        return "\n".join(blocks).strip()
+
+    @staticmethod
+    def _select_pages(
+        pages: list[dict],
+        *,
+        slide_range: tuple[int, int] | None = None,
+        max_slides: int | None = None,
+    ) -> list[dict]:
+        """Filter pages by range or max count, preserving order."""
+        if not pages:
+            return pages
+        if slide_range is not None:
+            start, end = slide_range
+            return [page for page in pages if start <= int(page.get("page_number", 0)) <= end]
+        if max_slides is not None:
+            ordered = sorted(pages, key=lambda item: int(item.get("page_number", 0)))
+            return ordered[:max_slides]
+        return pages
 
     def parse_slides(self, content: str) -> list[dict]:
         """Parse content into individual slides."""
         slides = []
+        content = content.replace("\r\n", "\n")
         pattern = r"<!-- PAGE (\d+) -->"
         parts = re.split(pattern, content)
 
@@ -183,11 +383,19 @@ class QBRProcessor:
                 slide_num = int(parts[i])
                 slide_content = parts[i + 1].strip()
 
-                # Extract speaker notes
-                notes_match = re.search(
-                    r"### Notes:\s*(.*?)(?=\n\n|$)", slide_content, re.DOTALL
-                )
-                speaker_notes = notes_match.group(1).strip() if notes_match else None
+                # Extract speaker notes (robust split + regex fallback)
+                speaker_notes = None
+                if "### Notes:" in slide_content:
+                    head, tail = slide_content.split("### Notes:", 1)
+                    slide_content = head.rstrip()
+                    speaker_notes = tail.strip() or None
+                else:
+                    notes_match = re.search(
+                        r"### Notes:\s*(.*?)(?=(?:\n\n)|$)", slide_content, re.DOTALL
+                    )
+                    speaker_notes = notes_match.group(1).strip() if notes_match else None
+                    if notes_match:
+                        slide_content = slide_content[:notes_match.start()].rstrip()
 
                 # Count images
                 image_refs = re.findall(r"!\[.*?\]\(.*?\)", slide_content)
@@ -255,6 +463,29 @@ class QBRProcessor:
 
         return metrics
 
+    @staticmethod
+    def _strip_notes_blocks(content: str) -> str:
+        """Remove ### Notes: blocks up to the next page marker."""
+        if not content:
+            return content
+        content = content.replace("\r\n", "\n")
+        removed = 0
+        out_parts: list[str] = []
+        idx = 0
+        while True:
+            start = content.find("### Notes:", idx)
+            if start == -1:
+                out_parts.append(content[idx:])
+                break
+            out_parts.append(content[idx:start])
+            end = content.find("<!-- PAGE", start)
+            removed += 1
+            if end == -1:
+                idx = len(content)
+                break
+            idx = end
+        return "".join(out_parts)
+
     def detect_charts(self, slides: list[dict]) -> list[dict]:
         """Detect chart patterns in slides."""
         charts = []
@@ -311,6 +542,8 @@ class QBRProcessor:
         business_terms: set[str],
         output_dir: Path,
         chunks: list[dict] | None = None,
+        content_override: str | None = None,
+        pages_override: list[dict] | None = None,
     ) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
         images_dir = output_dir / "images"
@@ -318,14 +551,23 @@ class QBRProcessor:
 
         chunks_source = chunks if chunks is not None else (result.chunks or [])
 
-        slide_texts = self._load_pptx_slide_texts(file_path) if file_path.suffix.lower() == ".pptx" else []
-        pages = self._split_pages(result.content)
-        remap = self._build_page_remap(pages, slide_texts) if slide_texts and pages else None
+        raw_content_export = content_override or result.content
+        raw_content_export = self._strip_notes_blocks(raw_content_export)
+        pages = pages_override or self._split_pages(raw_content_export)
+        slide_texts = (
+            self._load_pptx_slide_texts(file_path)
+            if file_path.suffix.lower() == ".pptx" and pages_override is None
+            else []
+        )
+        remap = (
+            self._build_page_remap(pages, slide_texts)
+            if slide_texts and pages and pages_override is None
+            else None
+        )
 
         slides_export = slides
         metrics_export = metrics
         charts_export = charts
-        raw_content_export = result.content
 
         if remap:
             pages_by_num = {page["page_number"]: page for page in pages}
@@ -365,7 +607,7 @@ class QBRProcessor:
             "extraction_timestamp": datetime.now().isoformat(),
             "kreuzberg_version": kreuzberg.version("kreuzberg"),
             "mime_type": result.mime_type,
-            "page_count": result.get_page_count(),
+            "page_count": len(pages) if pages is not None else result.get_page_count(),
             "detected_languages": result.detected_languages,
             "table_count": len(result.tables),
             "image_count": len(result.images) if result.images else 0,
@@ -504,6 +746,506 @@ class QBRProcessor:
         if isinstance(value, bytes):
             return base64.b64encode(value).decode("ascii")
         return value
+
+    @staticmethod
+    def _metric_candidate_to_dict(metric) -> dict:
+        return {
+            "id": metric.metric_id,
+            "name": metric.name,
+            "raw_value": metric.raw_value,
+            "normalized_value": metric.normalized_value,
+            "unit": metric.unit,
+            "metric_type": metric.metric_type,
+            "category": metric.category,
+            "raw_context": metric.raw_context,
+            "slide_number": metric.slide_number,
+            "source": metric.source,
+            "metric_catalog_id": metric.metric_catalog_id,
+            "metric_catalog_slug": metric.metric_catalog_slug,
+            "extraction_confidence": metric.extraction_confidence,
+            "metadata": metric.metadata,
+            "period_label": metric.period_label,
+            "period_start": metric.period_start,
+            "period_end": metric.period_end,
+            "brand": metric.brand,
+            "baseline_text": metric.baseline_text,
+            "baseline_type": metric.baseline_type,
+            "llm_context_label": metric.llm_context_label,
+        }
+
+    @staticmethod
+    def _extract_context_window(
+        text: str,
+        anchors: list[str],
+        *,
+        line_window: int = 1,
+        max_chars: int = 320,
+    ) -> str | None:
+        if not text:
+            return None
+        anchors_clean = [anchor.strip() for anchor in anchors if anchor and anchor.strip()]
+        if not anchors_clean:
+            return None
+        lines = text.splitlines()
+        for idx, line in enumerate(lines):
+            line_lower = line.lower()
+            if any(anchor.lower() in line_lower for anchor in anchors_clean):
+                start = max(0, idx - line_window)
+                end = min(len(lines), idx + line_window + 1)
+                snippet = " ".join(l.strip() for l in lines[start:end] if l.strip())
+                return snippet[:max_chars]
+        text_lower = text.lower()
+        for anchor in anchors_clean:
+            pos = text_lower.find(anchor.lower())
+            if pos >= 0:
+                start = max(0, pos - max_chars // 2)
+                end = min(len(text), pos + max_chars // 2)
+                snippet = text[start:end].replace("\n", " ").strip()
+                return snippet[:max_chars]
+        return None
+
+    @staticmethod
+    def _estimate_tokens(text: str) -> int:
+        if not text:
+            return 0
+        # Rough heuristic: ~1 token per 4 characters.
+        return max(1, len(text) // 4)
+
+    @staticmethod
+    def _build_metric_review_context(
+        *,
+        metric: MetricCandidate,
+        slide: dict,
+        catalog_entry: object | None,
+    ) -> str:
+        anchors = [metric.name, metric.raw_value]
+        if catalog_entry is not None:
+            aliases = [alias.alias for alias in getattr(catalog_entry, "aliases", [])]
+            anchors.extend(aliases[:6])
+
+        snippets: list[tuple[str, str]] = []
+        if metric.raw_context:
+            snippets.append(("raw_context", metric.raw_context.strip()))
+
+        slide_text = slide.get("raw_text") or ""
+        slide_snippet = QBRProcessor._extract_context_window(slide_text, anchors)
+        if slide_snippet:
+            snippets.append(("slide_text", slide_snippet))
+
+        if not snippets and slide_text:
+            fallback = slide_text.replace("\n", " ").strip()
+            snippets.append(("slide_text", fallback[:320]))
+
+        return "\n".join(f"{label}: {text}" for label, text in snippets if text)
+
+    @staticmethod
+    def _augment_duplicate_metric_context(
+        metrics: list[MetricCandidate],
+        slides: list[dict],
+    ) -> list[MetricCandidate]:
+        if not metrics:
+            return metrics
+        slide_lookup = {s.get("slide_number"): s for s in slides}
+        groups: dict[str, list[MetricCandidate]] = {}
+        for metric in metrics:
+            name = metric.name or metric.metric_catalog_slug or metric.metric_type or ""
+            name_key = name.strip().lower()
+            groups.setdefault(name_key, []).append(metric)
+
+        updated: list[MetricCandidate] = []
+        for metric in metrics:
+            name = metric.name or metric.metric_catalog_slug or metric.metric_type or ""
+            key = name.strip().lower()
+            group = groups.get(key, [])
+            if len(group) < 2:
+                updated.append(metric)
+                continue
+
+            slide_text = ""
+            if metric.slide_number is not None:
+                slide_text = (slide_lookup.get(metric.slide_number) or {}).get(
+                    "raw_text", ""
+                )
+            anchors = [metric.name, metric.raw_value]
+            slide_snippet = QBRProcessor._extract_context_window(
+                slide_text or "", anchors, line_window=2, max_chars=400
+            )
+            if not slide_snippet and slide_text:
+                slide_snippet = slide_text.replace("\n", " ").strip()[:400]
+
+            parts: list[str] = []
+            if metric.raw_context:
+                cleaned_context = re.sub(r"<[^>]+>", " ", metric.raw_context)
+                cleaned_context = re.sub(r"\s+", " ", cleaned_context).strip()
+                if cleaned_context:
+                    parts.append(cleaned_context)
+            if slide_snippet:
+                cleaned = re.sub(r"<[^>]+>", " ", slide_snippet)
+                cleaned = re.sub(r"\s+", " ", cleaned).strip()
+                candidate = cleaned
+                if candidate and candidate not in parts:
+                    parts.append(candidate)
+
+            if not parts:
+                updated.append(metric)
+                continue
+
+            combined = " | ".join(parts)
+            updated.append(replace(metric, raw_context=combined[:400]))
+
+        return updated
+
+    @staticmethod
+    def _log_duplicate_metric_context(metrics: list[MetricCandidate]) -> None:
+        if not metrics:
+            print("    (no metrics)")
+            return
+        groups: dict[str, list[MetricCandidate]] = {}
+        for metric in metrics:
+            name = metric.name or metric.metric_catalog_slug or metric.metric_type or ""
+            name_key = name.strip().lower()
+            groups.setdefault(name_key, []).append(metric)
+
+        duplicate_groups = [g for g in groups.values() if len(g) > 1]
+        print(f"    duplicate_groups={len(duplicate_groups)}")
+        sample_limit = 3
+        shown = 0
+        for group in duplicate_groups:
+            if shown >= sample_limit:
+                break
+            sample = group[0]
+            raw_preview = (sample.raw_context or "").replace("\n", " ").strip()[:160]
+            print(
+                "    - "
+                f"{sample.name} value={sample.normalized_value} unit={sample.unit} "
+                f"count={len(group)} raw_context='{raw_preview}'"
+            )
+            shown += 1
+
+    def _refine_metrics_with_llm(
+        self,
+        *,
+        metrics: list,
+        slides: list[dict],
+        metric_dictionary: object,
+    ) -> list:
+        if not metrics:
+            return metrics
+        start_time = time.perf_counter()
+        limit_env = (os.getenv("LLM_METRIC_SLIDE_LIMIT") or "").strip()
+        slide_limit = int(limit_env) if limit_env.isdigit() else None
+        slides_env = (os.getenv("LLM_METRIC_SLIDES") or "").strip()
+        slide_allowlist: set[int] | None = None
+        if slides_env:
+            parsed = []
+            for token in slides_env.split(","):
+                token = token.strip()
+                if not token:
+                    continue
+                if token.isdigit():
+                    parsed.append(int(token))
+            if parsed:
+                slide_allowlist = set(parsed)
+        slide_lookup = {s.get("slide_number"): s for s in slides}
+        catalog_entries = self._load_metric_catalog_entries()
+        catalog_by_name = {entry.name: entry for entry in catalog_entries}
+        dictionary_by_name = {definition.name: definition for definition in metric_dictionary.definitions}
+
+        metrics_by_group: dict[str, list] = {}
+        for metric in metrics:
+            metrics_by_group[metric.metric_id] = [metric]
+
+        reviewer = MetricReviewer(lm=self.lm)
+        refined: list = []
+        processed = 0
+        total_groups = len(metrics_by_group)
+        total_llm_tokens = 0
+        total_llm_time = 0.0
+        metric_timings: list[dict] = []
+        for metric_id, group in metrics_by_group.items():
+            metric = group[0]
+            slide_number = metric.slide_number
+            metric_name = metric.name
+            if slide_number is None:
+                refined.extend(group)
+                continue
+            if slide_allowlist is not None and slide_number not in slide_allowlist:
+                refined.extend(group)
+                continue
+            if slide_limit is not None and processed >= slide_limit:
+                refined.extend(group)
+                continue
+            slide = slide_lookup.get(slide_number, {})
+            definition = dictionary_by_name.get(metric_name)
+            catalog_entry = catalog_by_name.get(metric_name)
+            context_snippets = self._build_metric_review_context(
+                metric=group[0],
+                slide=slide,
+                catalog_entry=catalog_entry,
+            )
+
+            chosen = max(
+                group,
+                key=lambda m: (
+                    m.extraction_confidence if m.extraction_confidence is not None else -1,
+                    len(m.raw_context or ""),
+                ),
+            )
+            metric_payload = {
+                "id": chosen.metric_id,
+                "name": chosen.name,
+                "raw_value": chosen.raw_value,
+                "normalized_value": chosen.normalized_value,
+                "unit": chosen.unit,
+                "raw_context": (chosen.raw_context or "")[:400],
+                "slide_number": chosen.slide_number,
+                "source": chosen.source,
+                "category": chosen.category,
+                "period_label": chosen.period_label,
+                "period_start": chosen.period_start,
+                "period_end": chosen.period_end,
+                "brand": chosen.brand,
+                "baseline_text": chosen.baseline_text,
+                "baseline_type": chosen.baseline_type,
+                "extraction_confidence": chosen.extraction_confidence,
+            }
+            catalog_payload = {
+                "name": metric_name,
+                "expected_unit": getattr(catalog_entry, "expected_unit", None)
+                or (definition.unit_hint if definition else None),
+                "aliases": [alias.alias for alias in getattr(catalog_entry, "aliases", [])],
+                "disambiguation": list(getattr(catalog_entry, "disambiguation", ())),
+                "metric_id": getattr(catalog_entry, "metric_id", None),
+            }
+            try:
+                llm_start = time.perf_counter()
+                result = reviewer(
+                    metric_catalog=catalog_payload,
+                    metric=metric_payload,
+                    context_snippets=context_snippets,
+                )
+                llm_elapsed = time.perf_counter() - llm_start
+            except Exception as exc:
+                print(f"  [Metric Refine] LLM failed on slide {slide_number}: {exc}")
+                refined.extend(group)
+                continue
+            processed += 1
+            prompt_tokens = (
+                self._estimate_tokens(json.dumps(catalog_payload))
+                + self._estimate_tokens(json.dumps(metric_payload))
+                + self._estimate_tokens(context_snippets)
+            )
+            total_llm_tokens += prompt_tokens
+            total_llm_time += llm_elapsed
+            metric_timings.append(
+                {
+                    "metric_name": metric_name,
+                    "slide_number": slide_number,
+                    "candidates": len(group),
+                    "time_seconds": round(llm_elapsed, 4),
+                    "tokens_estimate": prompt_tokens,
+                }
+            )
+            print(
+                "  [Metric Refine] "
+                f"metric={metric_name} slide={slide_number} "
+                f"time={llm_elapsed:.2f}s tokens~{prompt_tokens}"
+            )
+
+            review = getattr(result, "review", None)
+            unit = getattr(review, "unit", None) if review is not None else None
+            value = getattr(review, "normalized_value", None) if review is not None else None
+            notes = getattr(review, "notes", None) if review is not None else None
+            confidence = getattr(review, "confidence", None) if review is not None else None
+            source_snippet = getattr(review, "source_snippet", None) if review is not None else None
+            context_label = getattr(review, "context_label", None) if review is not None else None
+
+            final_unit = unit or chosen.unit or (definition.unit_hint if definition else None)
+            final_value = value if value is not None else chosen.normalized_value
+            raw_value = chosen.raw_value or ""
+            if final_value is not None:
+                raw_value = str(final_value)
+                if final_unit == "currency" and raw_value and not raw_value.startswith("$"):
+                    raw_value = f"${raw_value}"
+                if final_unit == "percent" and raw_value and not raw_value.endswith("%"):
+                    raw_value = f"{raw_value}%"
+
+            metadata = dict(chosen.metadata or {})
+            metadata["llm_review"] = {
+                "notes": notes,
+                "confidence": confidence,
+                "source_snippet": source_snippet,
+                "context_label": context_label,
+            }
+
+            refined.append(
+                MetricCandidate(
+                    metric_id=_new_metric_id(),
+                    name=chosen.name,
+                    raw_value=raw_value,
+                    normalized_value=final_value,
+                    unit=final_unit,
+                    raw_context=source_snippet or chosen.raw_context,
+                    slide_number=slide_number,
+                    metric_type=_metric_type_from_unit(final_unit),
+                    source="llm_refined",
+                    category=chosen.category,
+                    extraction_confidence=confidence or chosen.extraction_confidence,
+                    metadata=metadata,
+                    baseline_text=chosen.baseline_text,
+                    baseline_type=chosen.baseline_type,
+                    period_label=chosen.period_label,
+                    period_start=chosen.period_start,
+                    period_end=chosen.period_end,
+                    brand=chosen.brand,
+                    metric_catalog_id=chosen.metric_catalog_id,
+                    metric_catalog_slug=chosen.metric_catalog_slug,
+                    llm_context_label=context_label,
+                )
+            )
+
+        elapsed = time.perf_counter() - start_time
+        self._llm_metric_timing = {
+            "total_groups": total_groups,
+            "processed_groups": processed,
+            "total_time_seconds": round(total_llm_time, 4),
+            "total_tokens_estimate": total_llm_tokens,
+            "per_metric": metric_timings,
+        }
+        print(
+            "  [Metric Refine] "
+            f"groups={total_groups} processed={processed} completed={elapsed:.2f}s "
+            f"llm_time={total_llm_time:.2f}s tokens~{total_llm_tokens}"
+        )
+        return refined or metrics
+
+    def _apply_metric_context_strategies(
+        self,
+        *,
+        metrics: list[MetricCandidate],
+        slides: list[dict],
+        client_name: str | None,
+        report_period: str | None,
+        stage: str,
+        allow_llm: bool,
+    ) -> list[MetricCandidate]:
+        if not metrics:
+            return metrics
+        strategies_env = (os.getenv("METRIC_CONTEXT_STRATEGIES") or "hybrid").strip()
+        strategy_names = [s.strip().lower() for s in strategies_env.split(",") if s.strip()]
+        document_context = DocumentContext(client_name=client_name, report_period=report_period)
+        rule_strategy = RuleBasedMetricContextStrategy()
+        strategies = []
+        for name in strategy_names:
+            if name == "rule_based":
+                strategies.append(rule_strategy)
+            elif name == "llm":
+                if not allow_llm:
+                    continue
+                strategies.append(LLMMetricsContextStrategy(MetricContextExtractor(lm=self.lm)))
+            elif name == "hybrid":
+                if not allow_llm:
+                    strategies.append(rule_strategy)
+                    continue
+                llm_strategy = LLMMetricsContextStrategy(MetricContextExtractor(lm=self.lm))
+                strategies.append(
+                    HybridMetricContextStrategy(
+                        rule_strategy=rule_strategy,
+                        llm_strategy=llm_strategy,
+                    )
+                )
+        if not strategies:
+            return metrics
+        return apply_context_strategies(
+            metrics=metrics,
+            slides=slides,
+            document_context=document_context,
+            strategies=strategies,
+            stage=stage,
+        )
+
+    @staticmethod
+    def _infer_period_fields(period_label: str | None) -> dict:
+        if not period_label:
+            return {"period_type": None, "period_number": None, "fiscal_year": None}
+        text = period_label.strip().upper()
+        match = re.search(r"\bH([12])\s*FY(\d{2,4})\b", text)
+        if match:
+            return {
+                "period_type": "half",
+                "period_number": int(match.group(1)),
+                "fiscal_year": QBRProcessor._parse_year(match.group(2)),
+            }
+        match = re.search(r"\bQ([1-4])\s*FY?(\d{2,4})\b", text)
+        if match:
+            return {
+                "period_type": "quarter",
+                "period_number": int(match.group(1)),
+                "fiscal_year": QBRProcessor._parse_year(match.group(2)),
+            }
+        match = re.search(r"\bFY(\d{2,4})\b", text)
+        if match:
+            return {
+                "period_type": "fy",
+                "period_number": None,
+                "fiscal_year": QBRProcessor._parse_year(match.group(1)),
+            }
+        return {"period_type": None, "period_number": None, "fiscal_year": None}
+
+    @staticmethod
+    def _parse_year(value: str) -> int:
+        year = int(value)
+        return 2000 + year if year < 100 else year
+
+    def _resolve_document_url(self, file_path: Path) -> str:
+        mapping_path = file_path.parent / self.DOCUMENT_URLS_FILENAME
+        if not mapping_path.exists():
+            return str(file_path.absolute())
+        try:
+            payload = json.loads(mapping_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            print(f"  [Document URL] Failed to read {mapping_path}: {exc}")
+            return str(file_path.absolute())
+        if not isinstance(payload, dict):
+            print(f"  [Document URL] Invalid mapping in {mapping_path}; expected JSON object.")
+            return str(file_path.absolute())
+        url = payload.get(file_path.name)
+        if isinstance(url, str) and url.strip():
+            return url.strip()
+        return str(file_path.absolute())
+
+    def _upsert_periods(self, session, metrics: list[MetricCandidate]) -> dict[tuple, Period]:
+        keys = {
+            (m.period_label, m.period_start, m.period_end)
+            for m in metrics
+            if m.period_label or m.period_start or m.period_end
+        }
+        if not keys:
+            return {}
+        labels = {k[0] for k in keys if k[0]}
+        existing = []
+        if labels:
+            existing = session.query(Period).filter(Period.period_label.in_(labels)).all()
+        period_map: dict[tuple, Period] = {
+            (p.period_label, p.start_date, p.end_date): p for p in existing
+        }
+        for period_label, period_start, period_end in keys:
+            key = (period_label, period_start, period_end)
+            if key in period_map:
+                continue
+            fields = self._infer_period_fields(period_label)
+            period = Period(
+                period_label=period_label or "Unknown",
+                period_type=fields["period_type"],
+                period_number=fields["period_number"],
+                fiscal_year=fields["fiscal_year"],
+                start_date=period_start,
+                end_date=period_end,
+            )
+            session.add(period)
+            period_map[key] = period
+        session.flush()
+        return period_map
 
     @classmethod
     def _build_chunks_from_pages(cls, pages: list[dict]) -> list[dict]:
@@ -806,6 +1548,364 @@ Categories:
         return {token for token in cleaned.split() if len(token) > 2}
 
     @staticmethod
+    def _normalize_year(raw_year: str) -> str:
+        year = raw_year.strip()
+        if len(year) == 2:
+            return f"FY{year}"
+        if len(year) == 4:
+            return f"FY{year[-2:]}"
+        return f"FY{year}"
+
+    def _infer_client_name(self, file_stem: str) -> str | None:
+        stem = file_stem.lower()
+        matches: list[tuple[int, str]] = []
+        for name in self._client_names:
+            if not name:
+                continue
+            lower = name.lower()
+            if lower in stem:
+                matches.append((len(lower), name))
+        if not matches:
+            return None
+        matches.sort(reverse=True)
+        return matches[0][1]
+
+    def _region_id_for_code(self, code: str | None) -> int | None:
+        if not code:
+            return None
+        return self._region_map.get(code)
+
+    def _infer_document_region(self, file_stem: str) -> tuple[int | None, str | None]:
+        inferred_country = infer_country_from_text(file_stem)
+        inferred_region = infer_region_from_text(file_stem)
+        region_id = self._region_id_for_code(inferred_region)
+        return region_id, inferred_country
+
+    def _infer_metric_region(
+        self,
+        metric: MetricCandidate,
+        *,
+        document_region_id: int | None,
+    ) -> tuple[int | None, str | None]:
+        qualifiers = (metric.metadata or {}).get("qualifiers") or {}
+        raw_context = metric.raw_context or ""
+        qualifier_geo = qualifiers.get("geo")
+        qualifier_country = qualifiers.get("country") or qualifiers.get("geo_country")
+
+        if qualifier_country:
+            inferred_country = qualifier_country
+        else:
+            inferred_country = infer_country_from_text(raw_context)
+
+        inferred_region = None
+        if qualifier_geo:
+            inferred_region = infer_region_from_text(qualifier_geo)
+        if not inferred_region and inferred_country:
+            inferred_region = infer_region_from_text(inferred_country)
+        if not inferred_region:
+            inferred_region = infer_region_from_text(raw_context)
+
+        region_id = self._region_id_for_code(inferred_region) or document_region_id
+        return region_id, inferred_country
+
+    def _seed_clients(self) -> None:
+        with self.SessionLocal() as session:
+            existing = session.query(Client).count()
+            if existing:
+                return
+            session.add(Client(name="Disney+"))
+            session.commit()
+
+    def _load_client_names(self) -> list[str]:
+        with self.SessionLocal() as session:
+            rows = session.query(Client.name).all()
+        return [row[0] for row in rows if row and row[0]]
+
+    def _seed_regions(self) -> None:
+        with self.SessionLocal() as session:
+            existing = session.query(Region).count()
+            if existing:
+                return
+            us = Region(code=REGION_US, name="United States")
+            emea = Region(code=REGION_EMEA, name="Europe, Middle East, and Africa")
+            session.add_all([us, emea])
+            session.flush()
+            session.add(
+                RegionCountry(
+                    region_id=us.id,
+                    country_name="United States",
+                    country_code="US",
+                )
+            )
+            for country in sorted(EMEA_COUNTRIES):
+                if country.lower() in {"uk", "uae"}:
+                    continue
+                session.add(
+                    RegionCountry(
+                        region_id=emea.id,
+                        country_name=country,
+                        country_code=None,
+                    )
+                )
+            session.commit()
+
+    def _load_region_map(self) -> dict[str, int]:
+        with self.SessionLocal() as session:
+            rows = session.query(Region.code, Region.id).all()
+        return {code: region_id for code, region_id in rows if code}
+
+    def _seed_metric_catalog(self) -> None:
+        with self.SessionLocal() as session:
+            existing = session.query(MetricCatalog).count()
+            if existing:
+                return
+            applicability_notes = {
+                "cost_per_acquisition": (
+                    "Use Spend and Acquisitions only from placements targeting users who have not installed the app. "
+                    "Exclude added value placements when computing CPA."
+                ),
+                "cost_per_install": (
+                    "Use Spend and Installs only from placements targeting users who have not installed the app. "
+                    "Exclude added value placements when computing CPI."
+                ),
+                "click_through_rate": "Clicks / Impressions for Homescreen placements.",
+                "video_completion_rate": "Completes / Impressions for Video placements.",
+            }
+            definitions = build_metric_dictionary().definitions
+            for definition in definitions:
+                if not definition.name:
+                    continue
+                slug = definition.slug or definition.name.lower().replace(" ", "_")
+                metric = MetricCatalog(
+                    name=definition.name,
+                    slug=slug,
+                    category=definition.category,
+                    default_unit=definition.unit_hint,
+                    formula=definition.formula,
+                    description=None,
+                    applicability_notes=applicability_notes.get(slug),
+                )
+                session.add(metric)
+                session.flush()
+                for pattern in definition.patterns:
+                    session.add(
+                        MetricAlias(
+                            metric_id=metric.id,
+                            alias=definition.name,
+                            pattern=pattern,
+                            priority=0,
+                            unit_override=None,
+                        )
+                    )
+            session.commit()
+
+    def _load_metric_catalog_map(self) -> dict[str, tuple[int, str]]:
+        with self.SessionLocal() as session:
+            rows = session.query(MetricCatalog.id, MetricCatalog.name, MetricCatalog.slug).all()
+        return {name: (metric_id, slug) for metric_id, name, slug in rows if name}
+
+    def _load_metric_catalog_entries(self) -> list:
+        try:
+            with self.SessionLocal() as session:
+                entries = build_metric_catalog_from_db(session)
+            return entries if entries else build_metric_catalog()
+        except Exception:
+            return build_metric_catalog()
+
+    def _load_metric_unit_map(self) -> dict[str, str]:
+        try:
+            with self.SessionLocal() as session:
+                rows = session.query(MetricCatalog.name, MetricCatalog.default_unit).all()
+            return {name: unit for name, unit in rows if name}
+        except Exception:
+            return {definition.name: definition.unit_hint for definition in build_metric_dictionary().definitions}
+
+    @staticmethod
+    def _unit_matches_expected(actual: str | None, expected: str | None) -> bool:
+        if not expected:
+            return True
+        actual = (actual or "").lower()
+        expected = expected.lower()
+        if expected == "percent":
+            return actual == "percent"
+        if expected == "currency":
+            return actual == "currency"
+        if expected == "time":
+            return actual == "time"
+        if expected == "count":
+            return actual in {"count", ""}
+        if expected == "ratio":
+            return actual == "ratio"
+        return True
+
+    def _metric_llm_selection_reasons(
+        self,
+        metric: MetricCandidate,
+        *,
+        unit_map: dict[str, str],
+        conflicting: set[str],
+    ) -> list[str]:
+        expected_unit = unit_map.get(metric.name)
+        unit_mismatch = not self._unit_matches_expected(metric.unit, expected_unit)
+        raw_value = (metric.raw_value or "").strip()
+        raw_unit_mismatch = (
+            ("%" in raw_value and metric.unit != "percent")
+            or ("$" in raw_value and metric.unit != "currency")
+        )
+        ambiguous_label = metric.name.lower() in {"rate", "ratio", "value", "index"}
+        reach_ambiguity = metric.name == "Reach" and any(
+            token in (metric.raw_context or "").lower()
+            for token in ("unique", "deduplicated", "unduplicated")
+        )
+        weak_source = metric.source == "speaker_notes"
+        conflict = metric.metric_id in conflicting
+
+        reasons = []
+        if unit_mismatch:
+            reasons.append("unit_mismatch")
+        if raw_unit_mismatch:
+            reasons.append("raw_unit_mismatch")
+        if ambiguous_label:
+            reasons.append("ambiguous_label")
+        if reach_ambiguity:
+            reasons.append("reach_ambiguity")
+        if weak_source:
+            reasons.append("weak_source")
+        if conflict:
+            reasons.append("conflict")
+        return reasons
+
+    def _select_metrics_for_llm_refine(self, metrics: list[MetricCandidate]) -> list[MetricCandidate]:
+        if not metrics:
+            return []
+        allow_env = (os.getenv("LLM_METRIC_NAME_ALLOWLIST") or "").strip()
+        allowlist = {
+            name.strip().lower()
+            for name in allow_env.split(",")
+            if name.strip()
+        }
+        unit_map = self._load_metric_unit_map()
+        by_slide_name: dict[tuple[int | None, str], list[MetricCandidate]] = {}
+        for metric in metrics:
+            by_slide_name.setdefault((metric.slide_number, metric.name), []).append(metric)
+
+        conflicting: set[str] = set()
+        for items in by_slide_name.values():
+            values = {m.normalized_value for m in items}
+            if len(values) > 1:
+                for metric in items:
+                    conflicting.add(metric.metric_id)
+
+        selected: list[MetricCandidate] = []
+        for metric in metrics:
+            if allowlist and metric.name.lower() not in allowlist:
+                continue
+            # Allowlist means always include matching metrics.
+            if allowlist:
+                selected.append(metric)
+                continue
+
+            reasons = self._metric_llm_selection_reasons(
+                metric,
+                unit_map=unit_map,
+                conflicting=conflicting,
+            )
+            if reasons:
+                selected.append(metric)
+        return selected
+
+    def _apply_metric_catalog(self, metrics: list) -> list:
+        if not metrics:
+            return metrics
+        updated = []
+        for metric in metrics:
+            catalog = self._metric_catalog_map.get(metric.name)
+            if catalog:
+                metric = replace(
+                    metric,
+                    metric_catalog_id=catalog[0],
+                    metric_catalog_slug=catalog[1],
+                )
+            updated.append(metric)
+        return updated
+
+    def _ensure_client(self, session, name: str) -> Client | None:
+        if not name:
+            return None
+        client = session.query(Client).filter(Client.name == name).one_or_none()
+        if client:
+            return client
+        client = Client(name=name)
+        session.add(client)
+        session.flush()
+        return client
+
+    def _infer_period_from_title(
+        self, title: str
+    ) -> tuple[str | None, str | None, str | None, str | None]:
+        text = title.strip()
+        if not text:
+            return (None, None, None, None)
+
+        half_match = re.search(r"\b(?:FY)?\s*'?(?P<year>\d{2,4})\s*H(?P<half>[12])\b", text, re.I)
+        if half_match:
+            fiscal_year = self._normalize_year(half_match.group("year"))
+            half = f"H{half_match.group('half')}"
+            return (f"{half} {fiscal_year}", fiscal_year, None, half)
+
+        half_match = re.search(r"\bH(?P<half>[12])\s*(?:FY)?\s*'?(?P<year>\d{2,4})\b", text, re.I)
+        if half_match:
+            fiscal_year = self._normalize_year(half_match.group("year"))
+            half = f"H{half_match.group('half')}"
+            return (f"{half} {fiscal_year}", fiscal_year, None, half)
+
+        q_match = re.search(r"\b(?:FY)?\s*'?(?P<year>\d{2,4})\s*Q(?P<quarter>[1-4])\b", text, re.I)
+        if q_match:
+            fiscal_year = self._normalize_year(q_match.group("year"))
+            quarter = f"Q{q_match.group('quarter')}"
+            return (f"{quarter} {fiscal_year}", fiscal_year, quarter, None)
+
+        q_match = re.search(r"\bQ(?P<quarter>[1-4])\s*(?:FY)?\s*'?(?P<year>\d{2,4})\b", text, re.I)
+        if q_match:
+            fiscal_year = self._normalize_year(q_match.group("year"))
+            quarter = f"Q{q_match.group('quarter')}"
+            return (f"{quarter} {fiscal_year}", fiscal_year, quarter, None)
+
+        fy_match = re.search(r"\bFY\s*'?(?P<year>\d{2,4})\b", text, re.I)
+        if fy_match:
+            fiscal_year = self._normalize_year(fy_match.group("year"))
+            return (fiscal_year, fiscal_year, None, None)
+
+        return (None, None, None, None)
+
+    def _normalize_period_label(self, label: str | None) -> str | None:
+        if not label:
+            return None
+        period_label, _, _, _ = self._infer_period_from_title(label)
+        return period_label
+
+    def _apply_document_period_defaults(
+        self,
+        metrics: list,
+        *,
+        document_period: str | None,
+    ) -> list:
+        if not metrics:
+            return metrics
+        doc_label = self._normalize_period_label(document_period)
+        if not doc_label:
+            return metrics
+        filtered = []
+        for metric in metrics:
+            metric_label = self._normalize_period_label(getattr(metric, "period_label", None))
+            if metric_label and metric_label != doc_label:
+                continue
+            if getattr(metric, "period_label", None) is None:
+                metric = replace(metric, period_label=doc_label)
+            filtered.append(metric)
+        return filtered
+
+    @staticmethod
     def _load_pptx_slide_texts(file_path: Path) -> list[dict]:
         """Load slide text in PPTX order from the PPTX XML."""
         ns = {
@@ -884,9 +1984,14 @@ Categories:
         file_path: str | Path,
         client_name: str | None = None,
         report_period: str | None = None,
+        run_llm_metrics: bool = True,
         run_llm_enhancement: bool = True,
+        run_llm_summary: bool = False,
+        run_llm_adjudicator: bool = False,
         export_outputs: bool = False,
         output_dir: Path | str | None = None,
+        slide_range: tuple[int, int] | None = None,
+        max_slides: int | None = None,
     ) -> int:
         """
         Process a document through the full pipeline.
@@ -895,18 +2000,24 @@ Categories:
             file_path: Path to the document
             client_name: Optional client name
             report_period: Optional report period
-            run_llm_enhancement: Whether to run LLM enhancement
+            run_llm_metrics: Whether to run LLM metric refinement
+            run_llm_enhancement: Whether to run the full LLM enhancement pipeline
+            run_llm_summary: Whether to run only the LLM executive summary
+            slide_range: Optional (start, end) slide range to process
+            max_slides: Optional max number of slides to process
 
         Returns:
             Document ID in the database
         """
         file_path = Path(file_path)
+        document_url = self._resolve_document_url(file_path)
 
         # Step 1: Extract
         print("\n" + "=" * 60)
         print("STEP 1: EXTRACTION")
         print("=" * 60)
 
+        self._llm_metric_timing = None
         result = self.extract_document(file_path)
 
         pages = self._split_pages(result.content)
@@ -931,6 +2042,30 @@ Categories:
             if remapped_pages:
                 chunks_for_storage = self._build_chunks_from_pages(remapped_pages)
 
+        pages_for_selection = remapped_pages or pages
+        content_for_processing = result.content
+        pages_override: list[dict] | None = None
+        if slide_range is not None or max_slides is not None:
+            selected_pages = self._select_pages(
+                pages_for_selection,
+                slide_range=slide_range,
+                max_slides=max_slides,
+            )
+            if selected_pages:
+                content_for_processing = self._build_content_from_pages(selected_pages)
+                pages_override = selected_pages
+                chunks_for_storage = self._build_chunks_from_pages(selected_pages)
+
+        inferred_client = client_name or self._infer_client_name(file_path.stem)
+        inferred_region_id, _ = self._infer_document_region(file_path.stem)
+        inferred_period, inferred_fiscal_year, inferred_quarter, inferred_half = (
+            self._infer_period_from_title(report_period or file_path.stem)
+        )
+        report_period = report_period or inferred_period
+        fiscal_year = inferred_fiscal_year
+        quarter = inferred_quarter
+        half = inferred_half
+
         post_embedding_settings = PostEmbeddingSettings.from_env()
         try:
             filled = apply_post_embeddings(chunks_for_storage, post_embedding_settings)
@@ -947,19 +2082,194 @@ Categories:
         print("STEP 2: PARSING")
         print("=" * 60)
 
-        slides = self.parse_slides(result.content)
-        metrics = self.extract_metrics(result.content)
+        slides = self.parse_slides(content_for_processing)
+        metrics = self.extract_metrics(content_for_processing)
         charts = self.detect_charts(slides)
+        remap_for_parsing = remap if pages_override is None else None
         slides_ordered, metrics_ordered, charts_ordered = self._apply_slide_remap(
             slides=slides,
             metrics=metrics,
             charts=charts,
-            remap=remap,
+            remap=remap_for_parsing,
         )
-        business_terms = self._extract_business_terms(result.content)
+        business_terms = self._extract_business_terms(content_for_processing)
+
+        tables_payload: list[dict] = []
+        for idx, table in enumerate(result.tables or []):
+            tables_payload.append(
+                {
+                    "index": idx,
+                    "headers": getattr(table, "headers", None),
+                    "rows": getattr(table, "rows", None),
+                    "raw": str(table),
+                }
+            )
+
+        metric_debug = None
+        scanned_metrics: list[MetricCandidate] = []
+        if file_path.suffix.lower() == ".pptx":
+            try:
+                deck = parse_pptx_deck(file_path)
+            except Exception as exc:
+                print(f"[Metrics] PPTX parse failed, falling back to text scan: {exc}")
+                deck = None
+            if slide_range is not None:
+                start, end = slide_range
+                if deck is not None:
+                    deck = deck.__class__(
+                        deck_id=deck.deck_id,
+                        slides=tuple(
+                            slide for slide in deck.slides if start <= slide.slide_index <= end
+                        ),
+                    )
+            elif max_slides is not None:
+                if deck is not None:
+                    deck = deck.__class__(
+                        deck_id=deck.deck_id,
+                        slides=tuple(deck.slides[:max_slides]),
+                    )
+            cache_dir = self.output_dir / ".metric_adjudicator_cache"
+            adjudicator = None
+            if run_llm_adjudicator:
+                adjudicator = LLMAdjudicator(
+                    call_llm=self._call_llm_text,
+                    cache_dir=cache_dir,
+                    enabled=True,
+                )
+            if deck is not None:
+                catalog_entries = self._load_metric_catalog_entries()
+                pipeline = MetricExtractionPipeline(
+                    config=PipelineConfig(),
+                    adjudicator=adjudicator,
+                    catalog_entries=catalog_entries,
+                )
+                deck_hash = compute_deck_hash(file_path)
+                extracted_metrics, metric_debug = pipeline.extract_from_deck(
+                    deck, deck_hash=deck_hash
+                )
+                scanned_metrics = [to_metric_candidate(metric) for metric in extracted_metrics]
+                if adjudicator is not None:
+                    print(
+                        "  [Metric Adjudicator] "
+                        f"requests={adjudicator.total_requests} "
+                        f"cache_hits={adjudicator.cache_hits} "
+                        f"llm_calls={adjudicator.llm_calls} "
+                        f"parse_failures={adjudicator.parse_failures} "
+                        f"empty_responses={adjudicator.empty_responses}"
+                    )
+            else:
+                metric_scanner = MetricScanner(build_metric_dictionary())
+                artifacts = MetricScanArtifacts(
+                    raw_content=result.content,
+                    slides=slides_ordered,
+                    metrics=metrics_ordered,
+                    charts=charts_ordered,
+                    chunks=chunks_for_storage,
+                    tables=tables_payload,
+                    keywords=business_terms,
+                    export_dir=None,
+                )
+                scanned_metrics = metric_scanner.scan(artifacts)
+                scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
+        else:
+            metric_scanner = MetricScanner(build_metric_dictionary())
+            artifacts = MetricScanArtifacts(
+                raw_content=result.content,
+                slides=slides_ordered,
+                metrics=metrics_ordered,
+                charts=charts_ordered,
+                chunks=chunks_for_storage,
+                tables=tables_payload,
+                keywords=business_terms,
+                export_dir=None,
+            )
+            scanned_metrics = metric_scanner.scan(artifacts)
+            scanned_metrics = metric_scanner.dedupe_exact(scanned_metrics)
+
+        llm_deduped_metrics = scanned_metrics
+        refined_metrics = None
+        use_legacy_llm_metrics = os.getenv("LEGACY_LLM_METRICS", "false").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        if run_llm_metrics and use_legacy_llm_metrics:
+            llm_candidates = self._select_metrics_for_llm_refine(scanned_metrics)
+            if llm_candidates:
+                refined_subset = self._refine_metrics_with_llm(
+                    metrics=llm_candidates,
+                    slides=slides_ordered,
+                    metric_dictionary=build_metric_dictionary(),
+                )
+                refined_ids = {metric.metric_id for metric in llm_candidates}
+                llm_deduped_metrics = [
+                    metric for metric in scanned_metrics if metric.metric_id not in refined_ids
+                ] + list(refined_subset)
+                refined_metrics = llm_deduped_metrics
+            else:
+                llm_deduped_metrics = scanned_metrics
+        scanned_metrics = self._apply_metric_context_strategies(
+            metrics=scanned_metrics,
+            slides=slides_ordered,
+            client_name=inferred_client,
+            report_period=report_period,
+            stage="scanned",
+            allow_llm=run_llm_metrics and use_legacy_llm_metrics,
+        )
+        llm_deduped_metrics = self._apply_metric_context_strategies(
+            metrics=llm_deduped_metrics,
+            slides=slides_ordered,
+            client_name=inferred_client,
+            report_period=report_period,
+            stage="deduped",
+            allow_llm=run_llm_metrics and use_legacy_llm_metrics,
+        )
+        if refined_metrics is not None:
+            refined_metrics = self._apply_metric_context_strategies(
+                metrics=refined_metrics,
+                slides=slides_ordered,
+                client_name=inferred_client,
+                report_period=report_period,
+                stage="refined",
+                allow_llm=run_llm_metrics and use_legacy_llm_metrics,
+            )
+        metrics_for_db = refined_metrics or llm_deduped_metrics
+
+        if report_period:
+            scanned_metrics = self._apply_document_period_defaults(
+                scanned_metrics,
+                document_period=report_period,
+            )
+            llm_deduped_metrics = self._apply_document_period_defaults(
+                llm_deduped_metrics,
+                document_period=report_period,
+            )
+            if refined_metrics is not None:
+                refined_metrics = self._apply_document_period_defaults(
+                    refined_metrics,
+                    document_period=report_period,
+                )
+            metrics_for_db = self._apply_document_period_defaults(
+                metrics_for_db,
+                document_period=report_period,
+            )
+
+        scanned_metrics = self._apply_metric_catalog(scanned_metrics)
+        llm_deduped_metrics = self._apply_metric_catalog(llm_deduped_metrics)
+        if refined_metrics is not None:
+            refined_metrics = self._apply_metric_catalog(refined_metrics)
+        metrics_for_db = self._apply_metric_catalog(metrics_for_db)
+        print("  - Augmenting duplicate metric context (before):")
+        self._log_duplicate_metric_context(metrics_for_db)
+        metrics_for_db = self._augment_duplicate_metric_context(
+            metrics_for_db, slides_ordered
+        )
+        print("  - Augmenting duplicate metric context (after):")
+        self._log_duplicate_metric_context(metrics_for_db)
 
         print(f"  - Slides parsed: {len(slides_ordered)}")
         print(f"  - Metrics found: {len(metrics_ordered)}")
+        print(f"  - Business metrics detected: {len(metrics_for_db)}")
         print(f"  - Charts detected: {len(charts_ordered)}")
 
         if export_outputs:
@@ -974,7 +2284,37 @@ Categories:
                 business_terms=business_terms,
                 output_dir=target_dir,
                 chunks=chunks_for_storage,
+                content_override=content_for_processing if pages_override else None,
+                pages_override=pages_override,
             )
+            (target_dir / "11_business_metrics.json").write_text(
+                json.dumps(
+                    [self._metric_candidate_to_dict(m) for m in scanned_metrics],
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            if metric_debug is not None:
+                (target_dir / "11b_business_metrics_debug.json").write_text(
+                    json.dumps(metric_debug.to_dict(), indent=2, default=str),
+                    encoding="utf-8",
+                )
+            if run_llm_enhancement:
+                (target_dir / "12_business_metrics_deduped.json").write_text(
+                    json.dumps(
+                        [self._metric_candidate_to_dict(m) for m in llm_deduped_metrics],
+                        indent=2,
+                    ),
+                    encoding="utf-8",
+                )
+                if refined_metrics is not None:
+                    (target_dir / "13_business_metrics_refined.json").write_text(
+                        json.dumps(
+                            [self._metric_candidate_to_dict(m) for m in refined_metrics],
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
             print(f"  - Extraction outputs saved: {target_dir}")
 
         # Step 3: Create database records
@@ -983,10 +2323,11 @@ Categories:
         print("=" * 60)
 
         with self.SessionLocal() as session:
+            client = self._ensure_client(session, inferred_client) if inferred_client else None
             # Create document
             document = Document(
                 filename=file_path.name,
-                file_path=str(file_path.absolute()),
+                file_path=document_url,
                 mime_type=result.mime_type,
                 status=DocumentStatus.EXTRACTED.value,
                 page_count=result.get_page_count(),
@@ -995,8 +2336,12 @@ Categories:
                 chunk_count=len(chunks_for_storage),
                 extraction_metadata=result.metadata,
                 detected_languages=result.detected_languages,
-                client_name=client_name,
+                client_id=client.id if client else None,
+                region_id=inferred_region_id,
                 report_period=report_period,
+                fiscal_year=fiscal_year,
+                quarter=quarter,
+                half=half,
             )
             session.add(document)
             session.flush()  # Get document ID
@@ -1022,19 +2367,71 @@ Categories:
             slide_map = {s.slide_number: s for s in slides_to_add}
             print(f"  - Slides created: {len(slide_map)}")
 
+            period_map = self._upsert_periods(session, metrics_for_db)
+
             # Create metrics (bulk insert)
-            metrics_to_add = [
-                Metric(
-                    document_id=document.id,
-                    slide_id=slide_map.get(m["slide_number"]).id if slide_map.get(m["slide_number"]) else None,
-                    raw_value=m["value"],
-                    raw_context=m.get("context"),
-                    raw_metric_type=m["metric_type"],
+            metrics_to_add: list[Metric] = []
+            for m in metrics_for_db:
+                region_id, country = self._infer_metric_region(
+                    m, document_region_id=inferred_region_id
                 )
-                for m in metrics_ordered
-            ]
+                metrics_to_add.append(
+                    Metric(
+                        document_id=document.id,
+                        slide_id=slide_map.get(m.slide_number).id
+                        if slide_map.get(m.slide_number)
+                        else None,
+                        raw_value=m.raw_value,
+                        raw_context=m.raw_context,
+                        raw_metric_type=m.metric_type,
+                        metric_catalog_id=m.metric_catalog_id,
+                        name=m.name,
+                        normalized_value=m.normalized_value,
+                        unit=m.unit,
+                        category=m.category,
+                        extraction_confidence=m.extraction_confidence,
+                        period_label=m.period_label,
+                        period_start=m.period_start,
+                        period_end=m.period_end,
+                        brand=m.brand,
+                        baseline_text=m.baseline_text,
+                        baseline_type=m.baseline_type,
+                        period_id=period_map.get(
+                            (m.period_label, m.period_start, m.period_end)
+                        ).id
+                        if period_map.get((m.period_label, m.period_start, m.period_end))
+                        else None,
+                        region_id=region_id,
+                        country=country,
+                        llm_context_label=m.llm_context_label,
+                    )
+                )
             session.add_all(metrics_to_add)
-            print(f"  - Metrics created: {len(metrics_ordered)}")
+            print(f"  - Metrics created: {len(metrics_to_add)}")
+
+            # Remove metrics whose raw_context is sourced from speaker notes only.
+            deleted = session.execute(
+                text(
+                    """
+                    DELETE FROM metrics
+                    WHERE document_id = :document_id
+                      AND raw_context IS NOT NULL
+                      AND TRIM(raw_context) != ''
+                      AND slide_id IN (
+                        SELECT id
+                        FROM slides
+                        WHERE document_id = :document_id
+                          AND speaker_notes IS NOT NULL
+                          AND TRIM(speaker_notes) != ''
+                          AND instr(speaker_notes, raw_context) > 0
+                          AND (raw_text IS NULL OR instr(raw_text, raw_context) = 0)
+                      )
+                    """
+                ),
+                {"document_id": document.id},
+            ).rowcount
+            if deleted:
+                print(f"  - Metrics removed (speaker notes cleanup): {deleted}")
 
             # Create charts (bulk insert)
             charts_to_add = [
@@ -1090,6 +2487,32 @@ Categories:
             session.commit()
             doc_id = document.id
 
+        if self._llm_metric_timing and export_outputs:
+            base_dir = Path(output_dir) if output_dir else self.output_dir
+            target_dir = base_dir / file_path.stem
+            run_payload = {
+                "document_id": doc_id,
+                "file_path": str(file_path.absolute()),
+                "created_at": datetime.utcnow().isoformat(),
+                "llm_model": self.llm_model,
+                "legacy_llm_metrics": use_legacy_llm_metrics,
+                "llm_metric_allowlist": os.getenv("LLM_METRIC_NAME_ALLOWLIST"),
+                "timing": self._llm_metric_timing,
+            }
+            timing_path = target_dir / "14_llm_metric_timing.json"
+            timing_path.write_text(json.dumps(run_payload, indent=2), encoding="utf-8")
+            history_path = base_dir / "llm_metric_timing_history.json"
+            history_payload = []
+            if history_path.exists():
+                try:
+                    history_payload = json.loads(history_path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError:
+                    history_payload = []
+            if not isinstance(history_payload, list):
+                history_payload = []
+            history_payload.append(run_payload)
+            history_path.write_text(json.dumps(history_payload, indent=2), encoding="utf-8")
+
         # Step 4: LLM Enhancement (optional)
         if run_llm_enhancement:
             print("\n" + "=" * 60)
@@ -1100,7 +2523,16 @@ Categories:
                 doc_id,
                 result.content,
                 slides_ordered,
-                metrics_ordered,
+                [
+                    {
+                        "value": m.raw_value,
+                        "metric_type": m.metric_type,
+                        "context": m.raw_context,
+                        "slide_number": m.slide_number,
+                        "name": m.name,
+                    }
+                    for m in metrics_for_db
+                ],
                 charts_ordered,
             )
             if export_outputs and llm_results is not None:
@@ -1108,6 +2540,22 @@ Categories:
                 target_dir = base_dir / file_path.stem
                 (target_dir / "10_llm_outputs.json").write_text(
                     json.dumps(self._to_jsonable(llm_results), indent=2, default=str),
+                    encoding="utf-8",
+                )
+                print(f"  - LLM outputs saved: {target_dir / '10_llm_outputs.json'}")
+        elif run_llm_summary:
+            print("\n" + "=" * 60)
+            print("STEP 4: LLM SUMMARY")
+            print("=" * 60)
+            summary_result = self.enhance_summary(
+                doc_id,
+                content_for_processing,
+            )
+            if export_outputs and summary_result is not None:
+                base_dir = Path(output_dir) if output_dir else self.output_dir
+                target_dir = base_dir / file_path.stem
+                (target_dir / "10_llm_outputs.json").write_text(
+                    json.dumps(self._to_jsonable({"executive_summary": summary_result}), indent=2, default=str),
                     encoding="utf-8",
                 )
                 print(f"  - LLM outputs saved: {target_dir / '10_llm_outputs.json'}")
@@ -1178,6 +2626,74 @@ Categories:
                     doc.status = DocumentStatus.EXTRACTED.value  # Keep as extracted
                     session.commit()
             return None
+
+    def enhance_summary(self, document_id: int, full_content: str):
+        try:
+            print("  Running LLM executive summary...")
+            with self.SessionLocal() as session:
+                doc = session.get(Document, document_id)
+                context = f"Client: {doc.client_name or 'Unknown'}, Period: {doc.report_period or 'Unknown'}"
+            summarizer = ExecutiveSummarizer(lm=self.lm)
+            summary = summarizer(full_content=full_content, document_metadata=context)
+            self._save_enhancements(document_id, {"executive_summary": summary})
+            print("  Summary complete!")
+            return summary
+        except Exception as exc:
+            print(f"  Summary failed: {exc}")
+            return None
+
+    def _dedupe_metrics_with_llm(
+        self,
+        metrics: list,
+    ) -> list:
+        if not metrics:
+            return metrics
+        try:
+            deduper = MetricDeduplicator(lm=self.lm)
+            by_name_value: dict[tuple[str, str | None, float | None], list] = {}
+            for metric in metrics:
+                rounded_value = (
+                    round(metric.normalized_value, 2)
+                    if metric.normalized_value is not None
+                    else None
+                )
+                key = (metric.name, metric.unit, rounded_value)
+                by_name_value.setdefault(key, []).append(metric)
+
+            remove_ids: set[str] = set()
+            max_batch = 60
+            for key, group in by_name_value.items():
+                if len(group) < 2:
+                    continue
+                batches = [group[i : i + max_batch] for i in range(0, len(group), max_batch)]
+                for batch in batches:
+                    payload = [
+                        {
+                            "id": m.metric_id,
+                            "name": m.name,
+                            "value": m.normalized_value,
+                            "unit": m.unit,
+                            "raw_value": m.raw_value,
+                            "context": m.raw_context,
+                            "slide_number": m.slide_number,
+                            "source": m.source,
+                        }
+                        for m in batch
+                    ]
+                    result = deduper(metrics=payload)
+                    batch_remove = set(getattr(result, "remove_ids", []) or [])
+                    remove_ids.update(batch_remove)
+
+            if not remove_ids:
+                return metrics
+            filtered = [m for m in metrics if m.metric_id not in remove_ids]
+            print(
+                f"  [Metric Dedupe] Removed {len(remove_ids)} duplicate metrics via LLM."
+            )
+            return filtered
+        except Exception as exc:
+            print(f"  [Metric Dedupe] LLM dedupe failed: {exc}")
+            return metrics
 
     def _save_enhancements(self, document_id: int, results: dict):
         """Save LLM enhancement results to database."""
@@ -1252,16 +2768,7 @@ Categories:
                         if hasattr(category, "value")
                         else str(category) if category else "other"
                     )
-                    trend = getattr(nm, "trend", None)
-                    db_metric.trend = (
-                        trend.value
-                        if hasattr(trend, "value")
-                        else str(trend) if trend else "unknown"
-                    )
-                    db_metric.is_positive_trend = getattr(nm, "is_positive", None)
-                    db_metric.change_percentage = getattr(nm, "change_percentage", None)
-                    db_metric.context = getattr(nm, "significance", None)
-                    db_metric.benchmark_comparison = getattr(nm, "benchmark_notes", None)
+                    # Trend/benchmark fields are no longer stored on metrics.
 
             # Update charts with reconstruction data
             chart_results = results.get("charts", [])

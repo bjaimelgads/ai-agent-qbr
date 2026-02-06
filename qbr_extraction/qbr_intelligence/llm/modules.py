@@ -15,7 +15,12 @@ from qbr_intelligence.schemas.llm_outputs import (
     EntityExtractionOutput,
     ExecutiveSummaryOutput,
     ImageAnalysisOutput,
+    MetricContextOutput,
+    MetricDeduplicationOutput,
     MetricNormalizationOutput,
+    MetricReviewOutput,
+    MetricRefinementOutput,
+    RefinedMetric,
     SlideAnalysisOutput,
 )
 
@@ -29,15 +34,12 @@ class SlideAnalysisSignature(dspy.Signature):
     """
     Analyze a QBR presentation slide to extract structured information.
 
-    Given the raw text content and optional speaker notes from a slide,
-    classify the slide type, extract key messages, metrics, and insights.
+    Given the raw text content from a slide, classify the slide type,
+    extract key messages, metrics, and insights.
     """
 
     slide_content: str = dspy.InputField(
         desc="Raw text content extracted from the slide"
-    )
-    speaker_notes: str = dspy.InputField(
-        desc="Speaker notes for this slide (may be empty)"
     )
     slide_number: int = dspy.InputField(desc="The slide number in the presentation")
 
@@ -60,16 +62,13 @@ class SlideAnalyzer(dspy.Module):
     def __init__(self, lm: dspy.LM | None = None):
         super().__init__()
         self.lm = lm
-        self.analyze = dspy.ChainOfThought(SlideAnalysisSignature)
+        self.analyze = dspy.Predict(SlideAnalysisSignature)
 
-    def forward(
-        self, slide_content: str, speaker_notes: str = "", slide_number: int = 0
-    ) -> SlideAnalysisOutput:
+    def forward(self, slide_content: str, slide_number: int = 0) -> SlideAnalysisOutput:
         """Analyze a slide and return structured output."""
         with dspy.settings.context(lm=self.lm):
             result = self.analyze(
                 slide_content=slide_content,
-                speaker_notes=speaker_notes or "",
                 slide_number=slide_number,
             )
         return result.analysis
@@ -129,6 +128,148 @@ class MetricNormalizer(dspy.Module):
                 document_context=document_context or "Business quarterly review",
             )
         return result.normalized
+
+
+# =============================================================================
+# Metric Deduplication Module
+# =============================================================================
+
+
+class MetricDeduplicationSignature(dspy.Signature):
+    """
+    Identify duplicate metrics that should be removed.
+
+    Given a JSON array of metric candidates (with ids, names, values, units, and context),
+    return the list of ids that should be removed as duplicates.
+    """
+
+    metrics_json: str = dspy.InputField(
+        desc="JSON array of metric candidates with ids, names, values, units, contexts"
+    )
+
+    deduped: MetricDeduplicationOutput = dspy.OutputField(
+        desc="List of metric ids to remove as duplicates"
+    )
+
+
+class MetricDeduplicator(dspy.Module):
+    """DSPY module for deduplicating extracted metric candidates."""
+
+    def __init__(self, lm: dspy.LM | None = None):
+        super().__init__()
+        self.lm = lm
+        self.dedupe = dspy.ChainOfThought(MetricDeduplicationSignature)
+
+    def forward(self, metrics: list[dict]) -> MetricDeduplicationOutput:
+        metrics_json = json.dumps(metrics, indent=2)
+        with dspy.settings.context(lm=self.lm):
+            result = self.dedupe(metrics_json=metrics_json)
+        return result.deduped
+
+
+# =============================================================================
+# Metric Candidate Review Module
+# =============================================================================
+
+
+class MetricReviewSignature(dspy.Signature):
+    """
+    Review a specific metric candidate group with minimal context.
+
+    Given metric catalog info, metric value/context, and context snippets,
+    provide corrections if needed and a required context label (1-2 lines)
+    describing what this metric value represents (segment, market, time period,
+    creative, etc.).
+    """
+
+    metric_catalog_json: str = dspy.InputField(
+        desc="JSON object with metric name, aliases, expected unit, and disambiguation tokens"
+    )
+    metric_json: str = dspy.InputField(
+        desc="JSON object with the metric value and contextual fields"
+    )
+    context_snippets: str = dspy.InputField(
+        desc="Deterministic context snippets near the metric label/value"
+    )
+
+    review: MetricReviewOutput = dspy.OutputField(
+        desc="Best candidate selection and optional corrections"
+    )
+
+
+class MetricReviewer(dspy.Module):
+    """DSPY module to review a specific metric candidate group."""
+
+    def __init__(self, lm: dspy.LM | None = None):
+        super().__init__()
+        self.lm = lm
+        self.review = dspy.Predict(MetricReviewSignature)
+
+    def forward(
+        self,
+        metric_catalog: dict,
+        metric: dict,
+        context_snippets: str,
+    ) -> MetricReviewOutput:
+        payload_catalog = json.dumps(metric_catalog, indent=2)
+        payload_metric = json.dumps(metric, indent=2)
+        with dspy.settings.context(lm=self.lm):
+            result = self.review(
+                metric_catalog_json=payload_catalog,
+                metric_json=payload_metric,
+                context_snippets=context_snippets,
+            )
+        return result.review
+
+
+# =============================================================================
+# Metric Context Module
+# =============================================================================
+
+
+class MetricContextSignature(dspy.Signature):
+    """
+    Extract period, brand/client, and baseline context for slide metrics.
+    """
+
+    slide_text: str = dspy.InputField(desc="Full slide text")
+    speaker_notes: str = dspy.InputField(desc="Speaker notes for the slide (may be empty)")
+    candidates_json: str = dspy.InputField(
+        desc="JSON array of candidate metrics with ids, names, values, units, and context"
+    )
+    document_context: str = dspy.InputField(
+        desc="Metadata about the document (client, period, etc.)"
+    )
+
+    contexts: MetricContextOutput = dspy.OutputField(
+        desc="Context fields for metrics on the slide"
+    )
+
+
+class MetricContextExtractor(dspy.Module):
+    """DSPY module to extract period/brand/baseline context for slide metrics."""
+
+    def __init__(self, lm: dspy.LM | None = None):
+        super().__init__()
+        self.lm = lm
+        self.extract = dspy.ChainOfThought(MetricContextSignature)
+
+    def forward(
+        self,
+        slide_text: str,
+        speaker_notes: str,
+        candidates: list[dict],
+        document_context: str,
+    ) -> MetricContextOutput:
+        payload_candidates = json.dumps(candidates, indent=2)
+        with dspy.settings.context(lm=self.lm):
+            result = self.extract(
+                slide_text=slide_text,
+                speaker_notes=speaker_notes or "",
+                candidates_json=payload_candidates,
+                document_context=document_context,
+            )
+        return result.contexts
 
 
 # =============================================================================
@@ -448,7 +589,7 @@ class QBREnhancementPipeline(dspy.Module):
         Run the full enhancement pipeline.
 
         Args:
-            slides: List of slide data with raw_text and speaker_notes
+            slides: List of slide data with raw_text
             metrics: List of extracted metrics
             charts: List of detected charts with raw_elements
             full_content: Full document text
@@ -486,7 +627,6 @@ class QBREnhancementPipeline(dspy.Module):
             try:
                 analysis = self.slide_analyzer(
                     slide_content=slide.get("raw_text", ""),
-                    speaker_notes=slide.get("speaker_notes", ""),
                     slide_number=slide.get("slide_number", 0),
                 )
                 slide_type = getattr(analysis, "slide_type", "unknown")
@@ -641,6 +781,11 @@ def create_lm(
     Example:
         >>> lm = create_lm("databricks/databricks-claude-opus-4-5")
     """
+    if hasattr(dspy, "configure_cache"):
+        dspy.configure_cache(
+            enable_disk_cache=False,
+            enable_memory_cache=False,
+        )
     return dspy.LM(
         model=model,
         max_tokens=max_tokens,

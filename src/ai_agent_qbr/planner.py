@@ -17,6 +17,7 @@ from penguiflow.planner.memory import MemoryBudget, MemoryIsolation, ShortTermMe
 from penguiflow.rich_output import DEFAULT_ALLOWLIST, RichOutputConfig, attach_rich_output_nodes, get_runtime
 from .config import Config
 from .infrastructure.guardrails import build_guardrail_gateway
+from .infrastructure.metric_router import MetricQueryRouter
 from .tools import build_catalog_bundle
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,15 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - Use the `qbr_context` provided in the LLM context whenever available.
 - Cite slide ranges when possible.
 - If no context is provided, say that you could not find relevant QBR content.
+- If the user specifies a region (e.g., US or EMEA), only use data explicitly tied to that region.
+  Do not blend regions. If the available context spans multiple regions or is ambiguous, ask the user
+  to confirm the desired source (US vs EMEA vs global). If they want aggregated decks, separate the
+  response by region.
+- Use `region_verification` in context when available to resolve regional scope.
 - If the user asks about capabilities, what you can do, or how you can help, call `agent_capabilities`.
+- For questions that ask for specific metrics, KPI values, or period comparisons, you MUST call
+  `query_metrics` first and use its result. Do not answer directly without the tool.
+- When citations include `document_url`, include those links in the Sources section.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
 
@@ -96,6 +105,51 @@ class ScriptedLLM:
             self._scripted = [json.dumps(item, ensure_ascii=False) for item in scripted]
 
         return self._scripted.pop(0)
+
+
+class DeterministicMetricToolLLM:
+    """LLM wrapper that deterministically routes metric queries to query_metrics."""
+
+    def __init__(self, inner: Any, router: MetricQueryRouter) -> None:
+        self._inner = inner
+        self._router = router
+        self._last_query: str | None = None
+        self._forced_for_last_query = False
+
+    def _extract_user_query(self, messages: Sequence[Mapping[str, str]]) -> str:
+        for msg in reversed(messages):
+            if msg.get("role") == "user":
+                return msg.get("content", "")
+        return messages[-1].get("content", "") if messages else ""
+
+    async def complete(
+        self,
+        *,
+        messages: Sequence[Mapping[str, str]],
+        response_format: Mapping[str, Any] | None = None,
+        stream: bool = False,
+        on_stream_chunk: Any = None,
+    ) -> str | tuple[str, float]:
+        query = self._extract_user_query(messages)
+        if query and query != self._last_query:
+            self._last_query = query
+            self._forced_for_last_query = False
+
+        if query and not self._forced_for_last_query and self._router.is_metric_query(query):
+            self._forced_for_last_query = True
+            payload = {
+                "thought": "Use structured metric store for metric/KPI questions.",
+                "next_node": "query_metrics",
+                "args": {"question": query},
+            }
+            return json.dumps(payload, ensure_ascii=False)
+
+        return await self._inner.complete(
+            messages=messages,
+            response_format=response_format,
+            stream=stream,
+            on_stream_chunk=on_stream_chunk,
+        )
 
 
 class DatabricksDSPyClient:
@@ -296,7 +350,7 @@ def _create_llm_client(config: Config) -> Any:
         return ScriptedLLM()
 
     # Native streaming path for WebSocket/AG-UI when streaming final response
-    if config.output_protocol in {"agui", "websocket"} and config.planner_stream_final_response:
+    if config.output_protocol in {"agui", "legacy"} and config.planner_stream_final_response:
         api_base = config.databricks_api_base or ""
         resolved_host = _resolve_databricks_host(config)
         if not api_base and resolved_host:
@@ -428,6 +482,8 @@ def build_planner(
     - LLM_MODEL_NAME: Model name (default: databricks-claude-sonnet-4-5)
     - LLM_MAX_TOKENS: Max tokens (default: 4000)
     - LLM_CACHE_ENABLED: Enable response caching (default: true)
+    - REGION_VERIFY_MODEL_NAME: Small model for region verification (default: gpt-5-2-mini)
+    - REGION_VERIFY_MAX_TOKENS: Max tokens for region verification (default: 256)
     """
     nodes, registry = build_catalog_bundle()
     rich_output_config = _build_rich_output_config(config)
@@ -438,9 +494,11 @@ def build_planner(
 
     # Create LLM client based on config (stub or real)
     llm_client = _create_llm_client(config)
+    if config.metric_router_enabled and hasattr(llm_client, "complete"):
+        llm_client = DeterministicMetricToolLLM(llm_client, MetricQueryRouter())
     guardrail_gateway = build_guardrail_gateway(config)
 
-    if isinstance(llm_client, ScriptedLLM) or isinstance(llm_client, DatabricksDSPyClient):
+    if hasattr(llm_client, "complete"):
         planner = ReactPlanner(
             llm_client=llm_client,
             catalog=catalog,

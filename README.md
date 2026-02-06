@@ -24,7 +24,7 @@ uvicorn ai_agent_qbr.api.app:app --reload
 Copy `.env.example` to `.env` and update values.
 
 Key settings:
-- `OUTPUT_PROTOCOL=websocket|agui`
+- `OUTPUT_PROTOCOL=legacy|agui`
 - `DATABASE_URL=sqlite+aiosqlite:///qbr_intelligence.db`
 - `STORAGE_BACKEND=sqlite`
 - `VECTOR_BACKEND=sqlite_embeddings`
@@ -36,6 +36,47 @@ Key settings:
 - `RERANK_TOP_N=20`
 - `RETRIEVAL_MMR_LAMBDA=0.5`
 - `RETRIEVAL_MAX_CHUNKS_PER_DOC=3`
+
+## Local WebSocket Chat (Legacy CLI)
+
+1) Create your env file:
+```
+cp .env.example .env
+```
+
+2) Update `.env` for local legacy WebSocket runs:
+```
+OUTPUT_PROTOCOL=websocket
+PLANNER_STREAM_FINAL_RESPONSE=true
+LOG_LEVEL=DEBUG
+PLANNER_DEBUG_EVENTS=true
+QBR_INTELLIGENCE_LIGHT_IMPORT=1
+WS_RECEIVE_TIMEOUT_SECONDS=180
+WS_KEEPALIVE_SECONDS=20
+```
+Make sure your Databricks settings are set (when `USE_STUB_LLM=false`):
+```
+DATABRICKS_HOST=...
+DATABRICKS_API_KEY=...   # or DATABRICKS_TOKEN
+# optional service principal auth
+DATABRICKS_CLIENT_ID=...
+DATABRICKS_CLIENT_SECRET=...
+```
+
+3) Start the server:
+```
+uvicorn ai_agent_qbr.api.app:app --reload
+```
+
+4) Run the legacy CLI:
+```
+python scripts/ws_cli.py --protocol legacy --base-url ws://localhost:8000 --repl --timeout 120
+```
+
+Single message example:
+```
+python scripts/ws_cli.py --protocol legacy --base-url ws://localhost:8000 --message "What is the value for CPA in H2 FY25?" --timeout 120
+```
 
 ## Architecture
 

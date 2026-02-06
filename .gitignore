@@ -39,7 +39,7 @@ htmlcov/
 # Build
 build/
 dist/
-
+extraction_output/
 # MLflow
 mlruns/
 mlartifacts/
@@ -50,3 +50,19 @@ mlflow.db-journal
 
 # Kreuzberg cache
 .kreuzberg/
+
+# Extraction outputs (business metrics)
+extraction_output/**/11_business_metrics.json
+extraction_output/**/12_business_metrics_deduped.json
+extraction_output/**/13_business_metrics_refined.json
+extraction_output/**/*business_metrics*.json
+extraction_output/**/01_extraction_metadata.json
+extraction_output/**/07_images_metadata.json
+extraction_output/**/10_llm_outputs.json
+extraction_output/**/10_llm_task_manifest.json
+extraction_output/**/pipeline_timing_*.json
+extraction_output/strategy_*/
+extraction_output/Disney+ US FY25 H2/
+
+# Local OAuth tokens
+.google_slides_token.json

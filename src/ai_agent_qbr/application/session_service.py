@@ -104,6 +104,7 @@ class SendMessageUseCase:
                 message_type="assistant",
                 content=response.answer,
                 user_email=_coerce_email(session.user_id),
+                artifacts=response.artifacts,
                 metadata=metadata,
             )
         except Exception as exc:

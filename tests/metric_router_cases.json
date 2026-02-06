@@ -1,0 +1,254 @@
+[
+  {
+    "id": "route_cpa_fy24_h2",
+    "query": "What is CPA for Disney+ in FY24 H2 (US)?",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "CPA appears on US H2 performance slides."
+  },
+  {
+    "id": "route_compare_cpa_h1_h2",
+    "query": "Compare CPA FY24 H1 vs FY24 H2.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx",
+    "note": "CPA appears in both H1 and H2 decks."
+  },
+  {
+    "id": "route_cpe_emea_h1",
+    "query": "CPE for EMEA in FY24 H1?",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "EMEA H1 performance includes CPE."
+  },
+  {
+    "id": "route_ctr_carousel",
+    "query": "CTR for Carousel Video vs Static in FY25 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Carousel CTR references in FY25 H1."
+  },
+  {
+    "id": "route_install_rate_h1",
+    "query": "Install rate in FY25 H1 for EMEA?",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Install rate appears in FY25 H1 metrics."
+  },
+  {
+    "id": "route_launch_rate_uk",
+    "query": "Launch rate for UK in FY25 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Launch rate appears in FY25 H1 by market."
+  },
+  {
+    "id": "route_installs_launches_h2",
+    "query": "Total installs and launches in FY24 H2.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Installs and launches in H2 at a glance."
+  },
+  {
+    "id": "route_investment_h2_vs_h1",
+    "query": "Investment in FY24 H2 vs FY24 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx",
+    "note": "Investment appears in both halves."
+  },
+  {
+    "id": "route_unique_reach",
+    "query": "Unique reach for US FY24 H2.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Unique reach is a listed metric."
+  },
+  {
+    "id": "route_mau_gap",
+    "query": "MAU gap between LG and Disney+ in FY24 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "MAU appears in LG vs Disney+ growth slide."
+  },
+  {
+    "id": "route_frequency_h2",
+    "query": "Avg frequency in FY24 H2.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Frequency appears in H2 at a glance."
+  },
+  {
+    "id": "route_acquired_users_h1",
+    "query": "Acquired users in FY25 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Acquired users listed in H1 metrics."
+  },
+  {
+    "id": "route_engaged_users_cpe",
+    "query": "Engaged users and CPE in FY25 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Engaged users and CPE appear in H1 performance."
+  },
+  {
+    "id": "route_impressions_not_installed",
+    "query": "Impressions delivered to Not Installed audience in FY24 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Impressions referenced in roadblock slides."
+  },
+  {
+    "id": "route_sov",
+    "query": "Share of voice for Disney+ in FY24 H2.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "SOV mentioned in competitor investment analysis."
+  },
+  {
+    "id": "route_cost_per_acquired_user",
+    "query": "Cost per acquired user in FY24 H1.",
+    "expected_route": true,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Cost per acquired user appears in CPA slides."
+  },
+  {
+    "id": "no_route_partnership_highlights",
+    "query": "Summarize the FY24 H2 partnership highlights.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Narrative request, no metric keyword."
+  },
+  {
+    "id": "no_route_recommendations_us_h1",
+    "query": "What are the key recommendations for US FY24 H1?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Recommendations slide, no metric keyword."
+  },
+  {
+    "id": "no_route_content_store_product",
+    "query": "Explain the Content Store Roadblock product.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx; Disney+ US FY25 H1.pptx",
+    "note": "Product description, not a metric query."
+  },
+  {
+    "id": "no_route_media_boost",
+    "query": "What is MediaBoost and how does it work?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Methodology explanation, no metric keyword."
+  },
+  {
+    "id": "no_route_home_screen_upgrades",
+    "query": "Describe the LG Home Screen upgrades.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx",
+    "note": "Product update, not a metric query."
+  },
+  {
+    "id": "no_route_title_support",
+    "query": "Which titles were supported in FY24 H1?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Title support timeline, no metric keyword."
+  },
+  {
+    "id": "no_route_flighting_strategy",
+    "query": "What was the flighting strategy in FY24 H2?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Flighting narrative, no metric keyword."
+  },
+  {
+    "id": "no_route_contacts",
+    "query": "List the key contacts on the last slide.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Contact info, not a metric query."
+  },
+  {
+    "id": "no_route_custom_landing_page",
+    "query": "Describe the Custom Landing Page product.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Product description, not a metric query."
+  },
+  {
+    "id": "no_route_tlamp",
+    "query": "What is TLAMP?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx",
+    "note": "Product acronym explanation, no metric keyword."
+  },
+  {
+    "id": "no_route_creative_best_practices",
+    "query": "What are the creative best practices for Carousel?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY25 H1.pptx",
+    "note": "Best practices request, no metric keyword."
+  },
+  {
+    "id": "no_route_emea_strategy",
+    "query": "Explain the EMEA media strategy by market.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY25 H1.pptx",
+    "note": "Strategy summary, no metric keyword."
+  },
+  {
+    "id": "no_route_spring_promo",
+    "query": "How did the roadblock spotlight work in Spring Promo?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Execution description, no metric keyword."
+  },
+  {
+    "id": "no_route_content_store_sponsorship",
+    "query": "What does the deck say about content store sponsorship?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H2.pptx; Disney+ US FY25 H1.pptx",
+    "note": "Narrative question, no metric keyword."
+  },
+  {
+    "id": "no_route_competitor_investment",
+    "query": "Summarize the competitor investment analysis.",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Analysis summary, no metric keyword."
+  },
+  {
+    "id": "edge_performance_change",
+    "query": "How did performance change from H1 to H2?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx",
+    "note": "Metric intent but no explicit alias."
+  },
+  {
+    "id": "edge_efficiency",
+    "query": "Was H2 more efficient than H1?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx",
+    "note": "Metric intent but no explicit alias."
+  },
+  {
+    "id": "edge_watch_time",
+    "query": "How did watch time change in FY24 H2?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H2.pptx",
+    "note": "Watch time is not a router keyword."
+  },
+  {
+    "id": "edge_engagement_improve",
+    "query": "Did engagement improve in FY25 H1?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY25 H1.pptx",
+    "note": "Engagement term alone does not match router."
+  },
+  {
+    "id": "edge_better_results",
+    "query": "Which half had better results?",
+    "expected_route": false,
+    "source_deck": "Disney+ US FY24 H1.pptx; Disney+ US FY24 H2.pptx",
+    "note": "Vague performance query without metric alias."
+  }
+]
