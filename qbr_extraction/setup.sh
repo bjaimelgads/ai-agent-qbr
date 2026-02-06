@@ -3,7 +3,8 @@ set -euo pipefail
 
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-echo 'export UV_LINK_MODE=copy' >> ~/.bashrc
+# Use hardlinks to avoid duplicating large wheel files in low-disk environments.
+echo 'export UV_LINK_MODE=hardlink' >> ~/.bashrc
 source ~/.bashrc
 
 # Force a Python version compatible with onnxruntime wheels

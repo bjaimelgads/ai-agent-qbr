@@ -49,6 +49,19 @@ class DocumentStatus(str, Enum):
     FAILED = "failed"
 
 
+class Client(Base):
+    """Client/advertiser registry."""
+
+    __tablename__ = "clients"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
+
+    documents: Mapped[list["Document"]] = relationship(
+        "Document", back_populates="client"
+    )
+
+
 class SlideType(str, Enum):
     """Type classification for slides."""
 
@@ -74,15 +87,6 @@ class MetricCategory(str, Enum):
     REVENUE = "revenue"  # ROAS, revenue
     EFFICIENCY = "efficiency"  # CPPC, cost per conversion
     OTHER = "other"
-
-
-class MetricTrend(str, Enum):
-    """Trend direction for metrics."""
-
-    UP = "up"
-    DOWN = "down"
-    STABLE = "stable"
-    UNKNOWN = "unknown"
 
 
 class EntityType(str, Enum):
@@ -124,6 +128,44 @@ class FacetType(str, Enum):
     BRAND = "brand"
     PRODUCT = "product"
     CUSTOM = "custom"
+
+
+# =============================================================================
+# Region Models
+# =============================================================================
+
+
+class Region(Base):
+    """Geographic region (e.g., US, EMEA)."""
+
+    __tablename__ = "regions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    countries: Mapped[list["RegionCountry"]] = relationship(
+        "RegionCountry", back_populates="region", cascade="all, delete-orphan"
+    )
+    documents: Mapped[list["Document"]] = relationship(
+        "Document", back_populates="region"
+    )
+    metrics: Mapped[list["Metric"]] = relationship("Metric", back_populates="region")
+
+
+class RegionCountry(Base):
+    """Country membership for a region (canonical names)."""
+
+    __tablename__ = "region_countries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    region_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("regions.id", ondelete="CASCADE"), nullable=False
+    )
+    country_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    country_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
+    region: Mapped["Region"] = relationship("Region", back_populates="countries")
 
 
 # =============================================================================
@@ -177,10 +219,16 @@ class Document(Base):
     detected_languages: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
     # Client/context info (extracted or provided)
-    client_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    client_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("clients.id", ondelete="SET NULL"), nullable=True
+    )
+    region_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("regions.id", ondelete="SET NULL"), nullable=True
+    )
     report_period: Mapped[str | None] = mapped_column(String(100), nullable=True)
     fiscal_year: Mapped[str | None] = mapped_column(String(20), nullable=True)
     quarter: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    half: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
     # Relationships
     sections: Mapped[list["Section"]] = relationship(
@@ -191,6 +239,9 @@ class Document(Base):
     )
     metrics: Mapped[list["Metric"]] = relationship(
         "Metric", back_populates="document", cascade="all, delete-orphan"
+    )
+    region: Mapped["Region | None"] = relationship(
+        "Region", back_populates="documents"
     )
     charts: Mapped[list["Chart"]] = relationship(
         "Chart", back_populates="document", cascade="all, delete-orphan"
@@ -210,6 +261,16 @@ class Document(Base):
     keywords: Mapped[list["Keyword"]] = relationship(
         "Keyword", back_populates="document", cascade="all, delete-orphan"
     )
+    client: Mapped["Client | None"] = relationship("Client", back_populates="documents")
+
+    @property
+    def client_name(self) -> str | None:
+        from sqlalchemy import inspect as sa_inspect
+
+        state = sa_inspect(self)
+        if "client" not in state.unloaded and self.client is not None:
+            return self.client.name
+        return None
 
     __table_args__ = (Index("idx_document_status", "status"),)
 
@@ -345,6 +406,75 @@ class Slide(Base):
 # =============================================================================
 
 
+class Period(Base):
+    """Normalized reporting period."""
+
+    __tablename__ = "periods"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    period_label: Mapped[str] = mapped_column(String(50), nullable=False)
+    period_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    period_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fiscal_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    start_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    end_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
+
+    metrics: Mapped[list["Metric"]] = relationship(
+        "Metric", back_populates="period"
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "period_label",
+            "start_date",
+            "end_date",
+            name="uq_period_label_range",
+        ),
+        Index("idx_period_label", "period_label"),
+        Index("idx_period_fiscal", "fiscal_year"),
+        Index("idx_period_type_number", "period_type", "period_number"),
+    )
+
+
+class MetricCatalog(Base):
+    """Canonical metric catalog with normalized definitions."""
+
+    __tablename__ = "metric_catalog"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
+    slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    category: Mapped[str] = mapped_column(String(50), nullable=True)
+    default_unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    formula: Mapped[str | None] = mapped_column(Text, nullable=True)
+    applicability_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    aliases: Mapped[list["MetricAlias"]] = relationship(
+        "MetricAlias", back_populates="metric", cascade="all, delete-orphan"
+    )
+    metrics: Mapped[list["Metric"]] = relationship(
+        "Metric", back_populates="metric_catalog"
+    )
+
+
+class MetricAlias(Base):
+    """Alias/patterns for matching metric names."""
+
+    __tablename__ = "metric_aliases"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    metric_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("metric_catalog.id", ondelete="CASCADE"), nullable=False
+    )
+    alias: Mapped[str] = mapped_column(String(200), nullable=False)
+    pattern: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    priority: Mapped[int] = mapped_column(Integer, default=0)
+    unit_override: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+    metric: Mapped["MetricCatalog"] = relationship("MetricCatalog", back_populates="aliases")
+
+
 class Metric(Base):
     """
     Extracted and normalized business metric.
@@ -368,6 +498,9 @@ class Metric(Base):
     raw_metric_type: Mapped[str] = mapped_column(
         String(50), nullable=False
     )  # percentage, currency, rate
+    metric_catalog_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("metric_catalog.id", ondelete="SET NULL"), nullable=True
+    )
 
     # LLM-enhanced normalization
     name: Mapped[str | None] = mapped_column(String(200), nullable=True)
@@ -376,31 +509,40 @@ class Metric(Base):
     category: Mapped[str] = mapped_column(
         String(50), default=MetricCategory.OTHER.value
     )
-    trend: Mapped[str] = mapped_column(String(20), default=MetricTrend.UNKNOWN.value)
-
-    # Comparison context
-    comparison_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    comparison_value: Mapped[float | None] = mapped_column(Float, nullable=True)
-    change_percentage: Mapped[float | None] = mapped_column(Float, nullable=True)
-    is_positive_trend: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
-
-    # Business significance (LLM-generated)
-    significance_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    context: Mapped[str | None] = mapped_column(Text, nullable=True)
-    benchmark_comparison: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Confidence
     extraction_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Period/brand/baseline context
+    period_label: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    period_start: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    period_end: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    brand: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    baseline_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    baseline_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    llm_context_label: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    period_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
+    )
+    region_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("regions.id", ondelete="SET NULL"), nullable=True
+    )
+    country: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     # Relationships
     document: Mapped["Document"] = relationship("Document", back_populates="metrics")
     slide: Mapped["Slide | None"] = relationship("Slide", back_populates="metrics")
+    period: Mapped["Period | None"] = relationship("Period", back_populates="metrics")
+    metric_catalog: Mapped["MetricCatalog | None"] = relationship(
+        "MetricCatalog", back_populates="metrics"
+    )
+    region: Mapped["Region | None"] = relationship("Region", back_populates="metrics")
 
     __table_args__ = (
         Index("idx_metric_document", "document_id"),
         Index("idx_metric_category", "category"),
-        Index("idx_metric_trend", "trend"),
         Index("idx_metric_name", "name"),
+        Index("idx_metric_region", "region_id"),
     )
 
 

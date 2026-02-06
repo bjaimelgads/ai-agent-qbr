@@ -19,6 +19,7 @@ class MemoryInteraction:
     user_prompt: str
     agent_response: str
     created_at: datetime
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

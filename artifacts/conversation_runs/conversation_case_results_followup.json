@@ -1,0 +1,396 @@
+{
+  "total": 15,
+  "results": [
+    {
+      "id": "metric_then_followup_compare",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "CPA for Disney+ in FY24 H2 US",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $13.00 (H2 FY24).\n\nSources: doc 3 slide 147"
+        },
+        {
+          "turn": 2,
+          "query": "and in H1?",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $13.00 (H2 FY24).\n\nSources: doc 3 slide 147"
+        },
+        {
+          "turn": 3,
+          "query": "compare them",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Cost per Acquisition moved from $4.58 (H2 FY24) to $9.86 (H2 FY24). Change: $5.28 (115.3%).\n\nDetails:\n- Cost per Acquisition: 4.58 currency (H2 FY24)\n- Cost per Acquisition: 9.86 currency (H2 FY24)\n\nSources: doc 3 slide 189"
+        },
+        {
+          "turn": 4,
+          "query": "what about CPE too?",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Engagement for Disney+ in US is $2.62 (H2 FY25).\n\nSources: doc 5 slide 280"
+        }
+      ]
+    },
+    {
+      "id": "metric_incomplete_then_clarify",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "what was the investment",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Spend for Disney+ in EMEA is 52.00 (H2 FY25).\n\nSources: doc 5 slide 278"
+        },
+        {
+          "turn": 2,
+          "query": "for FY24 H2",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Spend for Disney+ in US is 3.00 (H2 FY24).\n\nSources: doc 3 slide 139"
+        },
+        {
+          "turn": 3,
+          "query": "US",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Spend for Disney+ in US is 3.00 (H2 FY24).\n\nSources: doc 3 slide 139"
+        }
+      ]
+    },
+    {
+      "id": "metric_fuzzy_wording",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "how did efficiency change from H1 to H2",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "i mean CPA and CPE",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $21.24 (H2 FY25).\n\nSources: doc 5 slide 280"
+        },
+        {
+          "turn": 3,
+          "query": "US only",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $21.24 (H2 FY25).\n\nSources: doc 5 slide 280"
+        }
+      ]
+    },
+    {
+      "id": "metric_region_followup",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "installs in FY25 H1",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Installs for Disney+ in EMEA is 7.00 (H1 FY25).\n\nSources: doc 4 slide 207"
+        },
+        {
+          "turn": 2,
+          "query": "EMEA please",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Installs for Disney+ in EMEA is 7.00 (H1 FY25).\n\nSources: doc 4 slide 207"
+        },
+        {
+          "turn": 3,
+          "query": "by market if you can",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        }
+      ]
+    },
+    {
+      "id": "metric_vs_nonmetric_mixed",
+      "topic": "mixed",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "summarize partnership highlights for FY24 H2",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "ok now CPA for FY24 H2",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $13.00 (H2 FY24).\n\nSources: doc 3 slide 147"
+        },
+        {
+          "turn": 3,
+          "query": "and what were the recommendations?",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $13.00 (H2 FY24).\n\nSources: doc 3 slide 147"
+        }
+      ]
+    },
+    {
+      "id": "nonmetric_product_questions",
+      "topic": "non-metric",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "what is the Content Store Roadblock",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Content Store Roadblock Spend for Disney+ in EMEA is 11.00 (H2 FY25).\n\nSources: doc 5 slide 267"
+        },
+        {
+          "turn": 2,
+          "query": "how does it compare to Home Screen Roadblocks",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Content Store Roadblock Spend moved from 0.15% (H2 FY25) to 0.15% (H2 FY25). Change: 0.00% (0.0%).\n\nDetails:\n- Content Store Roadblock Spend: 0.15 percent (H2 FY25)\n- Content Store Roadblock Spend: 0.15 percent (H2 FY25)\n\nSources: doc 5 slide 334, doc 5 slide 335"
+        },
+        {
+          "turn": 3,
+          "query": "any best practices mentioned?",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Content Store Roadblock Spend moved from 0.15% (H2 FY25) to 0.15% (H2 FY25). Change: 0.00% (0.0%).\n\nDetails:\n- Content Store Roadblock Spend: 0.15 percent (H2 FY25)\n- Content Store Roadblock Spend: 0.15 percent (H2 FY25)\n\nSources: doc 5 slide 334, doc 5 slide 335"
+        }
+      ]
+    },
+    {
+      "id": "nonmetric_business_strategy",
+      "topic": "non-metric",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "what is the FY25 H1 media strategy by market",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "summarize the recommendations",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 3,
+          "query": "any risks or gaps called out?",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        }
+      ]
+    },
+    {
+      "id": "fuzzy_business_then_metric",
+      "topic": "mixed",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "how did we do in H2",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "i care about reach and frequency",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Frequency for Disney+ in EMEA is 100.00% (H2 FY25).\n\nSources: doc 5 slide 268"
+        },
+        {
+          "turn": 3,
+          "query": "US only",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Frequency for Disney+ in US is 3.00 (H2 FY25).\n\nSources: doc 5 slide 268"
+        }
+      ]
+    },
+    {
+      "id": "ambiguous_timeframe",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "what is CPA for Disney+",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $21.24 (H2 FY25).\n\nSources: doc 5 slide 280"
+        },
+        {
+          "turn": 2,
+          "query": "last half",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $21.24 (H2 FY25).\n\nSources: doc 5 slide 280"
+        },
+        {
+          "turn": 3,
+          "query": "us",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $21.24 (H2 FY25).\n\nSources: doc 5 slide 280"
+        }
+      ]
+    },
+    {
+      "id": "incomplete_followup_pronouns",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "unique reach in FY24 H2",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Reach for Disney+ in US is 5.00% (H2 FY24).\n\nSources: doc 3 slide 128"
+        },
+        {
+          "turn": 2,
+          "query": "and in EMEA?",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Reach for Disney+ in US is 5.00% (H2 FY24).\n\nSources: doc 3 slide 128"
+        },
+        {
+          "turn": 3,
+          "query": "is it higher?",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Reach for Disney+ in US is 5.00% (H2 FY24).\n\nSources: doc 3 slide 128"
+        }
+      ]
+    },
+    {
+      "id": "metric_definition",
+      "topic": "metric-definition",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "what is CPA",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Acquisition for Disney+ in US is $21.24 (H2 FY25).\n\nSources: doc 5 slide 280"
+        },
+        {
+          "turn": 2,
+          "query": "and CPE?",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Engagement for Disney+ in US is $2.62 (H2 FY25).\n\nSources: doc 5 slide 280"
+        }
+      ]
+    },
+    {
+      "id": "nonmetric_people",
+      "topic": "non-metric",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "who are the contacts on the thank you slide",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "can you list their roles",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        }
+      ]
+    },
+    {
+      "id": "metric_fallback_synonym",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "how much did we spend in FY24 H2",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "The total value is 220,153.00 across 11 records.\n\nSources: doc 3 slide 139, doc 3 slide 144, doc 3 slide 172"
+        },
+        {
+          "turn": 2,
+          "query": "investment only",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Acquisitions for Disney+ in US is 1.00 (H2 FY25).\n\nSources: doc 5 slide 266"
+        },
+        {
+          "turn": 3,
+          "query": "US",
+          "router_matched": false,
+          "metric_tool_used": true,
+          "answer": "Latest Acquisitions for Disney+ in US is 1.00 (H2 FY25).\n\nSources: doc 5 slide 266"
+        }
+      ]
+    },
+    {
+      "id": "metric_kpi_bundle",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "give me installs, launches, and CPA for FY24 H2",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Launches for Disney+ in US is 30.00 (H2 FY24).\n\nSources: doc 3 slide 129"
+        },
+        {
+          "turn": 2,
+          "query": "add CPE",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Cost per Engagement for Disney+ in US is $2.62 (H2 FY25).\n\nSources: doc 5 slide 280"
+        },
+        {
+          "turn": 3,
+          "query": "and average duration per session",
+          "router_matched": true,
+          "metric_tool_used": true,
+          "answer": "Latest Sessions for Disney+ in US is 2.00 (H2 FY25).\n\nSources: doc 5 slide 266"
+        }
+      ]
+    },
+    {
+      "id": "nonmetric_summary",
+      "topic": "non-metric",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "give me a high level summary of FY24 H1",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "top 3 highlights",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        }
+      ]
+    }
+  ]
+}

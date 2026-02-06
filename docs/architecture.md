@@ -16,6 +16,8 @@ Entities:
 - Embedding
 - RetrievalResult
 - Answer
+- Metric
+- Period
 
 Value Objects:
 - DocumentId
@@ -49,6 +51,7 @@ Implementations:
 - SQLiteKnowledgeRepository (SQLAlchemy against `qbr_intelligence.db`).
 - VectorIndex implementation backed by existing embeddings (in-process cosine search or FAISS index).
 - Adapters for existing QBR extraction data (chunk metadata, slide references).
+- Metric context extractors (rule-based, LLM, hybrid) used during extraction.
 
 Responsibilities:
 - Translate between persistence models and domain entities.
@@ -78,6 +81,19 @@ Responsibilities:
 5. Add optional FAISS/pgvector adapters later without touching domain or application layers.
    - Build FAISS index in `FAISS_DIR` and set `VECTOR_BACKEND=faiss`.
 
+## Metric Context Extraction (Period/Brand/Baseline)
+- Metric scanning produces candidate metrics per slide.
+- Context extraction resolves:
+  - `period_label`, `period_start`, `period_end`
+  - `brand`
+  - `baseline_text`, `baseline_type`
+- Strategy pattern enables independent context approaches:
+  - Rule-based parsing for common formats (FY/H1/H2/Q, YoY/MoM, etc.).
+  - LLM-assisted extraction when enabled.
+  - Hybrid: rule-based first, LLM can override.
+- Context provenance stored in `metadata.context_trace` with `source_snippet`.
+- Period normalization uses a fiscal calendar (FY start month configurable).
+
 ## Clean Architecture Rules
 - Domain does not import from application, infrastructure, or interface.
 - Application depends only on domain and ports.
@@ -89,3 +105,4 @@ Responsibilities:
 - Application: use-case tests with fake ports.
 - Infrastructure: integration tests against SQLite fixtures.
 - Interface: end-to-end WebSocket tests that validate AG-UI streaming.
+- Extraction: strategy unit tests for context parsing and fiscal calendar bounds.

@@ -50,13 +50,6 @@ class MetricCategory(str, Enum):
     OTHER = "other"
 
 
-class MetricTrend(str, Enum):
-    UP = "up"
-    DOWN = "down"
-    STABLE = "stable"
-    UNKNOWN = "unknown"
-
-
 class ChartType(str, Enum):
     BAR = "bar"
     LINE = "line"
@@ -104,9 +97,11 @@ class DocumentCreate(BaseSchema):
     title: str | None = None
     mime_type: str
     client_name: str | None = None
+    client_id: int | None = None
     report_period: str | None = None
     fiscal_year: str | None = None
     quarter: str | None = None
+    half: str | None = None
 
 
 class DocumentRead(BaseSchema):
@@ -136,9 +131,11 @@ class DocumentRead(BaseSchema):
     # Context
     detected_languages: list[str] | None = None
     client_name: str | None = None
+    client_id: int | None = None
     report_period: str | None = None
     fiscal_year: str | None = None
     quarter: str | None = None
+    half: str | None = None
 
     # Nested data (optional, loaded on demand)
     sections: list["SectionRead"] | None = None
@@ -155,7 +152,9 @@ class DocumentSummary(BaseSchema):
     created_at: datetime
     page_count: int
     client_name: str | None = None
+    client_id: int | None = None
     report_period: str | None = None
+    half: str | None = None
 
 
 # =============================================================================
@@ -256,6 +255,14 @@ class MetricCreate(BaseSchema):
     raw_value: str
     raw_context: str | None = None
     raw_metric_type: str
+    metric_catalog_id: int | None = None
+    period_label: str | None = None
+    period_start: str | None = None
+    period_end: str | None = None
+    brand: str | None = None
+    baseline_text: str | None = None
+    baseline_type: str | None = None
+    period_id: int | None = None
 
 
 class MetricRead(BaseSchema):
@@ -269,24 +276,23 @@ class MetricRead(BaseSchema):
     raw_value: str
     raw_context: str | None = None
     raw_metric_type: str
+    metric_catalog_id: int | None = None
 
     # Normalized (LLM-enhanced)
     name: str | None = None
     normalized_value: float | None = None
     unit: str | None = None
     category: MetricCategory = MetricCategory.OTHER
-    trend: MetricTrend = MetricTrend.UNKNOWN
-
-    # Comparison
-    comparison_baseline: str | None = None
-    comparison_value: float | None = None
-    change_percentage: float | None = None
-    is_positive_trend: bool | None = None
-
-    # Significance
-    significance: str | None = None
-    benchmark_comparison: str | None = None
     extraction_confidence: float | None = None
+
+    # Period/brand/baseline context
+    period_label: str | None = None
+    period_start: str | None = None
+    period_end: str | None = None
+    brand: str | None = None
+    baseline_text: str | None = None
+    baseline_type: str | None = None
+    period_id: int | None = None
 
 
 # =============================================================================

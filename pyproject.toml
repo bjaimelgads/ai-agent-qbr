@@ -17,6 +17,9 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.6",
     "python-dotenv>=1.0.0",
+    "google-api-python-client>=2.148.0",
+    "google-auth>=2.35.0",
+    "google-auth-oauthlib>=1.2.1",
     "ag-ui-protocol>=0.1.10",
     "aiosqlite>=0.22.1",
     "sqlalchemy>=2.0.45",
@@ -24,6 +27,7 @@ dependencies = [
     "uvicorn>=0.30.6",
     "websockets>=12.0",
     "python-pptx>=1.0.2",
+    "kreuzberg==4.0.0",
 ]
 
 [project.optional-dependencies]
@@ -51,6 +55,7 @@ extraction = [
 [project.scripts]
 ai_agent_qbr = "ai_agent_qbr.__main__:main"
 ai_agent_qbr_playground_ui = "ai_agent_qbr.playground_ui:main"
+metrics = "ai_agent_qbr.metrics_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -60,3 +65,8 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

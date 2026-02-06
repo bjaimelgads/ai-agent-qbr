@@ -6,15 +6,22 @@ import asyncio
 import logging
 import re
 import secrets
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
 from penguiflow.errors import FlowError
-from penguiflow.planner import PlannerFinish, PlannerPause
+from penguiflow.planner import PlannerFinish, PlannerPause, ToolContext
 
 from ai_agent_qbr.config import Config
 from ai_agent_qbr.infrastructure.memory_store import InMemoryMemoryStore
+from ai_agent_qbr.infrastructure.region_filter import (
+    build_context_from_items,
+    filter_items_by_region,
+)
+from ai_agent_qbr.infrastructure.region_verifier import RegionVerifier
+from ai_agent_qbr.infrastructure.metric_router import MetricQueryRouter
 from ai_agent_qbr.observability.mlflow_logger import (
     MlflowConfig,
     MlflowTrace,
@@ -23,8 +30,13 @@ from ai_agent_qbr.observability.mlflow_logger import (
 )
 from ai_agent_qbr.planner import PlannerBundle, build_planner
 from ai_agent_qbr.telemetry import AgentTelemetry
+from ai_agent_qbr.tools.region_verifier import verify_region_filter
+from ai_agent_qbr.models import RegionFilterVerificationArgs
 from qbr_agent.application.use_cases import AnswerQuestion, HybridSearchKnowledge
 from qbr_agent.infrastructure.factory import InfrastructureBundle, build_infrastructure
+from qbr_intelligence.metric_qa import MetricQueryEngine
+from qbr_intelligence.metric_qa.intent_llm import build_intent_llm
+from qbr_intelligence.schemas.metric_qa import AnswerCitation, MetricAnswer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +50,29 @@ def _is_greeting(text: str) -> bool:
     if not text:
         return False
     return bool(_GREETING_RE.match(text))
+
+
+_FOLLOWUP_MARKERS = {
+    "and",
+    "also",
+    "compare",
+    "vs",
+    "versus",
+    "what about",
+    "same",
+    "that",
+    "those",
+    "it",
+}
+
+
+def _looks_like_followup(query: str) -> bool:
+    if not query:
+        return False
+    lowered = query.strip().lower()
+    if len(lowered.split()) <= 4:
+        return True
+    return any(marker in lowered for marker in _FOLLOWUP_MARKERS)
 
 
 
@@ -58,6 +93,69 @@ class AgentResponse:
     answer: str | None
     trace_id: str
     metadata: dict[str, Any] | None = None
+    artifacts: dict[str, Any] | None = None
+
+
+def _coerce_metric_answer(payload: Any) -> MetricAnswer | None:
+    if payload is None:
+        return None
+    if isinstance(payload, MetricAnswer):
+        return payload
+    if isinstance(payload, Mapping):
+        try:
+            return MetricAnswer.model_validate(payload)
+        except Exception:
+            return None
+    return None
+
+
+def _format_metric_value(value: float | None, unit: str | None) -> str:
+    if value is None:
+        return "unknown"
+    if unit == "percent":
+        return f"{value:.2f}%"
+    if unit == "currency":
+        return f"${value:,.2f}"
+    return f"{value:,.2f}"
+
+
+def _build_metric_grid_artifact(answer: MetricAnswer | None) -> dict[str, Any] | None:
+    if answer is None:
+        return None
+    rows = answer.table_data or []
+    if len(rows) <= 1:
+        return None
+    grid_rows: list[dict[str, Any]] = []
+    metric_title = None
+    for row in rows:
+        metric = row.get("metric") or "metric"
+        if metric_title is None and metric:
+            metric_title = str(metric)
+        value = _format_metric_value(row.get("value"), row.get("unit"))
+        period = row.get("period")
+        region = row.get("region")
+        client = row.get("client")
+        metric_url = row.get("slide_url") or row.get("document_url")
+        grid_rows.append(
+            {
+                "value": value,
+                "period": period,
+                "region": region,
+                "client": client,
+                "metric_url": metric_url,
+            }
+        )
+    return {
+        "type": "datagrid",
+        "title": metric_title or "Metric Results",
+        "columns": [
+            {"field": "value", "header": "Value", "format": "text"},
+            {"field": "period", "header": "Time Period", "format": "text"},
+            {"field": "region", "header": "Region", "format": "text"},
+            {"field": "client", "header": "Client", "format": "text"},
+        ],
+        "rows": grid_rows,
+    }
 
 
 def _extract_answer(payload: Any) -> str | None:
@@ -148,6 +246,47 @@ def _extract_answer_from_mapping(payload: Mapping[str, Any]) -> str | None:
     return None
 
 
+def _format_metric_answer(answer: MetricAnswer) -> str:
+    text = answer.summary_text.strip()
+    details_rows = answer.table_data
+    if not details_rows and answer.data:
+        details_rows = [row.model_dump() if hasattr(row, "model_dump") else dict(row) for row in answer.data]
+    if details_rows:
+        lines = ["", "Details:"]
+        for row in details_rows[:5]:
+            metric = row.get("metric") or "metric"
+            period = row.get("period") or "period"
+            value = row.get("value")
+            unit = row.get("unit") or ""
+            context_label = row.get("llm_context_label")
+            context_text = f" — {context_label}" if context_label else ""
+            lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
+        text = f"{text}\n" + "\n".join(lines)
+    if answer.citations:
+        def _format_source(citation: AnswerCitation) -> str:
+            doc_label = citation.document_name or f"doc {citation.document_id}"
+            if citation.slide_number is not None:
+                doc_label = f"{doc_label} slide {citation.slide_number}"
+            elif citation.slide_id is not None:
+                doc_label = f"{doc_label} slide {citation.slide_id}"
+            doc_url = citation.slide_url or citation.document_url
+            if doc_url:
+                return f"{doc_label} ({doc_url})"
+            return doc_label
+
+        sources = ", ".join(_format_source(c) for c in answer.citations)
+        text = f"{text}\n\nSources: {sources}"
+    return text
+
+
+def _make_tool_context(payload: dict[str, Any]) -> Any:
+    """Create a tool context compatible with PenguiFlow Protocols."""
+    try:
+        return ToolContext(tool_context=payload)
+    except TypeError:
+        return type("ToolContext", (), {"tool_context": payload})()
+
+
 class AiAgentQbrOrchestrator:
     """Orchestrator that coordinates planner execution and QBR retrieval."""
 
@@ -185,6 +324,9 @@ class AiAgentQbrOrchestrator:
         self._recent_turns_limit = config.short_term_memory_full_zone_turns
         self._infra_bundle = infrastructure
         self._infra_lock = asyncio.Lock()
+        self._region_verifier: RegionVerifier | None = None
+        self._metric_router = MetricQueryRouter()
+        self._metric_query_engine: MetricQueryEngine | None = None
         self._mlflow_tracer = MlflowTracer(
             MlflowConfig(
                 enabled=config.mlflow_enabled,
@@ -220,6 +362,34 @@ class AiAgentQbrOrchestrator:
                     faiss_normalize=self._config.faiss_normalize,
                 )
         return self._infra_bundle
+
+    async def _get_metric_query_engine(self) -> MetricQueryEngine:
+        if self._metric_query_engine is not None:
+            return self._metric_query_engine
+        infra = await self._get_infrastructure()
+        intent_llm = None
+        if self._config.llm_intent_enabled and not self._config.use_stub_llm:
+            model_name = self._config.llm_model
+            if not model_name or model_name == "stub-llm":
+                if self._config.llm_model_name:
+                    model_name = f"databricks/{self._config.llm_model_name}"
+                else:
+                    model_name = None
+            if model_name and model_name != "stub-llm":
+                intent_llm = build_intent_llm(
+                    model=model_name,
+                    max_tokens=min(512, self._config.llm_max_tokens),
+                    temperature=0.0,
+                )
+        self._metric_query_engine = MetricQueryEngine(
+            database_url=self._config.database_url,
+            embeddings_provider=infra.embeddings,
+            llm_intent_enabled=self._config.llm_intent_enabled,
+            llm_answer_enabled=self._config.llm_answer_enabled,
+            llm_max_calls_per_query=self._config.llm_max_calls_per_query,
+            intent_llm=intent_llm,
+        )
+        return self._metric_query_engine
 
     def _append_recent_turn(
         self,
@@ -299,6 +469,7 @@ class AiAgentQbrOrchestrator:
                     session_id=session_id,
                     user_prompt=query,
                     agent_response=answer_text,
+                    metadata={},
                 )
                 self._append_recent_turn(
                     tenant_id=tenant_id,
@@ -321,6 +492,23 @@ class AiAgentQbrOrchestrator:
                     trace_id=trace_id,
                     metadata={},
                 )
+
+
+            region_result = None
+            region_focus = None
+            if self._config.region_verifier_enabled:
+                if self._region_verifier is None:
+                    self._region_verifier = RegionVerifier(self._config)
+                region_result = await verify_region_filter(
+                    RegionFilterVerificationArgs(question=query),
+                    _make_tool_context(
+                        {
+                            "status_publisher": self._telemetry.publish_status,
+                            "region_verifier": self._region_verifier,
+                        }
+                    ),
+                )
+                region_focus = region_result.region_focus
 
             infra = await self._get_infrastructure()
             search_use_case = HybridSearchKnowledge(
@@ -370,10 +558,23 @@ class AiAgentQbrOrchestrator:
                     min_score=self._config.retrieval_min_score,
                 )
 
+                if region_focus in {"us", "emea"}:
+                    filtered_citations = filter_items_by_region(
+                        answer_context.citations, region_focus
+                    )
+                    filtered_context = (
+                        build_context_from_items(filtered_citations)
+                        if filtered_citations
+                        else ""
+                    )
+                else:
+                    filtered_citations = list(answer_context.citations)
+                    filtered_context = answer_context.context or ""
+
                 self._mlflow_trace.set_outputs(
                     retrieval_span,
                     {
-                        "qbr_context": answer_context.context,
+                        "qbr_context": filtered_context,
                         "citations": [
                             {
                                 "chunk_id": result.chunk.chunk_id.value,
@@ -383,7 +584,7 @@ class AiAgentQbrOrchestrator:
                                 "end_slide": result.chunk.end_slide,
                                 "content": result.chunk.content,
                             }
-                            for result in answer_context.citations
+                            for result in filtered_citations
                         ],
                         "retrieval_debug": answer_use_case.last_debug or {},
                     },
@@ -394,11 +595,11 @@ class AiAgentQbrOrchestrator:
                 tags={"trace_id": trace_id},
             ) as retrieval_run:
                 if retrieval_run:
-                    retrieval_run.log_param("citation_count", len(answer_context.citations))
+                    retrieval_run.log_param("citation_count", len(filtered_citations))
                     self._mlflow_tracer.log_text(
                         retrieval_run,
                         "qbr_context",
-                        answer_context.context or "",
+                        filtered_context or "",
                     )
                     self._mlflow_tracer.log_json(
                         retrieval_run,
@@ -412,7 +613,7 @@ class AiAgentQbrOrchestrator:
                                 "end_slide": result.chunk.end_slide,
                                 "content": result.chunk.content,
                             }
-                            for result in answer_context.citations
+                            for result in filtered_citations
                         ],
                     )
                     if answer_use_case.last_debug:
@@ -430,7 +631,10 @@ class AiAgentQbrOrchestrator:
                 "conversation_memory": {
                     "recent_turns": list(self._recent_turns.get(session_key, []))
                 },
-                "qbr_context": answer_context.context,
+                "qbr_context": filtered_context,
+                "region_verification": (
+                    region_result.model_dump() if region_result is not None else None
+                ),
                 "qbr_citations": [
                     {
                         "chunk_id": result.chunk.chunk_id.value,
@@ -439,7 +643,7 @@ class AiAgentQbrOrchestrator:
                         "start_slide": result.chunk.start_slide,
                         "end_slide": result.chunk.end_slide,
                     }
-                    for result in answer_context.citations
+                    for result in filtered_citations
                 ],
             }
             tool_context = {
@@ -450,13 +654,18 @@ class AiAgentQbrOrchestrator:
                 "status_publisher": self._telemetry.publish_status,
                 "output_protocol": self._config.output_protocol,
                 "qbr_search_use_case": search_use_case,
-                "qbr_answer_context": answer_context.context,
+                "qbr_answer_context": filtered_context,
+                "region_focus": region_focus,
+                "region_verifier": self._region_verifier,
                 "retrieval_top_k": self._config.retrieval_top_k,
                 "retrieval_min_score": self._config.retrieval_min_score,
                 "retrieval_include_document_path": self._config.retrieval_include_document_path,
                 "comparison_top_docs": self._config.comparison_top_docs,
                 "comparison_per_doc_k": self._config.comparison_per_doc_k,
             }
+            interaction_metadata: dict[str, Any] = {}
+            tool_context["interaction_metadata"] = interaction_metadata
+            tool_context["metric_query_engine"] = await self._get_metric_query_engine()
             if self._config.comparison_stage1_top_k is not None:
                 tool_context["comparison_stage1_top_k"] = self._config.comparison_stage1_top_k
 
@@ -465,14 +674,22 @@ class AiAgentQbrOrchestrator:
                 span_type="LLM",
                 inputs={
                     "query": query,
-                    "qbr_context": answer_context.context,
+                    "qbr_context": filtered_context,
                     "qbr_citations": llm_context["qbr_citations"],
                 },
             ) as planner_span:
+                planner_started = time.perf_counter()
+                _LOGGER.info("Planner start trace_id=%s session_id=%s", trace_id, session_id)
                 result = await self._planner.run(
                     query=query,
                     llm_context=llm_context,
                     tool_context=tool_context,
+                )
+                _LOGGER.info(
+                    "Planner finished trace_id=%s session_id=%s elapsed_s=%.2f",
+                    trace_id,
+                    session_id,
+                    time.perf_counter() - planner_started,
                 )
 
             if isinstance(result, PlannerPause):
@@ -491,6 +708,7 @@ class AiAgentQbrOrchestrator:
                     session_id=session_id,
                     user_prompt=query,
                     agent_response=answer_text,
+                    metadata=interaction_metadata,
                 )
                 self._append_recent_turn(
                     tenant_id=tenant_id,
@@ -528,10 +746,43 @@ class AiAgentQbrOrchestrator:
                         payload,
                     )
 
+            metric_answer = None
+            if isinstance(interaction_metadata, dict):
+                metric_payload = interaction_metadata.get("metric_answer")
+                metric_answer = _coerce_metric_answer(metric_payload)
+            if metric_answer is None:
+                metric_answer = _coerce_metric_answer(payload)
+            if metric_answer is None:
+                _LOGGER.info("metric_grid trace_id=%s status=missing_metric_answer", trace_id)
+            else:
+                table_len = len(metric_answer.table_data or [])
+                data_len = len(metric_answer.data or [])
+                _LOGGER.info(
+                    "metric_grid trace_id=%s status=answer_loaded table_len=%s data_len=%s",
+                    trace_id,
+                    table_len,
+                    data_len,
+                )
+            artifacts = None
+            if self._config.rich_output_enabled and (
+                "datagrid" in (self._config.rich_output_allowlist or [])
+            ):
+                artifacts = _build_metric_grid_artifact(metric_answer)
+            if artifacts is None:
+                _LOGGER.info("metric_grid trace_id=%s status=no_artifact", trace_id)
+            else:
+                _LOGGER.info(
+                    "metric_grid trace_id=%s status=artifact type=%s rows=%s",
+                    trace_id,
+                    artifacts.get("type") if isinstance(artifacts, dict) else None,
+                    len(artifacts.get("rows") or []) if isinstance(artifacts, dict) else None,
+                )
+
             return AgentResponse(
                 answer=answer_text,
                 trace_id=trace_id,
                 metadata=dict(result.metadata),
+                artifacts=artifacts,
             )
 
     async def start_session(

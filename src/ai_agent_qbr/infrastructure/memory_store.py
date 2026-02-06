@@ -39,6 +39,7 @@ class InMemoryMemoryStore:
         session_id: str,
         user_prompt: str,
         agent_response: str,
+        metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         key = (tenant_id, user_id, session_id)
         self._interactions[key].append(
@@ -46,6 +47,7 @@ class InMemoryMemoryStore:
                 user_prompt=user_prompt,
                 agent_response=agent_response,
                 created_at=datetime.now(timezone.utc),
+                metadata=metadata or {},
             )
         )
         if self._max_turns and len(self._interactions[key]) > self._max_turns:
@@ -90,6 +92,24 @@ class InMemoryMemoryStore:
             return []
         slice_items = interactions[-limit:] if limit else interactions
         return [
-            {"user": item.user_prompt, "assistant": item.agent_response}
+            {
+                "user": item.user_prompt,
+                "assistant": item.agent_response,
+                "metadata": item.metadata,
+            }
             for item in slice_items
         ]
+
+    def get_last_metric_intent(
+        self,
+        *,
+        tenant_id: str,
+        user_id: str,
+        session_id: str,
+    ) -> dict[str, Any] | None:
+        interactions = self._interactions.get((tenant_id, user_id, session_id), [])
+        for item in reversed(interactions):
+            intent = item.metadata.get("metric_intent") if item.metadata else None
+            if isinstance(intent, dict):
+                return intent
+        return None

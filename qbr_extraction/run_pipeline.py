@@ -9,8 +9,14 @@ This script shows how to:
 
 Usage:
     python run_pipeline.py disney.pptx
-    python run_pipeline.py disney.pptx --no-llm  # Skip LLM enhancement
+    python run_pipeline.py disney.pptx --llm-metrics  # LLM metrics only
+    python run_pipeline.py disney.pptx --llm-summary  # LLM summary only
+    python run_pipeline.py disney.pptx --llm-enhancement  # LLM enhancement only
+    python run_pipeline.py disney.pptx --llm  # Full LLM enhancement
+    python run_pipeline.py disney.pptx --no-llm  # Explicitly disable LLM steps
     python run_pipeline.py --query-only          # Query existing data only
+    python run_pipeline.py disney.pptx --max-slides 4
+    python run_pipeline.py disney.pptx --slide-range 3-6
 
 Environment variables (can be set in .env file):
     OPENAI_API_KEY      - OpenAI API key (required for LLM enhancement)
@@ -28,10 +34,16 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 
 from dotenv import load_dotenv
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+repo_root = Path(__file__).resolve().parents[1]
+src_root = repo_root / "src"
+if str(src_root) not in sys.path:
+    sys.path.insert(0, str(src_root))
 
 from qbr_intelligence import QBRProcessor, QBRQueryInterface, init_db
 from qbr_intelligence.db.models import Document
@@ -43,6 +55,7 @@ from qbr_intelligence.query.tools import (
     get_top_metrics,
     list_documents,
 )
+from qbr_agent.infrastructure.faiss_builder import FaissBuildConfig, build_faiss_index
 
 # Load environment variables from .env file
 load_dotenv()
@@ -51,10 +64,15 @@ load_dotenv()
 async def process_document(
     file_path: str,
     database_url: str,
-    run_llm_enhancement: bool = True,
+    run_llm_metrics: bool = False,
+    run_llm_enhancement: bool = False,
+    run_llm_summary: bool = False,
+    run_llm_adjudicator: bool = False,
     export_outputs: bool = False,
     output_dir: str | None = None,
     override_existing: bool = False,
+    slide_range: tuple[int, int] | None = None,
+    max_slides: int | None = None,
 ) -> int:
     """
     Process a QBR document through the full pipeline.
@@ -78,7 +96,7 @@ async def process_document(
 
     # Check LLM config if enhancement enabled
     llm_model = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
-    if run_llm_enhancement:
+    if run_llm_enhancement or run_llm_metrics or run_llm_summary or run_llm_adjudicator:
         print("\n[2/4] LLM Enhancement enabled")
         print(f"      Model: {llm_model}")
         print("      LiteLLM picks up provider-specific env vars:")
@@ -86,8 +104,16 @@ async def process_document(
         print("      - OpenAI: OPENAI_API_KEY")
         print("      - Anthropic: ANTHROPIC_API_KEY")
         print("      - OpenRouter: OPENROUTER_API_KEY")
+        if not run_llm_enhancement and run_llm_metrics and not run_llm_summary:
+            print("      Mode: metrics-only (other LLM steps disabled)")
+        if not run_llm_enhancement and run_llm_summary and not run_llm_metrics:
+            print("      Mode: summary-only (other LLM steps disabled)")
+        if not run_llm_enhancement and run_llm_summary and run_llm_metrics:
+            print("      Mode: metrics + summary (other LLM steps disabled)")
+        if run_llm_adjudicator and not run_llm_enhancement and not run_llm_metrics and not run_llm_summary:
+            print("      Mode: metric adjudicator only")
     else:
-        print("\n[2/4] Skipping LLM enhancement (--no-llm)")
+        print("\n[2/4] Skipping LLM enhancement (default)")
 
     embedding_settings = EmbeddingSettings.from_env()
     if embedding_settings.enabled:
@@ -108,9 +134,14 @@ async def process_document(
     start_time = time.perf_counter()
     doc_id = processor.process_document(
         file_path=file_path,
+        run_llm_metrics=run_llm_metrics,
         run_llm_enhancement=run_llm_enhancement,
+        run_llm_summary=run_llm_summary,
+        run_llm_adjudicator=run_llm_adjudicator,
         export_outputs=export_outputs,
         output_dir=output_dir,
+        slide_range=slide_range,
+        max_slides=max_slides,
     )
     elapsed_seconds = time.perf_counter() - start_time
     end_dt = datetime.now(timezone.utc)
@@ -127,14 +158,37 @@ async def process_document(
         "finished_at": end_dt.isoformat(),
         "elapsed_seconds": round(elapsed_seconds, 3),
         "llm_enhancement": run_llm_enhancement,
+        "llm_adjudicator": run_llm_adjudicator,
         "llm_model": llm_model,
         "export_outputs": export_outputs,
         "output_dir": str(timing_target_dir),
     }
     timing_path.write_text(json.dumps(timing_payload, indent=2), encoding="utf-8")
     print(f"      Timing saved: {timing_path}")
+    print(f"      Elapsed time: {timing_payload['elapsed_seconds']}s")
 
     print(f"\n[4/4] Processing complete. Document ID: {doc_id}")
+
+    if os.getenv("FAISS_AUTO_BUILD", "").lower() in {"1", "true", "yes"}:
+        try:
+            config = FaissBuildConfig(
+                database_url=database_url,
+                base_dir=Path(os.getenv("FAISS_DIR", "./data/faiss")),
+                normalize=os.getenv("FAISS_NORMALIZE", "true").lower()
+                in {"1", "true", "yes"},
+                index_type=os.getenv("FAISS_INDEX_TYPE", "Flat"),
+                metric=os.getenv("FAISS_METRIC", "ip"),
+                embedding_model_filter=os.getenv("FAISS_EMBEDDING_MODEL_FILTER", "").strip()
+                or None,
+                force=os.getenv("FAISS_FORCE_REBUILD", "").lower() in {"1", "true", "yes"},
+            )
+            built = await build_faiss_index(config)
+            if built:
+                print(f"  [FAISS] Index built at {config.base_dir}")
+            else:
+                print("  [FAISS] Index already exists or no embeddings found.")
+        except Exception as exc:
+            print(f"  [FAISS] Auto-build failed: {exc}")
 
     return doc_id
 
@@ -182,7 +236,7 @@ async def query_demo(database_url: str, document_id: int | None = None):
         print(f"\n[Query 4] Top Metrics (ID: {document_id}):")
         top = await get_top_metrics(session, document_id, limit=5)
         for m in top.get("top_metrics", []):
-            print(f"  - {m['name']}: {m['raw_value']} ({m.get('trend', 'N/A')})")
+            print(f"  - {m['name']}: {m['raw_value']}")
 
         print(f"\n[Query 5] Key Insights (ID: {document_id}):")
         insights = await get_key_insights(session, document_id)
@@ -280,6 +334,22 @@ async def _delete_existing_documents(database_url: str, filename: str) -> int:
     return removed
 
 
+def _parse_slide_range(raw: str) -> tuple[int, int]:
+    value = raw.strip()
+    if "-" in value:
+        parts = value.split("-", 1)
+    elif ":" in value:
+        parts = value.split(":", 1)
+    else:
+        num = int(value)
+        return (num, num)
+    start = int(parts[0].strip())
+    end = int(parts[1].strip())
+    if start > end:
+        raise ValueError("Slide range start must be <= end.")
+    return (start, end)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="QBR Intelligence Pipeline - Process and query QBR documents"
@@ -301,9 +371,34 @@ def main():
         help=f"Database URL (default: {default_db})",
     )
     parser.add_argument(
+        "--llm-metrics",
+        action="store_true",
+        help="Enable LLM metric refinement",
+    )
+    parser.add_argument(
+        "--llm-summary",
+        action="store_true",
+        help="Enable LLM executive summary generation",
+    )
+    parser.add_argument(
+        "--llm-enhancement",
+        action="store_true",
+        help="Enable LLM enhancement pipeline (slides/charts/entities/etc.)",
+    )
+    parser.add_argument(
+        "--llm-adjudicator",
+        action="store_true",
+        help="Enable LLM adjudication for low-confidence metrics only",
+    )
+    parser.add_argument(
+        "--llm",
+        action="store_true",
+        help="Enable all LLM steps (metrics + enhancement + summary)",
+    )
+    parser.add_argument(
         "--no-llm",
         action="store_true",
-        help="Skip LLM enhancement",
+        help="Disable all LLM steps (default)",
     )
     parser.add_argument(
         "--query-only",
@@ -335,6 +430,16 @@ def main():
         metavar="DIR",
         help="Override the extraction output directory (default: extraction_output)",
     )
+    parser.add_argument(
+        "--slide-range",
+        metavar="RANGE",
+        help="Process only slides in the given range (e.g., 1-4 or 3:7)",
+    )
+    parser.add_argument(
+        "--max-slides",
+        type=int,
+        help="Process only the first N slides",
+    )
 
     args = parser.parse_args()
 
@@ -343,6 +448,26 @@ def main():
 
         if args.file and args.folder:
             raise ValueError("Use either a single file or --folder, not both.")
+        if args.slide_range and args.max_slides:
+            raise ValueError("Use either --slide-range or --max-slides, not both.")
+        run_llm_metrics = args.llm_metrics
+        run_llm_enhancement = args.llm_enhancement
+        run_llm_summary = args.llm_summary
+        run_llm_adjudicator = args.llm_adjudicator
+        if args.llm:
+            run_llm_metrics = True
+            run_llm_enhancement = True
+            run_llm_summary = True
+            run_llm_adjudicator = True
+        if args.no_llm:
+            run_llm_metrics = False
+            run_llm_enhancement = False
+            run_llm_summary = False
+            run_llm_adjudicator = False
+        slide_range = _parse_slide_range(args.slide_range) if args.slide_range else None
+        max_slides = args.max_slides
+        if max_slides is not None and max_slides <= 0:
+            raise ValueError("--max-slides must be a positive integer.")
 
         # Process document if provided
         if args.folder and not args.query_only:
@@ -362,19 +487,29 @@ def main():
                 doc_id = await process_document(
                     file_path=str(pptx_path),
                     database_url=args.db,
-                    run_llm_enhancement=not args.no_llm,
+                    run_llm_metrics=run_llm_metrics,
+                    run_llm_enhancement=run_llm_enhancement,
+                    run_llm_summary=run_llm_summary,
+                    run_llm_adjudicator=run_llm_adjudicator,
                     export_outputs=args.export_extraction,
                     output_dir=args.extraction_output_dir,
                     override_existing=args.override,
+                    slide_range=slide_range,
+                    max_slides=max_slides,
                 )
         elif args.file and not args.query_only:
             doc_id = await process_document(
                 file_path=args.file,
                 database_url=args.db,
-                run_llm_enhancement=not args.no_llm,
+                run_llm_metrics=run_llm_metrics,
+                run_llm_enhancement=run_llm_enhancement,
+                run_llm_summary=run_llm_summary,
+                run_llm_adjudicator=run_llm_adjudicator,
                 export_outputs=args.export_extraction,
                 output_dir=args.extraction_output_dir,
                 override_existing=args.override,
+                slide_range=slide_range,
+                max_slides=max_slides,
             )
 
         # Run query demo

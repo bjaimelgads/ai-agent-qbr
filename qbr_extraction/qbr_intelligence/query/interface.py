@@ -15,6 +15,7 @@ from sqlalchemy.orm import selectinload
 from qbr_intelligence.db.models import (
     Chart,
     Chunk,
+    Client,
     Document,
     DocumentFacet,
     DocumentStatus,
@@ -84,38 +85,40 @@ class QBRQueryInterface:
         Returns:
             List of document summaries
         """
-        query = select(Document)
+        query = select(Document, Client)
 
         conditions = []
         if status:
             conditions.append(Document.status == status)
         if client_name:
-            conditions.append(Document.client_name.ilike(f"%{client_name}%"))
+            conditions.append(Client.name.ilike(f"%{client_name}%"))
         if date_from:
             conditions.append(Document.created_at >= date_from)
         if date_to:
             conditions.append(Document.created_at <= date_to)
 
         if conditions:
-            query = query.where(and_(*conditions))
+            query = query.outerjoin(Client).where(and_(*conditions))
+        else:
+            query = query.outerjoin(Client)
 
         query = query.order_by(Document.created_at.desc()).limit(limit).offset(offset)
 
         result = await self.session.execute(query)
-        documents = result.scalars().all()
+        rows = result.all()
 
         return [
             {
                 "id": doc.id,
                 "filename": doc.filename,
-                "client_name": doc.client_name,
+                "client_name": client.name if client else None,
                 "period": doc.period,
                 "status": doc.status,
                 "slide_count": doc.slide_count,
                 "executive_summary": doc.executive_summary,
                 "created_at": doc.created_at.isoformat() if doc.created_at else None,
             }
-            for doc in documents
+            for doc, client in rows
         ]
 
     async def get_document(self, document_id: int) -> dict[str, Any] | None:
@@ -133,6 +136,7 @@ class QBRQueryInterface:
             .options(
                 selectinload(Document.sections),
                 selectinload(Document.facets).selectinload(DocumentFacet.facet_value).selectinload(FacetValue.facet),
+                selectinload(Document.client),
             )
             .where(Document.id == document_id)
         )
@@ -203,7 +207,9 @@ class QBRQueryInterface:
         Returns:
             Summary data including wins, improvements, recommendations
         """
-        query = select(Document).where(Document.id == document_id)
+        query = select(Document).options(selectinload(Document.client)).where(
+            Document.id == document_id
+        )
         result = await self.session.execute(query)
         doc = result.scalar_one_or_none()
 
@@ -272,7 +278,7 @@ class QBRQueryInterface:
         if conditions:
             query = query.where(and_(*conditions))
 
-        query = query.order_by(Metric.significance_score.desc().nullslast()).limit(limit)
+        query = query.order_by(Metric.normalized_value.desc().nullslast()).limit(limit)
 
         result = await self.session.execute(query)
         metrics = result.scalars().all()
@@ -287,11 +293,6 @@ class QBRQueryInterface:
                 "normalized_value": m.normalized_value,
                 "unit": m.unit,
                 "category": m.category if m.category else None,
-                "trend": m.trend,
-                "comparison_type": m.comparison_type,
-                "comparison_value": m.comparison_value,
-                "context": m.context,
-                "significance_score": m.significance_score,
             }
             for m in metrics
         ]
@@ -311,7 +312,7 @@ class QBRQueryInterface:
         query = (
             select(Metric)
             .where(Metric.document_id == document_id)
-            .order_by(Metric.category, Metric.significance_score.desc().nullslast())
+            .order_by(Metric.category, Metric.normalized_value.desc().nullslast())
         )
 
         result = await self.session.execute(query)
@@ -328,9 +329,7 @@ class QBRQueryInterface:
                 "raw_value": m.raw_value,
                 "normalized_value": m.normalized_value,
                 "unit": m.unit,
-                "trend": m.trend,
                 "slide_id": m.slide_id,
-                "significance_score": m.significance_score,
             })
 
         return grouped
@@ -339,20 +338,19 @@ class QBRQueryInterface:
         self, document_id: int, limit: int = 10
     ) -> list[dict[str, Any]]:
         """
-        Get the most significant metrics for a document.
+        Get the highest-valued metrics for a document.
 
         Args:
             document_id: Document ID
             limit: Number of top metrics to return
 
         Returns:
-            List of most significant metrics
+            List of metrics ordered by normalized value
         """
         query = (
             select(Metric)
             .where(Metric.document_id == document_id)
-            .where(Metric.significance_score.isnot(None))
-            .order_by(Metric.significance_score.desc())
+            .order_by(Metric.normalized_value.desc().nullslast())
             .limit(limit)
         )
 
@@ -363,10 +361,9 @@ class QBRQueryInterface:
             {
                 "name": m.name,
                 "raw_value": m.raw_value,
+                "normalized_value": m.normalized_value,
+                "unit": m.unit,
                 "category": m.category if m.category else None,
-                "trend": m.trend,
-                "significance_score": m.significance_score,
-                "context": m.context,
             }
             for m in metrics
         ]
@@ -387,8 +384,9 @@ class QBRQueryInterface:
             List of metric values across documents with context
         """
         query = (
-            select(Metric, Document.client_name, Document.period)
+            select(Metric, Client.name, Document.period)
             .join(Document)
+            .outerjoin(Client)
             .where(Metric.name.ilike(f"%{metric_name}%"))
         )
 
@@ -408,7 +406,6 @@ class QBRQueryInterface:
                 "metric_name": m.name,
                 "raw_value": m.raw_value,
                 "normalized_value": m.normalized_value,
-                "trend": m.trend,
             }
             for m, client_name, period in rows
         ]

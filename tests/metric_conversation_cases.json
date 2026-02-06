@@ -1,0 +1,178 @@
+[
+  {
+    "id": "conv_greeting_general_capabilities",
+    "description": "Greeting + capabilities + general question",
+    "turns": [
+      {
+        "query": "hi there",
+        "expected_metric_route": false
+      },
+      {
+        "query": "what can you do?",
+        "expected_metric_route": false
+      },
+      {
+        "query": "summarize the FY24 H2 partnership highlights",
+        "expected_metric_route": false
+      }
+    ]
+  },
+  {
+    "id": "conv_metric_then_followup_incomplete",
+    "description": "Metric query followed by incomplete follow-up",
+    "turns": [
+      {
+        "query": "CPA for Disney+ in FY24 H2 (US)",
+        "expected_metric_route": true
+      },
+      {
+        "query": "and in H1?",
+        "expected_metric_route": false
+      },
+      {
+        "query": "compare H1 vs H2",
+        "expected_metric_route": false
+      }
+    ]
+  },
+  {
+    "id": "conv_metric_then_followup_with_metric",
+    "description": "Metric query with explicit metric follow-ups",
+    "turns": [
+      {
+        "query": "Total installs and launches in FY24 H2",
+        "expected_metric_route": true
+      },
+      {
+        "query": "and CTR for the same period?",
+        "expected_metric_route": true
+      },
+      {
+        "query": "unique reach?",
+        "expected_metric_route": true
+      }
+    ]
+  },
+  {
+    "id": "conv_bad_spelling_metric",
+    "description": "Bad spelling of metric terms",
+    "turns": [
+      {
+        "query": "whats cpa for disny plus h2?",
+        "expected_metric_route": true
+      },
+      {
+        "query": "cpe emea h1 pls",
+        "expected_metric_route": true
+      },
+      {
+        "query": "ctr carusel video vs static?",
+        "expected_metric_route": true
+      }
+    ]
+  },
+  {
+    "id": "conv_incomplete_metric_terms",
+    "description": "Incomplete metric prompts",
+    "turns": [
+      {
+        "query": "CPA?",
+        "expected_metric_route": true
+      },
+      {
+        "query": "US FY24 H2",
+        "expected_metric_route": false
+      },
+      {
+        "query": "and cpe?",
+        "expected_metric_route": true
+      }
+    ]
+  },
+  {
+    "id": "conv_product_questions",
+    "description": "Product feature questions (should be non-metric)",
+    "turns": [
+      {
+        "query": "Explain the Content Store Roadblock product",
+        "expected_metric_route": false
+      },
+      {
+        "query": "Describe the LG Home Screen upgrades",
+        "expected_metric_route": false
+      },
+      {
+        "query": "What is TLAMP?",
+        "expected_metric_route": false
+      }
+    ]
+  },
+  {
+    "id": "conv_strategy_and_metrics_mix",
+    "description": "Strategy question then metric follow-up",
+    "turns": [
+      {
+        "query": "What were the US FY24 recommendations?",
+        "expected_metric_route": false
+      },
+      {
+        "query": "give me CPA and CPE for US FY24 H1",
+        "expected_metric_route": true
+      },
+      {
+        "query": "and investment?",
+        "expected_metric_route": true
+      }
+    ]
+  },
+  {
+    "id": "conv_emea_market_metrics",
+    "description": "EMEA metrics by market with vague follow-up",
+    "turns": [
+      {
+        "query": "CPE by EMEA market in FY24 H1",
+        "expected_metric_route": true
+      },
+      {
+        "query": "which market was best?",
+        "expected_metric_route": false
+      },
+      {
+        "query": "UK CPE?",
+        "expected_metric_route": true
+      }
+    ]
+  },
+  {
+    "id": "conv_competitor_investment",
+    "description": "Competitor analysis wording",
+    "turns": [
+      {
+        "query": "Summarize the competitor investment analysis",
+        "expected_metric_route": false
+      },
+      {
+        "query": "investment in FY24 H2",
+        "expected_metric_route": true
+      }
+    ]
+  },
+  {
+    "id": "conv_watch_time_engagement",
+    "description": "Non-router metrics (watch time, engagement)",
+    "turns": [
+      {
+        "query": "How did watch time change in FY24 H2?",
+        "expected_metric_route": false
+      },
+      {
+        "query": "Did engagement improve in FY25 H1?",
+        "expected_metric_route": false
+      },
+      {
+        "query": "average minutes per launch in FY24 H2",
+        "expected_metric_route": false
+      }
+    ]
+  }
+]

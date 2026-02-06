@@ -41,9 +41,10 @@ class MemoryClient:
         session_id: str,
         user_prompt: str,
         agent_response: str,
+        metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Persist the interaction for future retrieval."""
-        del user_prompt, agent_response
+        del user_prompt, agent_response, metadata
         return {"id": "stub-fragment-id"}
 
     async def reinforce(

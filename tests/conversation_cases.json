@@ -1,0 +1,135 @@
+[
+  {
+    "id": "metric_then_followup_compare",
+    "topic": "metrics",
+    "turns": [
+      "CPA for Disney+ in FY24 H2 US",
+      "and in H1?",
+      "compare them",
+      "what about CPE too?"
+    ]
+  },
+  {
+    "id": "metric_incomplete_then_clarify",
+    "topic": "metrics",
+    "turns": [
+      "what was the investment",
+      "for FY24 H2",
+      "US"
+    ]
+  },
+  {
+    "id": "metric_fuzzy_wording",
+    "topic": "metrics",
+    "turns": [
+      "how did efficiency change from H1 to H2",
+      "i mean CPA and CPE",
+      "US only"
+    ]
+  },
+  {
+    "id": "metric_region_followup",
+    "topic": "metrics",
+    "turns": [
+      "installs in FY25 H1",
+      "EMEA please",
+      "by market if you can"
+    ]
+  },
+  {
+    "id": "metric_vs_nonmetric_mixed",
+    "topic": "mixed",
+    "turns": [
+      "summarize partnership highlights for FY24 H2",
+      "ok now CPA for FY24 H2",
+      "and what were the recommendations?"
+    ]
+  },
+  {
+    "id": "nonmetric_product_questions",
+    "topic": "non-metric",
+    "turns": [
+      "what is the Content Store Roadblock",
+      "how does it compare to Home Screen Roadblocks",
+      "any best practices mentioned?"
+    ]
+  },
+  {
+    "id": "nonmetric_business_strategy",
+    "topic": "non-metric",
+    "turns": [
+      "what is the FY25 H1 media strategy by market",
+      "summarize the recommendations",
+      "any risks or gaps called out?"
+    ]
+  },
+  {
+    "id": "fuzzy_business_then_metric",
+    "topic": "mixed",
+    "turns": [
+      "how did we do in H2",
+      "i care about reach and frequency",
+      "US only"
+    ]
+  },
+  {
+    "id": "ambiguous_timeframe",
+    "topic": "metrics",
+    "turns": [
+      "what is CPA for Disney+",
+      "last half",
+      "us"
+    ]
+  },
+  {
+    "id": "incomplete_followup_pronouns",
+    "topic": "metrics",
+    "turns": [
+      "unique reach in FY24 H2",
+      "and in EMEA?",
+      "is it higher?"
+    ]
+  },
+  {
+    "id": "metric_definition",
+    "topic": "metric-definition",
+    "turns": [
+      "what is CPA",
+      "and CPE?"
+    ]
+  },
+  {
+    "id": "nonmetric_people",
+    "topic": "non-metric",
+    "turns": [
+      "who are the contacts on the thank you slide",
+      "can you list their roles"
+    ]
+  },
+  {
+    "id": "metric_fallback_synonym",
+    "topic": "metrics",
+    "turns": [
+      "how much did we spend in FY24 H2",
+      "investment only",
+      "US"
+    ]
+  },
+  {
+    "id": "metric_kpi_bundle",
+    "topic": "metrics",
+    "turns": [
+      "give me installs, launches, and CPA for FY24 H2",
+      "add CPE",
+      "and average duration per session"
+    ]
+  },
+  {
+    "id": "nonmetric_summary",
+    "topic": "non-metric",
+    "turns": [
+      "give me a high level summary of FY24 H1",
+      "top 3 highlights"
+    ]
+  }
+]
