@@ -40,7 +40,10 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - Use `region_verification` in context when available to resolve regional scope.
 - If the user asks about capabilities, what you can do, or how you can help, call `agent_capabilities`.
 - For questions that ask for specific metrics, KPI values, or period comparisons, you MUST call
-  `query_metrics` first and use its result. Do not answer directly without the tool.
+  `resolve_metric_intent` first. If fields are missing or ambiguous, call `refine_metric_intent`
+  with candidate values; if still unresolved, ask a clarifying question. When ready, call
+  `query_metrics` using a concise canonical query string that preserves the user’s intent but
+  replaces only the missing/ambiguous entities with the resolved values. Avoid verbose sentences.
 - When citations include `document_url`, include those links in the Sources section.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
@@ -138,8 +141,8 @@ class DeterministicMetricToolLLM:
         if query and not self._forced_for_last_query and self._router.is_metric_query(query):
             self._forced_for_last_query = True
             payload = {
-                "thought": "Use structured metric store for metric/KPI questions.",
-                "next_node": "query_metrics",
+                "thought": "Resolve metric intent before querying structured metrics.",
+                "next_node": "resolve_metric_intent",
                 "args": {"question": query},
             }
             return json.dumps(payload, ensure_ascii=False)
@@ -490,6 +493,7 @@ def build_planner(
     if rich_output_config.enabled:
         nodes.extend(attach_rich_output_nodes(registry, config=rich_output_config))
     catalog = build_catalog(nodes, registry)
+    logger.info("Planner tools: %s", [node.name for node in nodes])
     rich_output_prompt = get_runtime().prompt_section()
 
     # Create LLM client based on config (stub or real)

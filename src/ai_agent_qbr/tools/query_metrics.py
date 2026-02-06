@@ -15,10 +15,18 @@ import time
 
 _LOGGER = logging.getLogger(__name__)
 
-@tool(desc="Query structured metric facts with deterministic filters", side_effects="read", tags=["planner"])
+@tool(
+    desc=(
+        "Query structured metric facts with deterministic filters. "
+        "Call this after resolve_metric_intent (and refine_metric_intent if needed)."
+    ),
+    side_effects="read",
+    tags=["planner"],
+)
 async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer:
     status = ToolStatusEmitter(ctx, tool_name="query_metrics")
-    await status.step("Querying structured metric facts.", step_name="Metric QA")
+    await status.step("Looking up metric results.", step_name="Finding metrics")
+    _LOGGER.info("METRIC_QA_QUERY question=%s", args.question)
 
     engine = ctx.tool_context.get("metric_query_engine")
     if not isinstance(engine, MetricQueryEngine):

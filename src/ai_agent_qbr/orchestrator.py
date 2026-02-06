@@ -523,105 +523,108 @@ class AiAgentQbrOrchestrator:
                 mmr_lambda=self._config.retrieval_mmr_lambda,
                 max_chunks_per_doc=self._config.retrieval_max_chunks_per_doc,
             )
-            answer_use_case = AnswerQuestion(
-                repository=infra.repository,
-                vector_index=infra.vector_index,
-                embeddings=infra.embeddings,
-                reranker=infra.reranker,
-                use_hybrid=True,
-                text_weight=self._config.retrieval_text_weight,
-                vector_weight=self._config.retrieval_vector_weight,
-                candidate_multiplier=self._config.retrieval_candidate_multiplier,
-                include_document_path=self._config.retrieval_include_document_path,
-                rerank_top_n=self._config.rerank_top_n,
-                mmr_lambda=self._config.retrieval_mmr_lambda,
-                max_chunks_per_doc=self._config.retrieval_max_chunks_per_doc,
-            )
-            with self._mlflow_trace.span(
-                name="retrieval",
-                span_type="RETRIEVER",
-                attributes={
-                    "top_k": self._config.retrieval_top_k,
-                    "min_score": self._config.retrieval_min_score,
-                    "text_search_backend": self._config.text_search_backend,
-                    "text_weight": self._config.retrieval_text_weight,
-                    "vector_weight": self._config.retrieval_vector_weight,
-                    "rerank_top_n": self._config.rerank_top_n,
-                    "mmr_lambda": self._config.retrieval_mmr_lambda,
-                    "max_chunks_per_doc": self._config.retrieval_max_chunks_per_doc,
-                },
-                inputs={"query": query},
-            ) as retrieval_span:
-                answer_context = await answer_use_case.execute(
-                    query=query,
-                    top_k=self._config.retrieval_top_k,
-                    min_score=self._config.retrieval_min_score,
+            filtered_citations: list = []
+            filtered_context = ""
+            if self._config.retrieval_enabled:
+                answer_use_case = AnswerQuestion(
+                    repository=infra.repository,
+                    vector_index=infra.vector_index,
+                    embeddings=infra.embeddings,
+                    reranker=infra.reranker,
+                    use_hybrid=True,
+                    text_weight=self._config.retrieval_text_weight,
+                    vector_weight=self._config.retrieval_vector_weight,
+                    candidate_multiplier=self._config.retrieval_candidate_multiplier,
+                    include_document_path=self._config.retrieval_include_document_path,
+                    rerank_top_n=self._config.rerank_top_n,
+                    mmr_lambda=self._config.retrieval_mmr_lambda,
+                    max_chunks_per_doc=self._config.retrieval_max_chunks_per_doc,
                 )
-
-                if region_focus in {"us", "emea"}:
-                    filtered_citations = filter_items_by_region(
-                        answer_context.citations, region_focus
-                    )
-                    filtered_context = (
-                        build_context_from_items(filtered_citations)
-                        if filtered_citations
-                        else ""
-                    )
-                else:
-                    filtered_citations = list(answer_context.citations)
-                    filtered_context = answer_context.context or ""
-
-                self._mlflow_trace.set_outputs(
-                    retrieval_span,
-                    {
-                        "qbr_context": filtered_context,
-                        "citations": [
-                            {
-                                "chunk_id": result.chunk.chunk_id.value,
-                                "document_id": result.chunk.document_id.value,
-                                "score": result.score.value,
-                                "start_slide": result.chunk.start_slide,
-                                "end_slide": result.chunk.end_slide,
-                                "content": result.chunk.content,
-                            }
-                            for result in filtered_citations
-                        ],
-                        "retrieval_debug": answer_use_case.last_debug or {},
+                with self._mlflow_trace.span(
+                    name="retrieval",
+                    span_type="RETRIEVER",
+                    attributes={
+                        "top_k": self._config.retrieval_top_k,
+                        "min_score": self._config.retrieval_min_score,
+                        "text_search_backend": self._config.text_search_backend,
+                        "text_weight": self._config.retrieval_text_weight,
+                        "vector_weight": self._config.retrieval_vector_weight,
+                        "rerank_top_n": self._config.rerank_top_n,
+                        "mmr_lambda": self._config.retrieval_mmr_lambda,
+                        "max_chunks_per_doc": self._config.retrieval_max_chunks_per_doc,
                     },
-                )
+                    inputs={"query": query},
+                ) as retrieval_span:
+                    answer_context = await answer_use_case.execute(
+                        query=query,
+                        top_k=self._config.retrieval_top_k,
+                        min_score=self._config.retrieval_min_score,
+                    )
 
-            with self._mlflow_tracer.nested_run(
-                run_name="retrieval",
-                tags={"trace_id": trace_id},
-            ) as retrieval_run:
-                if retrieval_run:
-                    retrieval_run.log_param("citation_count", len(filtered_citations))
-                    self._mlflow_tracer.log_text(
-                        retrieval_run,
-                        "qbr_context",
-                        filtered_context or "",
+                    if region_focus in {"us", "emea"}:
+                        filtered_citations = filter_items_by_region(
+                            answer_context.citations, region_focus
+                        )
+                        filtered_context = (
+                            build_context_from_items(filtered_citations)
+                            if filtered_citations
+                            else ""
+                        )
+                    else:
+                        filtered_citations = list(answer_context.citations)
+                        filtered_context = answer_context.context or ""
+
+                    self._mlflow_trace.set_outputs(
+                        retrieval_span,
+                        {
+                            "qbr_context": filtered_context,
+                            "citations": [
+                                {
+                                    "chunk_id": result.chunk.chunk_id.value,
+                                    "document_id": result.chunk.document_id.value,
+                                    "score": result.score.value,
+                                    "start_slide": result.chunk.start_slide,
+                                    "end_slide": result.chunk.end_slide,
+                                    "content": result.chunk.content,
+                                }
+                                for result in filtered_citations
+                            ],
+                            "retrieval_debug": answer_use_case.last_debug or {},
+                        },
                     )
-                    self._mlflow_tracer.log_json(
-                        retrieval_run,
-                        "citations",
-                        [
-                            {
-                                "chunk_id": result.chunk.chunk_id.value,
-                                "document_id": result.chunk.document_id.value,
-                                "score": result.score.value,
-                                "start_slide": result.chunk.start_slide,
-                                "end_slide": result.chunk.end_slide,
-                                "content": result.chunk.content,
-                            }
-                            for result in filtered_citations
-                        ],
-                    )
-                    if answer_use_case.last_debug:
+
+                with self._mlflow_tracer.nested_run(
+                    run_name="retrieval",
+                    tags={"trace_id": trace_id},
+                ) as retrieval_run:
+                    if retrieval_run:
+                        retrieval_run.log_param("citation_count", len(filtered_citations))
+                        self._mlflow_tracer.log_text(
+                            retrieval_run,
+                            "qbr_context",
+                            filtered_context or "",
+                        )
                         self._mlflow_tracer.log_json(
                             retrieval_run,
-                            "retrieval_debug",
-                            answer_use_case.last_debug,
+                            "citations",
+                            [
+                                {
+                                    "chunk_id": result.chunk.chunk_id.value,
+                                    "document_id": result.chunk.document_id.value,
+                                    "score": result.score.value,
+                                    "start_slide": result.chunk.start_slide,
+                                    "end_slide": result.chunk.end_slide,
+                                    "content": result.chunk.content,
+                                }
+                                for result in filtered_citations
+                            ],
                         )
+                        if answer_use_case.last_debug:
+                            self._mlflow_tracer.log_json(
+                                retrieval_run,
+                                "retrieval_debug",
+                                answer_use_case.last_debug,
+                            )
 
             conscious = self._session_cache.get(
                 session_key, {"conscious": [], "token_estimate": 0}

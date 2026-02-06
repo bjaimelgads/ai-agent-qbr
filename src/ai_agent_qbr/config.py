@@ -164,6 +164,7 @@ class Config:
     embeddings_normalize: bool = True
     retrieval_top_k: int = 5
     retrieval_min_score: float | None = None
+    retrieval_enabled: bool = True
     text_search_backend: str = "fts5"
     retrieval_text_weight: float = 0.6
     retrieval_vector_weight: float = 0.4
@@ -301,6 +302,7 @@ class Config:
             embeddings_normalize=_env_flag("EMBEDDINGS_NORMALIZE", True),
             retrieval_top_k=_env_int("RETRIEVAL_TOP_K", 5),
             retrieval_min_score=_parse_optional_float(os.getenv("RETRIEVAL_MIN_SCORE")),
+            retrieval_enabled=_env_flag("RETRIEVAL_ENABLED", True),
             text_search_backend=os.getenv("TEXT_SEARCH_BACKEND", "fts5"),
             retrieval_text_weight=_env_float("RETRIEVAL_TEXT_WEIGHT", 0.6),
             retrieval_vector_weight=_env_float("RETRIEVAL_VECTOR_WEIGHT", 0.4),

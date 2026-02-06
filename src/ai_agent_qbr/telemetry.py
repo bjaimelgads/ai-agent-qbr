@@ -47,6 +47,11 @@ class AgentTelemetry:
         node_name = None
         if isinstance(payload, dict):
             node_name = payload.get("node_name") or payload.get("step_name")
+            if "next_node" in payload:
+                self._logger.info(
+                    "Planner action: next_node=%s",
+                    payload.get("next_node"),
+                )
 
         debug_events = os.getenv("PLANNER_DEBUG_EVENTS", "false").lower() in {"1", "true", "yes", "on"}
         if debug_events and event_type:
