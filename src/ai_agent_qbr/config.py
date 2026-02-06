@@ -201,6 +201,7 @@ class Config:
     guardrails_router_token: str | None = None
     guardrails_router_conversation_turns: int = 5
 
+
     @classmethod
     def from_env(cls) -> "Config":
         """Load configuration from environment variables."""

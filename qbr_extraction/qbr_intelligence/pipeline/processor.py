@@ -106,6 +106,7 @@ class QBRProcessor:
 
     CHUNK_MAX_CHARS = 1500
     CHUNK_OVERLAP = 200
+    DOCUMENT_URLS_FILENAME = "document_urls.json"
 
     def __init__(
         self,
@@ -1196,6 +1197,23 @@ class QBRProcessor:
         year = int(value)
         return 2000 + year if year < 100 else year
 
+    def _resolve_document_url(self, file_path: Path) -> str:
+        mapping_path = file_path.parent / self.DOCUMENT_URLS_FILENAME
+        if not mapping_path.exists():
+            return str(file_path.absolute())
+        try:
+            payload = json.loads(mapping_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            print(f"  [Document URL] Failed to read {mapping_path}: {exc}")
+            return str(file_path.absolute())
+        if not isinstance(payload, dict):
+            print(f"  [Document URL] Invalid mapping in {mapping_path}; expected JSON object.")
+            return str(file_path.absolute())
+        url = payload.get(file_path.name)
+        if isinstance(url, str) and url.strip():
+            return url.strip()
+        return str(file_path.absolute())
+
     def _upsert_periods(self, session, metrics: list[MetricCandidate]) -> dict[tuple, Period]:
         keys = {
             (m.period_label, m.period_start, m.period_end)
@@ -1992,6 +2010,7 @@ Categories:
             Document ID in the database
         """
         file_path = Path(file_path)
+        document_url = self._resolve_document_url(file_path)
 
         # Step 1: Extract
         print("\n" + "=" * 60)
@@ -2308,7 +2327,7 @@ Categories:
             # Create document
             document = Document(
                 filename=file_path.name,
-                file_path=str(file_path.absolute()),
+                file_path=document_url,
                 mime_type=result.mime_type,
                 status=DocumentStatus.EXTRACTED.value,
                 page_count=result.get_page_count(),

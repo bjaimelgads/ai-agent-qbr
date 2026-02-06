@@ -763,7 +763,11 @@ class AiAgentQbrOrchestrator:
                     table_len,
                     data_len,
                 )
-            artifacts = _build_metric_grid_artifact(metric_answer)
+            artifacts = None
+            if self._config.rich_output_enabled and (
+                "datagrid" in (self._config.rich_output_allowlist or [])
+            ):
+                artifacts = _build_metric_grid_artifact(metric_answer)
             if artifacts is None:
                 _LOGGER.info("metric_grid trace_id=%s status=no_artifact", trace_id)
             else:
