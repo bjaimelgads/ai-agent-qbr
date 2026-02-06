@@ -7,15 +7,15 @@ from penguiflow.planner import ToolContext
 
 from ai_agent_qbr.infrastructure.region_filter import filter_items_by_region
 from ai_agent_qbr.models import Query, SearchResult, SearchResults
+from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_agent.application.use_cases import HybridSearchKnowledge
 from qbr_agent.domain.value_objects import DocumentId
 
 
 @tool(desc="Search internal QBR knowledge", side_effects="read", tags=["planner"])
 async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
-    status_publisher = ctx.tool_context.get("status_publisher")
-    if callable(status_publisher):
-        status_publisher("Searching QBR materials for relevant details.", "Searching")
+    status = ToolStatusEmitter(ctx, tool_name="search_documents")
+    await status.step("Searching QBR materials for relevant details.", step_name="Search QBR")
     use_case = ctx.tool_context.get("qbr_search_use_case")
     if not isinstance(use_case, HybridSearchKnowledge):
         return SearchResults(results=[])
@@ -24,8 +24,8 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
     min_score = ctx.tool_context.get("retrieval_min_score")
 
     comparison_intent = bool(args.comparison_intent)
-    if comparison_intent and callable(status_publisher):
-        status_publisher("Comparing across multiple decks.", "Comparing")
+    if comparison_intent:
+        await status.step("Comparing across multiple decks.", step_name="Compare decks")
 
     if comparison_intent:
         results = await _search_comparison_documents(

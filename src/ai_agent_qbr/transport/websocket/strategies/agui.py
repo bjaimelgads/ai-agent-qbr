@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import secrets
+from datetime import datetime, timezone
 from typing import Any
+from uuid import uuid4
 
 from ag_ui.core import RunAgentInput
 from pydantic import ValidationError
@@ -33,8 +35,10 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
         self._send_message = send_message
         self._session_registry = session_registry
         self._logger = logger or logging.getLogger(__name__)
+        self._reasoning_ids: dict[str, str | None] = {}
 
     async def on_connect(self, session_id: str) -> None:
+        self._reasoning_ids[session_id] = None
         self._logger.info("AG-UI websocket connected: %s", session_id)
 
     async def on_message(self, session_id: str, message: Any) -> None:
@@ -142,6 +146,7 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
                 adapter.end_run()
 
     async def on_disconnect(self, session_id: str) -> None:
+        self._reasoning_ids.pop(session_id, None)
         self._logger.info("AG-UI websocket disconnected: %s", session_id)
 
     def _parse_input(self, session_id: str, message: Any) -> RunAgentInput | None:
@@ -151,8 +156,17 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             return RunAgentInput.model_validate(message)
         except ValidationError:
             pass
-        if isinstance(message, dict) and "message" in message:
+        if isinstance(message, dict):
+            normalized = _normalize_message_payload(message)
+            if normalized is not None:
+                try:
+                    return RunAgentInput.model_validate(normalized)
+                except ValidationError:
+                    pass
+        if isinstance(message, dict):
             user_message = message.get("message")
+            if not isinstance(user_message, str):
+                user_message = message.get("text")
             if not isinstance(user_message, str):
                 return None
             return build_run_input(
@@ -167,10 +181,13 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             payload = event.model_dump(by_alias=True, exclude_none=True)
         else:
             payload = event
-        await self._send(session_id, payload)
+        for outbound in self._normalize_payloads(session_id, payload):
+            if isinstance(outbound, dict) and "timestamp" not in outbound:
+                outbound["timestamp"] = _now_iso_timestamp()
+            await self._send(session_id, outbound)
 
     async def _send_error(self, session_id: str, message: str) -> None:
-        payload = {"type": "RUN_ERROR", "message": message}
+        payload = {"type": "RUN_ERROR", "message": message, "timestamp": _now_iso_timestamp()}
         await self._send(session_id, payload)
 
     def _extract_tenant_id(self, message: Any) -> str:
@@ -186,3 +203,93 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             if isinstance(meta, dict) and isinstance(meta.get("user_id"), str):
                 return meta["user_id"]
         return "user"
+
+    def _normalize_payloads(self, session_id: str, payload: Any) -> list[Any]:
+        if not isinstance(payload, dict):
+            return [payload]
+
+        event_type = payload.get("type")
+        if event_type == "RUN_STARTED":
+            self._reasoning_ids[session_id] = None
+            return [payload]
+
+        if event_type == "RUN_FINISHED":
+            return self._flush_reasoning(session_id) + [payload]
+
+        if event_type == "CUSTOM" and payload.get("name") == "thinking":
+            value = payload.get("value") or {}
+            if not isinstance(value, dict):
+                value = {}
+            text = value.get("text") if isinstance(value.get("text"), str) else ""
+            done = bool(value.get("done"))
+            return self._reasoning_payloads(session_id, text=text, done=done)
+
+        return [payload]
+
+    def _reasoning_payloads(self, session_id: str, *, text: str, done: bool) -> list[dict[str, Any]]:
+        message_id = self._reasoning_ids.get(session_id)
+        if message_id is None and not text and not done:
+            return []
+        if message_id is None:
+            message_id = str(uuid4())
+            self._reasoning_ids[session_id] = message_id
+            payloads: list[dict[str, Any]] = [
+                {"type": "CUSTOM", "name": "REASONING_START", "messageId": message_id}
+            ]
+        else:
+            payloads = []
+
+        if text:
+            payloads.append(
+                {
+                    "type": "CUSTOM",
+                    "name": "REASONING_MESSAGE_CONTENT",
+                    "messageId": message_id,
+                    "delta": text,
+                }
+            )
+
+        if done:
+            payloads.append({"type": "CUSTOM", "name": "REASONING_END", "messageId": message_id})
+            self._reasoning_ids[session_id] = None
+
+        return payloads
+
+    def _flush_reasoning(self, session_id: str) -> list[dict[str, Any]]:
+        message_id = self._reasoning_ids.get(session_id)
+        if not message_id:
+            return []
+        self._reasoning_ids[session_id] = None
+        return [{"type": "CUSTOM", "name": "REASONING_END", "messageId": message_id}]
+
+
+def _now_iso_timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _normalize_message_payload(payload: dict[str, Any]) -> dict[str, Any] | None:
+    messages = payload.get("messages")
+    if not isinstance(messages, list):
+        return None
+    normalized_messages: list[Any] = []
+    changed = False
+    for item in messages:
+        if not isinstance(item, dict):
+            normalized_messages.append(item)
+            continue
+        normalized = dict(item)
+        role = normalized.get("role")
+        if role == "agent":
+            normalized["role"] = "assistant"
+            changed = True
+        if "content" not in normalized:
+            text = normalized.get("text")
+            if isinstance(text, str):
+                normalized["content"] = text
+                changed = True
+        normalized_messages.append(normalized)
+    if not changed:
+        return payload
+    updated = dict(payload)
+    updated["messages"] = normalized_messages
+    return updated

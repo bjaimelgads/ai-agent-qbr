@@ -6,6 +6,7 @@ from penguiflow.catalog import tool
 from penguiflow.planner import ToolContext
 
 from ai_agent_qbr.models import MetricQueryArgs
+from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.schemas.metric_qa import MetricAnswer
 
@@ -16,9 +17,8 @@ _LOGGER = logging.getLogger(__name__)
 
 @tool(desc="Query structured metric facts with deterministic filters", side_effects="read", tags=["planner"])
 async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer:
-    status_publisher = ctx.tool_context.get("status_publisher")
-    if callable(status_publisher):
-        status_publisher("Querying structured metric facts.", "Metric QA")
+    status = ToolStatusEmitter(ctx, tool_name="query_metrics")
+    await status.step("Querying structured metric facts.", step_name="Metric QA")
 
     engine = ctx.tool_context.get("metric_query_engine")
     if not isinstance(engine, MetricQueryEngine):
