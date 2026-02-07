@@ -64,5 +64,9 @@ extraction_output/**/pipeline_timing_*.json
 extraction_output/strategy_*/
 extraction_output/Disney+ US FY25 H2/
 
+# Legacy e2e output
+qbr_legacy_e2e/
+qbr_legacy_e2e.db
+
 # Local OAuth tokens
 .google_slides_token.json

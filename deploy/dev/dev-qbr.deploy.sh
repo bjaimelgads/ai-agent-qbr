@@ -22,8 +22,6 @@ cp "$ROOT_DIR/app.py" "$DEPLOY_DIR"
 # Ship local SQLite DB + FAISS index if present
 if [ -f "$ROOT_DIR/qbr_intelligence.db" ]; then
   cp "$ROOT_DIR/qbr_intelligence.db" "$DEPLOY_DIR/qbr_intelligence.db"
-  mkdir -p "$DEPLOY_DIR/data"
-  cp "$ROOT_DIR/qbr_intelligence.db" "$DEPLOY_DIR/data/qbr_intelligence.db"
 else
   echo "ERROR: Missing $ROOT_DIR/qbr_intelligence.db; cannot deploy DB." >&2
   exit 1

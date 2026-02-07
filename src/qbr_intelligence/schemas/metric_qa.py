@@ -47,6 +47,7 @@ class MetricRow(BaseModel):
     client: str | None = None
     region: str | None = None
     llm_context_label: str | None = None
+    semantic_score: float | None = None
 
 
 class AnswerCitation(BaseModel):
