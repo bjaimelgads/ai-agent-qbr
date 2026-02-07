@@ -252,17 +252,74 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
     if not details_rows and answer.data:
         details_rows = [row.model_dump() if hasattr(row, "model_dump") else dict(row) for row in answer.data]
     if details_rows:
-        lines = ["", "Details:"]
-        for row in details_rows[:5]:
-            metric = row.get("metric") or "metric"
-            period = row.get("period") or "period"
-            value = row.get("value")
-            unit = row.get("unit") or ""
-            context_label = row.get("llm_context_label")
-            context_text = f" — {context_label}" if context_label else ""
-            lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
-        text = f"{text}\n" + "\n".join(lines)
-    if answer.citations:
+        has_doc_context = any(row.get("document_name") or row.get("document_url") for row in details_rows)
+        if has_doc_context:
+            metric_name = details_rows[0].get("metric") or "Metric"
+            lines = ["", f"Metric: {metric_name}"]
+            grouped: dict[tuple[str | None, str | None, int | None, int | None, str | None], list[dict]] = {}
+            for row in details_rows:
+                key = (
+                    row.get("document_name"),
+                    row.get("document_url"),
+                    row.get("slide_number"),
+                    row.get("slide_id"),
+                    row.get("slide_title"),
+                )
+                grouped.setdefault(key, []).append(row)
+
+            doc_order: list[tuple[str | None, str | None]] = []
+            for row in details_rows:
+                doc_key = (row.get("document_name"), row.get("document_url"))
+                if doc_key not in doc_order:
+                    doc_order.append(doc_key)
+
+            def _slide_sort_key(item: tuple) -> tuple:
+                _, _, slide_number, slide_id, _ = item[0]
+                return (slide_number or 0, slide_id or 0)
+
+            for doc_name, doc_url in doc_order:
+                doc_label = doc_name or "Document"
+                doc_line = f"Document: {doc_label}"
+                if doc_url:
+                    doc_line = f"{doc_line} (`{doc_url}`)"
+                lines.append(doc_line)
+
+                slide_items = [
+                    (key, rows)
+                    for key, rows in grouped.items()
+                    if key[0] == doc_name and key[1] == doc_url
+                ]
+                for (key, rows) in sorted(slide_items, key=_slide_sort_key):
+                    _, _, slide_number, slide_id, slide_title = key
+                    slide_label = "Slide"
+                    if slide_number:
+                        slide_label = f"{slide_label} {slide_number}"
+                    elif slide_id:
+                        slide_label = f"{slide_label} {slide_id}"
+                    if slide_title:
+                        slide_label = f"{slide_label}: {slide_title}"
+                    lines.append(f"- {slide_label}")
+
+                    for row in rows[:4]:
+                        value = row.get("value")
+                        unit = row.get("unit") or ""
+                        value_text = f"{value} {unit}".strip()
+                        context = row.get("snippet") or row.get("llm_context_label")
+                        context_text = f" — {context}" if context else ""
+                        lines.append(f"  - {value_text}{context_text}")
+            text = f"{text}\n" + "\n".join(lines)
+        else:
+            lines = ["", "Details:"]
+            for row in details_rows[:5]:
+                metric = row.get("metric") or "metric"
+                period = row.get("period") or "period"
+                value = row.get("value")
+                unit = row.get("unit") or ""
+                context_label = row.get("llm_context_label")
+                context_text = f" — {context_label}" if context_label else ""
+                lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
+            text = f"{text}\n" + "\n".join(lines)
+    if answer.citations and not details_rows:
         def _format_source(citation: AnswerCitation) -> str:
             doc_label = citation.document_name or f"doc {citation.document_id}"
             if citation.slide_number is not None:
@@ -271,7 +328,7 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 doc_label = f"{doc_label} slide {citation.slide_id}"
             doc_url = citation.slide_url or citation.document_url
             if doc_url:
-                return f"{doc_label} ({doc_url})"
+                return f"{doc_label} (`{doc_url}`)"
             return doc_label
 
         sources = ", ".join(_format_source(c) for c in answer.citations)

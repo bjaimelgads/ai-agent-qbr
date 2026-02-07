@@ -31,8 +31,8 @@ async def test_refine_metric_intent_period(metric_db, dummy_ctx):
         dummy_ctx,
     )
 
-    assert result.intent.period is not None
-    assert result.intent.period.value == "Q2 2025"
+    assert result.intent.period
+    assert result.intent.period[0].value == "Q2 2025"
     assert "period" not in result.unresolved_fields
 
 
@@ -59,5 +59,5 @@ async def test_refine_metric_intent_client_like(metric_db, dummy_ctx):
         dummy_ctx,
     )
 
-    assert result.intent.client == "Brand X"
+    assert result.intent.client == ["Brand X"]
     assert "client" not in result.unresolved_fields

@@ -147,6 +147,12 @@ def _row_to_table(row: MetricFactRow) -> dict:
         "client": row.client_name,
         "region": row.region,
         "llm_context_label": row.llm_context_label,
+        "document_name": row.document_name,
+        "document_url": row.document_url,
+        "slide_number": row.slide_number,
+        "slide_id": row.slide_id,
+        "slide_title": row.slide_title,
+        "snippet": row.snippet,
     }
 
 

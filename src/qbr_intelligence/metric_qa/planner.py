@@ -14,10 +14,9 @@ DEFAULT_LIMIT = 200
 @dataclass
 class MetricQueryPlan:
     metric_ids: list[str]
-    client: str | None
-    region: str | None
-    period_start: date | None
-    period_end: date | None
+    client: list[str]
+    region: list[str]
+    period_ranges: list[tuple[date, date]]
     limit: int
     order_by: str
     aggregation: str | None
@@ -29,12 +28,15 @@ def build_plan(intent: QueryIntent) -> MetricQueryPlan:
     order_by = "period_end DESC"
     if intent.aggregation == "trend":
         order_by = "period_end ASC"
+    ranges: list[tuple[date, date]] = []
+    for period in intent.period:
+        if period.start and period.end:
+            ranges.append((period.start, period.end))
     return MetricQueryPlan(
         metric_ids=intent.metric_ids,
         client=intent.client,
         region=intent.region,
-        period_start=intent.period.start if intent.period else None,
-        period_end=intent.period.end if intent.period else None,
+        period_ranges=ranges,
         limit=limit,
         order_by=order_by,
         aggregation=intent.aggregation,

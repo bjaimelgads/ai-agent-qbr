@@ -188,8 +188,7 @@ class MetricQueryEngine:
             metric_ids=plan.metric_ids,
             client_name=plan.client,
             region=plan.region,
-            period_start=plan.period_start,
-            period_end=plan.period_end,
+            period_ranges=plan.period_ranges,
             limit=plan.limit,
             order_by=plan.order_by,
         )
@@ -295,20 +294,20 @@ class MetricQueryEngine:
 
         client_resolution = client_resolver.resolve(query)
         if client_resolution.value:
-            if merged.client and merged.client != client_resolution.value:
+            if merged.client and merged.client != [client_resolution.value]:
                 assumptions.append("Client overridden by deterministic resolver")
-            merged.client = client_resolution.value
+            merged.client = [client_resolution.value]
 
         region_resolution = region_resolver.resolve(query)
         if region_resolution.value:
-            if merged.region and merged.region != region_resolution.value:
+            if merged.region and merged.region != [region_resolution.value]:
                 assumptions.append("Region overridden by deterministic resolver")
-            merged.region = region_resolution.value
+            merged.region = [region_resolution.value]
 
         bounds, label, period_type = period_resolver.resolve(query, anchor_date=anchor_date)
         if bounds:
             merged.period = deterministic.period
-            if merged.period and merged.period.value and merged.period.value != label:
+            if merged.period and merged.period[0].value and merged.period[0].value != label:
                 assumptions.append("Period overridden by deterministic resolver")
             if deterministic.period:
                 merged.period = deterministic.period
@@ -408,8 +407,7 @@ class MetricQueryEngine:
                 metric_ids=plan.metric_ids,
                 client_name=None,
                 region=plan.region,
-                period_start=plan.period_start,
-                period_end=plan.period_end,
+                period_ranges=plan.period_ranges,
                 limit=plan.limit,
                 order_by=plan.order_by,
             )
@@ -425,8 +423,7 @@ class MetricQueryEngine:
                 metric_ids=plan.metric_ids,
                 client_name=plan.client,
                 region=None,
-                period_start=plan.period_start,
-                period_end=plan.period_end,
+                period_ranges=plan.period_ranges,
                 limit=plan.limit,
                 order_by=plan.order_by,
             )
@@ -443,8 +440,7 @@ class MetricQueryEngine:
                     metric_ids=matched_ids,
                     client_name=plan.client,
                     region=plan.region,
-                    period_start=plan.period_start,
-                    period_end=plan.period_end,
+                    period_ranges=plan.period_ranges,
                     limit=plan.limit,
                     order_by=plan.order_by,
                 )

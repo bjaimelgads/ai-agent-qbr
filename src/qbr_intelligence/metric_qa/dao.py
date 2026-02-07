@@ -31,6 +31,7 @@ SELECT
     d.file_path AS document_url,
     m.slide_id AS slide_id,
     s.slide_number AS slide_number,
+    s.title AS slide_title,
     s.google_slide_id AS google_slide_id,
     m.extraction_confidence AS confidence,
     COALESCE(m.name, mc.name) AS label_text,
@@ -67,6 +68,7 @@ SELECT
     d.file_path AS document_url,
     m.slide_id AS slide_id,
     s.slide_number AS slide_number,
+    s.title AS slide_title,
     NULL AS google_slide_id,
     m.extraction_confidence AS confidence,
     COALESCE(m.name, mc.name) AS label_text,
@@ -103,6 +105,7 @@ class MetricFactRow:
     document_url: str | None
     slide_id: int | None
     slide_number: int | None
+    slide_title: str | None
     google_slide_id: str | None
     confidence: float | None
     label_text: str | None
@@ -218,10 +221,9 @@ class MetricFactStore:
         self,
         *,
         metric_ids: list[str] | None = None,
-        client_name: str | None = None,
-        region: str | None = None,
-        period_start: date | None = None,
-        period_end: date | None = None,
+        client_name: list[str] | None = None,
+        region: list[str] | None = None,
+        period_ranges: list[tuple[date, date]] | None = None,
         limit: int = 200,
         order_by: str = "period_end DESC",
     ) -> tuple[list[MetricFactRow], str, dict[str, Any]]:
@@ -232,23 +234,36 @@ class MetricFactStore:
             clauses.append("metric_id IN :metric_ids")
             params["metric_ids"] = metric_ids
         if client_name:
-            clauses.append("client_name LIKE :client_name")
-            params["client_name"] = f"%{client_name}%"
+            client_clauses = []
+            for idx, name in enumerate(client_name):
+                key = f"client_name_{idx}"
+                client_clauses.append(f"client_name LIKE :{key}")
+                params[key] = f"%{name}%"
+            if client_clauses:
+                clauses.append("(" + " OR ".join(client_clauses) + ")")
         if region:
-            clauses.append("region = :region")
-            params["region"] = region
-        if period_start and period_end:
-            clauses.append("period_start IS NOT NULL AND period_end IS NOT NULL")
-            clauses.append("period_end >= :period_start")
-            clauses.append("period_start <= :period_end")
-            params["period_start"] = period_start.isoformat()
-            params["period_end"] = period_end.isoformat()
+            clauses.append("region IN :regions")
+            params["regions"] = region
+        if period_ranges:
+            range_clauses = []
+            for idx, (start, end) in enumerate(period_ranges):
+                start_key = f"period_start_{idx}"
+                end_key = f"period_end_{idx}"
+                range_clauses.append(
+                    f"(period_start IS NOT NULL AND period_end IS NOT NULL AND period_end >= :{start_key} AND period_start <= :{end_key})"
+                )
+                params[start_key] = start.isoformat()
+                params[end_key] = end.isoformat()
+            if range_clauses:
+                clauses.append("(" + " OR ".join(range_clauses) + ")")
         where_clause = " AND ".join(clauses)
         sql_text = f"SELECT * FROM metric_fact WHERE {where_clause} ORDER BY {order_by} LIMIT :limit"
         params["limit"] = int(limit)
         stmt = text(sql_text)
         if metric_ids:
             stmt = stmt.bindparams(bindparam("metric_ids", expanding=True))
+        if region:
+            stmt = stmt.bindparams(bindparam("regions", expanding=True))
         async with self._engine.connect() as conn:
             result = await conn.execute(stmt, params)
             rows = [MetricFactRow.from_row(dict(row._mapping)) for row in result]

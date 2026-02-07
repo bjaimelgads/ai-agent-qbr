@@ -98,9 +98,9 @@ class ResolvedMetricIntent(BaseModel):
     """Structured intent resolved from a metric query."""
 
     metric_ids: list[str] = Field(default_factory=list)
-    client: str | None = None
-    region: str | None = None
-    period: PeriodSpec | None = None
+    client: list[str] = Field(default_factory=list)
+    region: list[str] = Field(default_factory=list)
+    period: list[PeriodSpec] = Field(default_factory=list)
     aggregation: str | None = None
     grouping: str | None = None
     limit: int | None = None

@@ -90,8 +90,8 @@ async def refine_metric_intent(
         if not client_hits:
             client_hits = _like_match(engine._clients or [], args.candidates.clients)
         client_hits = list(dict.fromkeys(client_hits))
-        if len(client_hits) == 1:
-            updated.client = client_hits[0]
+        if client_hits:
+            updated.client = client_hits
             assumptions.append("Client inferred from candidate list")
         else:
             unresolved.append("client")
@@ -103,13 +103,13 @@ async def refine_metric_intent(
             if resolution.value:
                 region_hits.append(resolution.value)
         region_hits = list(dict.fromkeys(region_hits))
-        if len(region_hits) == 1:
-            updated.region = region_hits[0]
+        if region_hits:
+            updated.region = region_hits
             assumptions.append("Region inferred from candidate list")
         else:
             unresolved.append("region")
 
-    if updated.period is None:
+    if not updated.period:
         period_hits: list[PeriodSpec] = []
         for candidate in args.candidates.periods:
             bounds, label, period_type = period_resolver.resolve(candidate, anchor_date=anchor_date)
@@ -122,8 +122,8 @@ async def refine_metric_intent(
                         end=bounds.end,
                     )
                 )
-        if len(period_hits) == 1:
-            updated.period = period_hits[0]
+        if period_hits:
+            updated.period = period_hits
             assumptions.append("Period inferred from candidate list")
         else:
             unresolved.append("period")

@@ -185,10 +185,13 @@ def _row_to_table(row: MetricFactRow) -> dict:
         "region": row.region,
         "llm_context_label": row.llm_context_label,
         "document_id": row.document_id,
+        "document_name": row.document_name,
         "document_url": row.document_url,
         "slide_id": row.slide_id,
         "slide_number": row.slide_number,
+        "slide_title": row.slide_title,
         "slide_url": slide_url or row.document_url,
+        "snippet": row.snippet,
     }
 
 

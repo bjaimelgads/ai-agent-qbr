@@ -17,6 +17,7 @@ from ai_agent_qbr.models import (
 from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.metric_qa.intent import DeterministicIntentExtractor
+from qbr_intelligence.metric_qa.resolvers import RegionResolver
 
 
 @tool(
@@ -47,14 +48,40 @@ async def resolve_metric_intent(
     extractor = DeterministicIntentExtractor(engine._catalog or [], engine._clients or [])
     intent, debug = extractor.extract(args.question, anchor_date=anchor_date)
 
-    period_spec = None
-    if intent.period:
-        period_spec = PeriodSpec(
-            type=intent.period.type,
-            value=intent.period.value,
-            start=intent.period.start,
-            end=intent.period.end,
-        )
+    period_specs: list[PeriodSpec] = []
+    raw_periods = intent.period or []
+    if not isinstance(raw_periods, list):
+        raw_periods = [raw_periods]
+    for period in raw_periods:
+        if hasattr(period, "start") and hasattr(period, "end"):
+            period_specs.append(
+                PeriodSpec(
+                    type=getattr(period, "type", None),
+                    value=getattr(period, "value", None),
+                    start=getattr(period, "start", None),
+                    end=getattr(period, "end", None),
+                )
+            )
+            continue
+        if isinstance(period, dict):
+            period_specs.append(
+                PeriodSpec(
+                    type=period.get("type"),
+                    value=period.get("value"),
+                    start=period.get("start"),
+                    end=period.get("end"),
+                )
+            )
+            continue
+        if isinstance(period, (list, tuple)) and len(period) >= 2:
+            period_specs.append(
+                PeriodSpec(
+                    type=period[3] if len(period) > 3 else None,
+                    value=period[2] if len(period) > 2 else None,
+                    start=period[0],
+                    end=period[1],
+                )
+            )
 
     confidence = FieldConfidence(
         metric=max(debug.metrics.values(), default=0.0),
@@ -63,11 +90,20 @@ async def resolve_metric_intent(
         period=1.0 if intent.period else 0.0,
     )
 
+    client_values = intent.client if isinstance(intent.client, list) else ([intent.client] if intent.client else [])
+    region_values = intent.region if isinstance(intent.region, list) else ([intent.region] if intent.region else [])
+    if not region_values:
+        fallback = RegionResolver().resolve(args.question)
+        if fallback.value:
+            region_values = [fallback.value]
+        elif fallback.candidates:
+            region_values = list(fallback.candidates)
+
     resolved = ResolvedMetricIntent(
         metric_ids=list(intent.metric_ids),
-        client=intent.client,
-        region=intent.region,
-        period=period_spec,
+        client=client_values,
+        region=region_values,
+        period=period_specs,
         aggregation=intent.aggregation,
         grouping=intent.grouping,
         limit=intent.limit,
