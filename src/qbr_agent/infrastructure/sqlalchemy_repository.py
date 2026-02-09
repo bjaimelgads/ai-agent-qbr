@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from dataclasses import replace
-from dataclasses import dataclass
+from dataclasses import replace, dataclass, field
+import json
 import logging
 from typing import Any
 
@@ -34,6 +34,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
     sessionmaker: async_sessionmaker[AsyncSession]
     text_search_backend: str = "fts5"
     fts_table: str = "chunks_fts"
+    _db_backend: str | None = field(default=None, init=False, repr=False)
 
     async def _ensure_reflection(self, session: AsyncSession) -> None:
         global _DOCUMENTS, _CHUNKS, _SLIDES, _CLIENTS, _CHUNKS_FTS, _WARNED_MISSING_TABLES
@@ -41,17 +42,25 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             _DOCUMENTS is not None
             and _CHUNKS is not None
             and _SLIDES is not None
-            and (_CHUNKS_FTS is not None or self.text_search_backend == "like")
+            and (
+                _CHUNKS_FTS is not None
+                or self.text_search_backend in {"like", "auto", "postgres_fts"}
+            )
         ):
             return
 
         conn = await session.connection()
+        if self._db_backend is None:
+            self._db_backend = conn.engine.dialect.name
         await conn.run_sync(_METADATA.reflect)
         _DOCUMENTS = _METADATA.tables.get("documents")
         _CHUNKS = _METADATA.tables.get("chunks")
         _SLIDES = _METADATA.tables.get("slides")
         _CLIENTS = _METADATA.tables.get("clients")
-        _CHUNKS_FTS = _METADATA.tables.get(self.fts_table)
+        if self._db_backend == "sqlite":
+            _CHUNKS_FTS = _METADATA.tables.get(self.fts_table)
+        else:
+            _CHUNKS_FTS = None
         if not _WARNED_MISSING_TABLES and (
             _DOCUMENTS is None or _CHUNKS is None or _SLIDES is None
         ):
@@ -263,7 +272,8 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             if _CHUNKS is None:
                 return []
             backend = self.text_search_backend.lower()
-            if backend in {"fts5", "auto"}:
+            backend = self._select_text_backend(backend)
+            if backend == "fts5":
                 matches = await self._search_chunks_fts5(
                     session=session,
                     terms=terms,
@@ -279,12 +289,33 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                             limit,
                         )
                     return matches
+            if backend == "postgres_fts":
+                matches = await self._search_chunks_postgres_fts(
+                    session=session,
+                    terms=terms,
+                    query=query,
+                    limit=limit,
+                    document_id=document_id,
+                )
+                if matches is not None:
+                    return matches
             return await self._search_chunks_like(
                 session=session,
                 terms=terms,
                 limit=limit,
                 document_id=document_id,
             )
+
+    def _select_text_backend(self, backend: str) -> str:
+        if backend != "auto":
+            return backend
+        if self._db_backend is None:
+            return "like"
+        if self._db_backend == "sqlite":
+            return "fts5"
+        if self._db_backend in {"postgresql", "postgres"}:
+            return "postgres_fts"
+        return "like"
 
     async def _search_chunks_fts5(
         self,
@@ -336,6 +367,51 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
         if _LOGGER.isEnabledFor(logging.DEBUG):
             top_score = matches[0].score if matches else None
             _LOGGER.debug("FTS5 BM25 top score: %s", top_score)
+        return matches
+
+    async def _search_chunks_postgres_fts(
+        self,
+        *,
+        session: AsyncSession,
+        terms: list[str],
+        query: str,
+        limit: int,
+        document_id: DocumentId | None,
+    ) -> list[TextMatch] | None:
+        if _CHUNKS is None:
+            return None
+        params: dict[str, Any] = {"query": query, "limit": limit}
+        doc_clause = ""
+        if document_id is not None:
+            doc_clause = " AND chunks.document_id = :document_id"
+            params["document_id"] = document_id.value
+        stmt = text(
+            f"""
+            SELECT chunks.id AS id,
+                   ts_rank_cd(
+                       to_tsvector('english', chunks.content),
+                       plainto_tsquery('english', :query)
+                   ) AS rank
+            FROM chunks
+            WHERE to_tsvector('english', chunks.content)
+                  @@ plainto_tsquery('english', :query){doc_clause}
+            ORDER BY rank DESC
+            LIMIT :limit
+            """
+        )
+        try:
+            result = await session.execute(stmt, params)
+        except OperationalError as exc:
+            _LOGGER.warning("Postgres FTS query failed; falling back to LIKE. %s", exc)
+            return None
+        rows = result.fetchall()
+        matches: list[TextMatch] = []
+        for row in rows:
+            rank = float(row.rank) if row.rank is not None else 0.0
+            matches.append(TextMatch(chunk_id=ChunkId(int(row.id)), score=rank))
+        if _LOGGER.isEnabledFor(logging.DEBUG):
+            top_score = matches[0].score if matches else None
+            _LOGGER.debug("Postgres FTS top score: %s", top_score)
         return matches
 
     async def _search_chunks_like(
@@ -437,4 +513,22 @@ def _coerce_vector(value: Any) -> list[float]:
         return []
     if isinstance(value, list):
         return [float(item) for item in value]
+    if isinstance(value, (bytes, bytearray)):
+        try:
+            decoded = value.decode("utf-8")
+        except Exception:
+            return []
+        try:
+            parsed = json.loads(decoded)
+        except json.JSONDecodeError:
+            return []
+        if isinstance(parsed, list):
+            return [float(item) for item in parsed]
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            return []
+        if isinstance(parsed, list):
+            return [float(item) for item in parsed]
     return []

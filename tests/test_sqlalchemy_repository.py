@@ -6,7 +6,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from qbr_agent.domain.value_objects import DocumentId, EmbeddingVector
-from qbr_agent.infrastructure.sqlalchemy_repository import SqlAlchemyKnowledgeRepository
+from qbr_agent.infrastructure.sqlalchemy_repository import SqlAlchemyKnowledgeRepository, _coerce_vector
 from qbr_agent.infrastructure.vector_index import SqliteEmbeddingVectorIndex
 
 
@@ -184,3 +184,13 @@ async def test_repository_fts_bm25_ranking(tmp_path) -> None:
     assert text_hits
     assert text_hits[0].chunk_id.value == 1
     assert isinstance(text_hits[0].score, float)
+
+
+def test_text_search_backend_auto_selects_postgres() -> None:
+    repository = SqlAlchemyKnowledgeRepository(sessionmaker=None)  # type: ignore[arg-type]
+    repository._db_backend = "postgresql"
+    assert repository._select_text_backend("auto") == "postgres_fts"
+
+
+def test_coerce_vector_handles_json_string() -> None:
+    assert _coerce_vector("[1, 2, 3]") == [1.0, 2.0, 3.0]

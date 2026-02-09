@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
+import os
+
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 
@@ -13,10 +15,15 @@ class DatabaseGateway:
         self._echo = echo
         self._engine: AsyncEngine | None = None
         self._sessionmaker: async_sessionmaker[AsyncSession] | None = None
+        self._connect_args = _database_connect_args(database_url)
 
     def engine(self) -> AsyncEngine:
         if self._engine is None:
-            self._engine = create_async_engine(self._database_url, echo=self._echo)
+            self._engine = create_async_engine(
+                self._database_url,
+                echo=self._echo,
+                connect_args=self._connect_args,
+            )
         return self._engine
 
     def sessionmaker(self) -> async_sessionmaker[AsyncSession]:
@@ -29,3 +36,11 @@ class DatabaseGateway:
         async_session = self.sessionmaker()
         async with async_session() as session:
             yield session
+
+
+def _database_connect_args(database_url: str) -> dict:
+    if not database_url.startswith("postgresql+asyncpg://"):
+        return {}
+    if os.getenv("DATABRICKS_LAKEBASE_ENABLED", "").lower() not in {"1", "true", "yes", "on"}:
+        return {}
+    return {"ssl": True}

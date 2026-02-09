@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import logging
 import os
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from dataclasses import dataclass, field
 
 _DEFAULT_RICH_OUTPUT_ALLOWLIST = [
@@ -23,6 +25,8 @@ _DEFAULT_RICH_OUTPUT_ALLOWLIST = [
     "image",
     "video",
 ]
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -74,6 +78,45 @@ def _env_csv(name: str, default: list[str]) -> list[str]:
         return default
     items = [item.strip() for item in raw.split(",") if item.strip()]
     return items
+
+
+def _build_lakebase_database_url() -> str:
+    host = os.getenv("DATABRICKS_LAKEBASE_DB_INSTANCE", "")
+    if host and "." not in host:
+        host = f"{host}.database.cloud.databricks.com"
+    db_name = os.getenv("DATABRICKS_LAKEBASE_DB_NAME", "")
+    port = os.getenv("DATABRICKS_LAKEBASE_DB_PORT", "5432")
+    username = os.getenv("DATABRICKS_LAKEBASE_DB_USERNAME", "")
+    token = os.getenv("DATABRICKS_LAKEBASE_TOKEN", "")
+    if not host or not db_name or not username or not token:
+        _LOGGER.error(
+            "Lakebase settings missing: host=%s db_name=%s username=%s token_set=%s",
+            bool(host),
+            bool(db_name),
+            bool(username),
+            bool(token),
+        )
+        raise ValueError(
+            "Lakebase settings missing. Require DATABRICKS_LAKEBASE_DB_INSTANCE, "
+            "DATABRICKS_LAKEBASE_DB_NAME, DATABRICKS_LAKEBASE_DB_USERNAME, "
+            "and DATABRICKS_LAKEBASE_TOKEN."
+        )
+    safe_url = f"postgresql+asyncpg://{username}:***@{host}:{port}/{db_name}"
+    _LOGGER.info("Lakebase DATABASE_URL resolved: %s", safe_url)
+    return f"postgresql+asyncpg://{username}:{token}@{host}:{port}/{db_name}"
+
+
+def _normalize_database_url(database_url: str) -> str:
+    if not database_url.startswith("postgresql+asyncpg://"):
+        return database_url
+    parsed = urlparse(database_url)
+    query = [
+        (key, value)
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+        if key.lower() not in {"sslmode", "ssl"}
+    ]
+    cleaned = parsed._replace(query=urlencode(query))
+    return urlunparse(cleaned)
 
 
 def _parse_optional_float(raw: str | None) -> float | None:
@@ -209,6 +252,11 @@ class Config:
         output_protocol = _normalize_output_protocol(
             os.getenv("OUTPUT_PROTOCOL", "legacy")
         )
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url and _env_flag("DATABRICKS_LAKEBASE_ENABLED", False):
+            database_url = _build_lakebase_database_url()
+        if database_url:
+            database_url = _normalize_database_url(database_url)
         return cls(
             memory_base_url=os.getenv("MEMORY_BASE_URL", "http://localhost:8000"),
             llm_model=os.getenv("LLM_MODEL", "stub-llm"),
@@ -293,7 +341,7 @@ class Config:
             mlflow_experiment=os.getenv("MLFLOW_EXPERIMENT")
             or os.getenv("MLFLOW_EXPERIMENT_NAME"),
             mlflow_tracing_enabled=_env_flag("MLFLOW_TRACING_ENABLED", False),
-            database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qbr_intelligence.db"),
+            database_url=database_url or "sqlite+aiosqlite:///qbr_intelligence.db",
             log_sqlite_status=_env_flag("LOG_SQLITE_STATUS", True),
             storage_backend=os.getenv("STORAGE_BACKEND", "sqlite"),
             vector_backend=os.getenv("VECTOR_BACKEND", "sqlite_embeddings"),
@@ -356,14 +404,16 @@ class Config:
         """Validate required configuration and raise ValueError when missing."""
         if self.output_protocol not in {"legacy", "agui"}:
             raise ValueError("OUTPUT_PROTOCOL must be one of: legacy, agui")
-        if self.storage_backend not in {"sqlite"}:
-            raise ValueError("STORAGE_BACKEND must be one of: sqlite")
+        if self.storage_backend not in {"sqlite", "postgres"}:
+            raise ValueError("STORAGE_BACKEND must be one of: sqlite, postgres")
         if self.vector_backend not in {"sqlite_embeddings", "faiss"}:
             raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss")
         if self.rerank_backend not in {"none", "cross_encoder"}:
             raise ValueError("RERANK_BACKEND must be one of: none, cross_encoder")
-        if self.text_search_backend not in {"fts5", "auto", "like"}:
-            raise ValueError("TEXT_SEARCH_BACKEND must be one of: fts5, auto, like")
+        if self.text_search_backend not in {"fts5", "auto", "like", "postgres_fts"}:
+            raise ValueError(
+                "TEXT_SEARCH_BACKEND must be one of: fts5, auto, like, postgres_fts"
+            )
         if self.guardrails_mode not in {"shadow", "enforce"}:
             raise ValueError("GUARDRAILS_MODE must be one of: shadow, enforce")
         if self.guardrails_router_conversation_turns < 1:

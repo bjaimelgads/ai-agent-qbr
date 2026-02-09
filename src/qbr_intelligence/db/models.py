@@ -413,8 +413,8 @@ class Period(Base):
     __tablename__ = "periods"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    period_label: Mapped[str] = mapped_column(String(50), nullable=False)
-    period_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    period_label: Mapped[str] = mapped_column(String(200), nullable=False)
+    period_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     period_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fiscal_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     start_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
@@ -515,7 +515,7 @@ class Metric(Base):
     extraction_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Period/brand/baseline context
-    period_label: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    period_label: Mapped[str | None] = mapped_column(String(200), nullable=True)
     period_start: Mapped[str | None] = mapped_column(String(20), nullable=True)
     period_end: Mapped[str | None] = mapped_column(String(20), nullable=True)
     brand: Mapped[str | None] = mapped_column(String(200), nullable=True)

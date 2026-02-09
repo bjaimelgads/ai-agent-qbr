@@ -10,6 +10,9 @@ from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.exc import SQLAlchemyError
 from typing import Callable
 from pathlib import Path
 
@@ -117,6 +120,7 @@ def create_app(
         _maybe_seed_sqlite_db(config.database_url, log_enabled=config.log_sqlite_status)
         if config.log_sqlite_status:
             _log_database_status(config.database_url)
+        await _log_database_connectivity(config.database_url)
         _log_faiss_status(Path(config.faiss_dir))
         logger.info(
             "MLflow tracing: enabled=%s trace=%s uri=%s experiment=%s",
@@ -184,7 +188,7 @@ def _log_database_status(database_url: str) -> None:
         logger.info("Database URL: (empty)")
         return
     if not database_url.startswith("sqlite"):
-        logger.info("Database URL: %s (non-sqlite)", database_url)
+        logger.info("Database URL: %s (non-sqlite)", _safe_database_url(database_url))
         return
     db_path = _sqlite_path_from_url(database_url)
     if not db_path:
@@ -211,6 +215,49 @@ def _sqlite_path_from_url(database_url: str) -> Path | None:
     if path.startswith("//"):
         path = path[1:]
     return Path(path)
+
+
+async def _log_database_connectivity(database_url: str) -> None:
+    if not database_url or database_url.startswith("sqlite"):
+        return
+    engine = create_async_engine(
+        database_url,
+        pool_pre_ping=True,
+        connect_args=_database_connect_args(database_url),
+    )
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        logger.info("Database connectivity check: ok (%s)", _safe_database_url(database_url))
+    except Exception as exc:
+        logger.error(
+            "Database connectivity check failed (%s): %s",
+            _safe_database_url(database_url),
+            exc,
+        )
+    finally:
+        await engine.dispose()
+
+
+def _safe_database_url(database_url: str) -> str:
+    try:
+        parsed = urlparse(database_url)
+    except Exception:
+        return database_url
+    if not parsed.password:
+        return database_url
+    safe_netloc = f"{parsed.username}:***@{parsed.hostname}"
+    if parsed.port:
+        safe_netloc = f"{safe_netloc}:{parsed.port}"
+    return parsed._replace(netloc=safe_netloc).geturl()
+
+
+def _database_connect_args(database_url: str) -> dict:
+    if not database_url.startswith("postgresql+asyncpg://"):
+        return {}
+    if os.getenv("DATABRICKS_LAKEBASE_ENABLED", "").lower() not in {"1", "true", "yes", "on"}:
+        return {}
+    return {"ssl": True}
 
 
 def _log_sqlite_counts(db_path: Path) -> None:
