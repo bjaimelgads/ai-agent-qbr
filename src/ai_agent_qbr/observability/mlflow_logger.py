@@ -37,20 +37,33 @@ class MlflowTracer:
         if not self._mlflow:
             yield None
             return
-        if self._config.tracking_uri:
-            self._mlflow.set_tracking_uri(self._config.tracking_uri)
-        if self._config.experiment:
-            self._mlflow.set_experiment(self._config.experiment)
-        with self._mlflow.start_run(run_name=run_name, tags=tags):
-            yield self._mlflow
+        try:
+            if self._config.tracking_uri:
+                self._mlflow.set_tracking_uri(self._config.tracking_uri)
+            if self._config.experiment:
+                self._mlflow.set_experiment(self._config.experiment)
+            parent_run = self._mlflow.active_run()
+            with self._mlflow.start_run(
+                run_name=run_name,
+                tags=tags,
+                nested=bool(parent_run),
+            ):
+                yield self._mlflow
+        except Exception as exc:  # noqa: BLE001
+            _LOGGER.warning("MLflow interaction run disabled due to runtime error: %s", exc)
+            yield None
 
     @contextmanager
     def nested_run(self, *, run_name: str, tags: dict[str, str] | None = None) -> Iterator[object | None]:
         if not self._mlflow:
             yield None
             return
-        with self._mlflow.start_run(run_name=run_name, nested=True, tags=tags or {}):
-            yield self._mlflow
+        try:
+            with self._mlflow.start_run(run_name=run_name, nested=True, tags=tags or {}):
+                yield self._mlflow
+        except Exception as exc:  # noqa: BLE001
+            _LOGGER.warning("MLflow nested run disabled due to runtime error: %s", exc)
+            yield None
 
     def log_json(self, mlflow_obj: object | None, name: str, payload: Any) -> None:
         if not mlflow_obj:
