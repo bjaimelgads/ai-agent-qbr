@@ -13,6 +13,7 @@ from ai_agent_qbr.models import (
     RefineMetricIntentResult,
     ResolvedMetricIntent,
 )
+from ai_agent_qbr.tools.question_normalization import normalize_question_arg
 from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.metric_qa.resolvers import ClientResolver, MetricResolver, PeriodResolver, RegionResolver
@@ -47,6 +48,15 @@ async def refine_metric_intent(
 ) -> RefineMetricIntentResult:
     status = ToolStatusEmitter(ctx, tool_name="refine_metric_intent")
     await status.step("Confirming details.", step_name="Confirming details")
+    logger = logging.getLogger("uvicorn.error")
+    canonical_query = normalize_question_arg(args.question, ctx.tool_context)
+    logger.info(
+        "REFINE_INTENT_REQUEST raw=%r canonical=%r current_intent=%s candidates=%s",
+        args.question,
+        canonical_query,
+        args.intent.model_dump(),
+        args.candidates.model_dump(),
+    )
 
     engine = ctx.tool_context.get("metric_query_engine")
     if not isinstance(engine, MetricQueryEngine):
@@ -57,7 +67,7 @@ async def refine_metric_intent(
         )
 
     await engine._load_catalogs()
-    anchor_date = await engine._select_anchor_date(args.question)
+    anchor_date = await engine._select_anchor_date(canonical_query)
 
     updated = ResolvedMetricIntent.model_validate(args.intent.model_dump())
     assumptions: list[str] = []
@@ -133,5 +143,5 @@ async def refine_metric_intent(
         assumptions=assumptions,
         unresolved_fields=unresolved,
     )
-    logging.getLogger(__name__).info("REFINE_INTENT_RESULT %s", result.model_dump())
+    logger.info("REFINE_INTENT_RESULT %s", result.model_dump())
     return result

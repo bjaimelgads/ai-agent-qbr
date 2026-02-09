@@ -14,6 +14,7 @@ from ai_agent_qbr.models import (
     ResolveMetricIntentResult,
     ResolvedMetricIntent,
 )
+from ai_agent_qbr.tools.question_normalization import normalize_question_arg
 from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.metric_qa.intent import DeterministicIntentExtractor
@@ -34,6 +35,13 @@ async def resolve_metric_intent(
 ) -> ResolveMetricIntentResult:
     status = ToolStatusEmitter(ctx, tool_name="resolve_metric_intent")
     await status.step("Understanding your request.", step_name="Understanding request")
+    logger = logging.getLogger("uvicorn.error")
+    canonical_query = normalize_question_arg(args.question, ctx.tool_context)
+    logger.info(
+        "RESOLVE_INTENT_REQUEST raw=%r canonical=%r",
+        args.question,
+        canonical_query,
+    )
 
     engine = ctx.tool_context.get("metric_query_engine")
     if not isinstance(engine, MetricQueryEngine):
@@ -43,10 +51,16 @@ async def resolve_metric_intent(
         )
 
     await engine._load_catalogs()
-    anchor_date = await engine._select_anchor_date(args.question)
+    anchor_date = await engine._select_anchor_date(canonical_query)
+    logger.info("RESOLVE_INTENT_ANCHOR_DATE %s", anchor_date)
 
     extractor = DeterministicIntentExtractor(engine._catalog or [], engine._clients or [])
-    intent, debug = extractor.extract(args.question, anchor_date=anchor_date)
+    intent, debug = extractor.extract(canonical_query, anchor_date=anchor_date)
+    logger.info(
+        "RESOLVE_INTENT_RAW intent=%s debug=%s",
+        getattr(intent, "model_dump", lambda: intent)(),
+        getattr(debug, "model_dump", lambda: debug)(),
+    )
 
     period_specs: list[PeriodSpec] = []
     raw_periods = intent.period or []
@@ -93,7 +107,7 @@ async def resolve_metric_intent(
     client_values = intent.client if isinstance(intent.client, list) else ([intent.client] if intent.client else [])
     region_values = intent.region if isinstance(intent.region, list) else ([intent.region] if intent.region else [])
     if not region_values:
-        fallback = RegionResolver().resolve(args.question)
+        fallback = RegionResolver().resolve(canonical_query)
         if fallback.value:
             region_values = [fallback.value]
         elif fallback.candidates:

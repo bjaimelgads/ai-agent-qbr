@@ -686,11 +686,24 @@ class AiAgentQbrOrchestrator:
             conscious = self._session_cache.get(
                 session_key, {"conscious": [], "token_estimate": 0}
             )
+            last_metric_intent = None
+            if hasattr(self._memory, "get_last_metric_intent"):
+                try:
+                    candidate = self._memory.get_last_metric_intent(
+                        tenant_id=tenant_id,
+                        user_id=user_id,
+                        session_id=session_id,
+                    )
+                except Exception:  # noqa: BLE001
+                    candidate = None
+                if isinstance(candidate, dict):
+                    last_metric_intent = candidate
             llm_context = {
                 "conscious_memories": list(conscious.get("conscious", [])),
                 "conversation_memory": {
                     "recent_turns": list(self._recent_turns.get(session_key, []))
                 },
+                "last_metric_intent": last_metric_intent,
                 "qbr_context": filtered_context,
                 "region_verification": (
                     region_result.model_dump() if region_result is not None else None
@@ -710,6 +723,7 @@ class AiAgentQbrOrchestrator:
                 "tenant_id": tenant_id,
                 "user_id": user_id,
                 "session_id": session_id,
+                "original_query": query,
                 "trace_id": trace_id,
                 "status_publisher": self._telemetry.publish_status,
                 "output_protocol": self._config.output_protocol,

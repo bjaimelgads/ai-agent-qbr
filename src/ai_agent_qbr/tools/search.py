@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+
 from penguiflow.catalog import tool
 from penguiflow.planner import ToolContext
 
 from ai_agent_qbr.infrastructure.region_filter import filter_items_by_region
 from ai_agent_qbr.models import Query, SearchResult, SearchResults
+from ai_agent_qbr.tools.question_normalization import normalize_question_arg
 from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_agent.application.use_cases import HybridSearchKnowledge
 from qbr_agent.domain.value_objects import DocumentId
@@ -16,12 +19,22 @@ from qbr_agent.domain.value_objects import DocumentId
 async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
     status = ToolStatusEmitter(ctx, tool_name="search_documents")
     await status.step("Searching QBR materials for relevant details.", step_name="Search QBR")
+    logger = logging.getLogger("uvicorn.error")
     use_case = ctx.tool_context.get("qbr_search_use_case")
     if not isinstance(use_case, HybridSearchKnowledge):
         return SearchResults(results=[])
 
     top_k = int(ctx.tool_context.get("retrieval_top_k", 5))
     min_score = ctx.tool_context.get("retrieval_min_score")
+    canonical_query = normalize_question_arg(args.question, ctx.tool_context)
+    logger.info(
+        "SEARCH_REQUEST raw=%r canonical=%r top_k=%s min_score=%s comparison=%s",
+        args.question,
+        canonical_query,
+        top_k,
+        min_score,
+        bool(args.comparison_intent),
+    )
 
     comparison_intent = bool(args.comparison_intent)
     if comparison_intent:
@@ -29,7 +42,7 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
 
     if comparison_intent:
         results = await _search_comparison_documents(
-            query=args.question,
+            query=canonical_query,
             use_case=use_case,
             top_k=top_k,
             min_score=min_score,
@@ -37,17 +50,24 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
         )
     else:
         results = await use_case.execute(
-            query=args.question,
+            query=canonical_query,
             top_k=top_k,
             min_score=min_score,
         )
 
     region_focus = ctx.tool_context.get("region_focus")
     if isinstance(region_focus, str):
+        logger.info("SEARCH_REGION_FOCUS %s", region_focus)
         results = filter_items_by_region(results, region_focus)
 
     include_path = bool(ctx.tool_context.get("retrieval_include_document_path", False))
-    return await _format_results(results, use_case, include_path)
+    formatted = await _format_results(results, use_case, include_path)
+    logger.info(
+        "SEARCH_RESULTS count=%s top_titles=%s",
+        len(formatted.results),
+        [item.title for item in formatted.results[:5]],
+    )
+    return formatted
 
 
 async def _search_comparison_documents(

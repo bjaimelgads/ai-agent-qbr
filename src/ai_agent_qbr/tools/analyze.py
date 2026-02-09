@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from penguiflow.catalog import tool
 from penguiflow.planner import ToolContext
 
@@ -13,6 +15,11 @@ from ai_agent_qbr.tools.status import ToolStatusEmitter
 async def analyze_results(args: SearchResults, ctx: ToolContext) -> FinalAnswer:
     status = ToolStatusEmitter(ctx, tool_name="analyze_results")
     await status.step("Summarizing the most relevant QBR insights.", step_name="Summarize")
+    logging.getLogger("uvicorn.error").info(
+        "ANALYZE_RESULTS count=%s top_titles=%s",
+        len(args.results),
+        [item.title for item in args.results[:5]],
+    )
     user = ctx.tool_context.get("user_id", "user")
     context = ctx.tool_context.get("qbr_answer_context")
 
