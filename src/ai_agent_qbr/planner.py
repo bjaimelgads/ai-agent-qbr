@@ -12,7 +12,12 @@ from dataclasses import dataclass
 from typing import Any, Literal, Union, cast
 
 from penguiflow.catalog import build_catalog
-from penguiflow.planner import PlannerEventCallback, ReactPlanner
+from penguiflow.planner import (
+    PlannerEventCallback,
+    ReactPlanner,
+    ReflectionConfig,
+    ReflectionCriteria,
+)
 from penguiflow.planner.memory import MemoryBudget, MemoryIsolation, ShortTermMemoryConfig
 from penguiflow.rich_output import DEFAULT_ALLOWLIST, RichOutputConfig, attach_rich_output_nodes, get_runtime
 from .config import Config
@@ -48,6 +53,15 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
   `conversation_memory.recent_turns` and `last_metric_intent` in the LLM context. Preserve the
   user's latest metric change, but carry forward prior client/region/period unless the user
   explicitly overrides them.
+- For complex metric questions (multiple metrics, periods, clients, or regions), decompose the
+  request into atomic metric lookups and execute them in parallel using `plan` + `join` when
+  possible. Keep each atomic lookup narrowly scoped so results are easy to compare and cite.
+- For explicit comparisons (e.g., H1 vs H2, client A vs client B), prefer separate scoped
+  `query_metrics` calls per comparison side over one broad query that mixes contexts.
+- After parallel lookups, synthesize a comparison only from compatible values (same metric and
+  unit). If values are ambiguous or incompatible, ask a brief clarification instead of guessing.
+- Keep parallel fan-out pragmatic: avoid unnecessary explosion in tool calls. If the request would
+  require many cells, ask the user to narrow scope first.
 - Tool argument contract: for tools with `args.question` (`resolve_metric_intent`, `query_metrics`,
   `search_documents`, `refine_metric_intent`), pass only the latest user utterance or a concise
   canonical rewrite. Never pass planner internals such as `observation`, `context`, serialized
@@ -55,13 +69,27 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - Treat `raw_context` and `llm_context_label` as supporting context only. Focus the answer on the
   user’s requested metric(s) and entities; do not introduce additional metrics or KPIs unless the
   user explicitly asked for them. If you include context, tie it directly to the requested metric.
+- If the draft answer may be inaccurate, ambiguous, or unsupported by strong citations, prefer a
+  retrieval-first correction loop: call `search_documents` with a concise query, then answer from
+  that evidence. Do not finalize until evidence supports the answer.
 - When citations include `document_url`, include those links in the Sources section.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
 
 
-def _build_system_prompt(rich_output_prompt: str) -> str:
+def _build_system_prompt(
+    rich_output_prompt: str,
+    *,
+    require_search_fallback: bool = True,
+) -> str:
     prompt = SYSTEM_PROMPT_EXTRA
+    if not require_search_fallback:
+        prompt = prompt.replace(
+            "- If the draft answer may be inaccurate, ambiguous, or unsupported by strong citations, prefer a\n"
+            "  retrieval-first correction loop: call `search_documents` with a concise query, then answer from\n"
+            "  that evidence. Do not finalize until evidence supports the answer.\n",
+            "",
+        )
     if rich_output_prompt:
         prompt = f"{prompt}\n\n{rich_output_prompt}" if prompt else rich_output_prompt
     return prompt
@@ -477,6 +505,19 @@ def _build_short_term_memory(config: Config) -> ShortTermMemoryConfig | None:
     )
 
 
+def _build_reflection_config(config: Config) -> ReflectionConfig | None:
+    """Build reflection loop configuration."""
+    if not config.reflection_enabled:
+        return None
+    return ReflectionConfig(
+        enabled=True,
+        criteria=ReflectionCriteria(),
+        quality_threshold=config.reflection_quality_threshold,
+        max_revisions=config.reflection_max_revisions,
+        use_separate_llm=config.reflection_use_separate_llm,
+    )
+
+
 def build_planner(
     config: Config,
     *,
@@ -514,26 +555,46 @@ def build_planner(
     guardrail_gateway = build_guardrail_gateway(config)
 
     if hasattr(llm_client, "complete"):
+        reflection_config = _build_reflection_config(config)
         planner = ReactPlanner(
             llm_client=llm_client,
             catalog=catalog,
             registry=registry,
-            system_prompt_extra=_build_system_prompt(rich_output_prompt),
+            system_prompt_extra=_build_system_prompt(
+                rich_output_prompt,
+                require_search_fallback=config.reflection_require_search_documents_on_low_confidence,
+            ),
             event_callback=event_callback,
             stream_final_response=config.planner_stream_final_response,
             short_term_memory=_build_short_term_memory(config),
             guardrail_gateway=guardrail_gateway,
+            reflection_config=reflection_config,
+            reflection_llm=(
+                f"databricks/{config.region_verify_model_name}"
+                if config.reflection_use_separate_llm
+                else None
+            ),
         )
         return PlannerBundle(planner=planner, llm_client=llm_client)
 
+    reflection_config = _build_reflection_config(config)
     planner = ReactPlanner(
         llm=llm_client,
         catalog=catalog,
         registry=registry,
-        system_prompt_extra=_build_system_prompt(rich_output_prompt),
+        system_prompt_extra=_build_system_prompt(
+            rich_output_prompt,
+            require_search_fallback=config.reflection_require_search_documents_on_low_confidence,
+        ),
         event_callback=event_callback,
         stream_final_response=config.planner_stream_final_response,
         short_term_memory=_build_short_term_memory(config),
         guardrail_gateway=guardrail_gateway,
+        reflection_config=reflection_config,
+        reflection_llm=(
+            f"databricks/{config.region_verify_model_name}"
+            if config.reflection_use_separate_llm
+            else None
+        ),
     )
     return PlannerBundle(planner=planner, llm_client=llm_client)

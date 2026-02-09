@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -16,25 +17,54 @@ from qbr_intelligence.metric_qa.dao import MetricFactStore
 
 
 def _build_metric_fact_text(row: dict) -> str:
-    parts: list[str] = []
+    # Build embedding text with context-first emphasis for post-filter reranking.
+    # The query path already filters by metric/client/region/period in SQL, so
+    # semantic ranking should focus on "what this row represents".
+    semantic_parts: list[str] = []
+    metadata_parts: list[str] = []
+
+    context_label = row.get("llm_context_label")
+    slide_title = row.get("slide_title")
+    snippet = _sanitize_snippet(row.get("snippet"))
     metric = row.get("metric_name") or row.get("label_text")
+
+    if context_label:
+        semantic_parts.append(f"Context: {context_label}")
+        # Repeat once to increase weight of row-level meaning in the embedding.
+        semantic_parts.append(f"Context Focus: {context_label}")
+    if slide_title:
+        semantic_parts.append(f"Slide Title: {slide_title}")
+    if snippet:
+        semantic_parts.append(f"Evidence: {snippet}")
+
     if metric:
-        parts.append(f"Metric: {metric}")
-    if row.get("llm_context_label"):
-        parts.append(f"Context: {row['llm_context_label']}")
-    if row.get("snippet"):
-        parts.append(f"Snippet: {row['snippet']}")
-    if row.get("slide_title"):
-        parts.append(f"Slide: {row['slide_title']}")
+        metadata_parts.append(f"Metric: {metric}")
     if row.get("period_label"):
-        parts.append(f"Period: {row['period_label']}")
+        metadata_parts.append(f"Period: {row['period_label']}")
     if row.get("client_name"):
-        parts.append(f"Client: {row['client_name']}")
+        metadata_parts.append(f"Client: {row['client_name']}")
     if row.get("region"):
-        parts.append(f"Region: {row['region']}")
+        metadata_parts.append(f"Region: {row['region']}")
     if row.get("document_name"):
-        parts.append(f"Document: {row['document_name']}")
+        metadata_parts.append(f"Document: {row['document_name']}")
+
+    parts = semantic_parts + metadata_parts
     return " | ".join(parts)
+
+
+def _sanitize_snippet(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = str(value)
+    # Remove image placeholders that add noise but little semantic value.
+    text = re.sub(r"!\[rId\d+\]\([^)]*\)", " ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return None
+    # Keep snippets short enough to avoid drowning higher-value context fields.
+    if len(text) > 420:
+        return text[:417].rstrip() + "..."
+    return text
 
 
 def _hash_text(text: str) -> str:
