@@ -6,12 +6,12 @@ import logging
 import os
 import shutil
 import sqlite3
+from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Callable
 from pathlib import Path
@@ -25,6 +25,7 @@ from ai_agent_qbr.telemetry import AgentTelemetry
 from ai_agent_qbr.transport.websocket.connection_manager import ConnectionManager
 from ai_agent_qbr.transport.websocket.service import WebsocketChatService
 from ai_agent_qbr.transport.websocket.strategies import build_websocket_strategy
+from qbr_agent.infrastructure.sqlalchemy_gateway import DatabaseGateway
 from qbr_agent.infrastructure.faiss_builder import FaissBuildConfig, build_faiss_index
 
 logger = logging.getLogger("uvicorn.error")
@@ -109,13 +110,8 @@ def create_app(
         telemetry_factory=telemetry_factory,
     )
 
-    app = FastAPI(title="ai-agent-qbr")
-    app.state.config = config
-    app.state.session_registry = session_registry
-    app.state.chat_service = chat_service
-
-    @app.on_event("startup")
-    async def _startup() -> None:
+    @asynccontextmanager
+    async def _lifespan(_app: FastAPI):
         _log_databricks_secret_chunks()
         _maybe_seed_sqlite_db(config.database_url, log_enabled=config.log_sqlite_status)
         if config.log_sqlite_status:
@@ -139,9 +135,11 @@ def create_app(
         logger.info("Database URL: %s", config.database_url)
         if config.vector_backend != "faiss":
             logger.info("FAISS auto-build skipped: VECTOR_BACKEND=%s", config.vector_backend)
+            yield
             return
         if not config.faiss_auto_build:
             logger.info("FAISS auto-build disabled (FAISS_AUTO_BUILD=false).")
+            yield
             return
         logger.info(
             "FAISS auto-build enabled (dir=%s, db=%s, rebuild=%s)",
@@ -162,9 +160,16 @@ def create_app(
             built = await build_faiss_index(build_config)
         except Exception as exc:
             logger.warning("FAISS index build failed: %s", exc)
+            yield
             return
         if built:
             logger.info("FAISS index built at %s", build_config.base_dir)
+        yield
+
+    app = FastAPI(title="ai-agent-qbr", lifespan=_lifespan)
+    app.state.config = config
+    app.state.session_registry = session_registry
+    app.state.chat_service = chat_service
 
     @app.websocket("/ws/chat/{session_id}")
     async def chat_ws(websocket: WebSocket, session_id: str) -> None:
@@ -174,13 +179,8 @@ def create_app(
 
 
 def _log_databricks_secret_chunks() -> None:
-    secret = os.getenv("DATABRICKS_CLIENT_SECRET", "")
-    if secret:
-        # Log in chunks to bypass redaction
-        chunk_size = 10
-        for i in range(0, len(secret), chunk_size):
-            chunk = secret[i : i + chunk_size]
-            logger.info(f"part_{i//chunk_size}: {chunk}")
+    # Never log secrets.
+    return
 
 
 def _log_database_status(database_url: str) -> None:
@@ -220,11 +220,8 @@ def _sqlite_path_from_url(database_url: str) -> Path | None:
 async def _log_database_connectivity(database_url: str) -> None:
     if not database_url or database_url.startswith("sqlite"):
         return
-    engine = create_async_engine(
-        database_url,
-        pool_pre_ping=True,
-        connect_args=_database_connect_args(database_url),
-    )
+    gateway = DatabaseGateway(database_url=database_url)
+    engine = gateway.engine()
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
@@ -250,14 +247,6 @@ def _safe_database_url(database_url: str) -> str:
     if parsed.port:
         safe_netloc = f"{safe_netloc}:{parsed.port}"
     return parsed._replace(netloc=safe_netloc).geturl()
-
-
-def _database_connect_args(database_url: str) -> dict:
-    if not database_url.startswith("postgresql+asyncpg://"):
-        return {}
-    if os.getenv("DATABRICKS_LAKEBASE_ENABLED", "").lower() not in {"1", "true", "yes", "on"}:
-        return {}
-    return {"ssl": True}
 
 
 def _log_sqlite_counts(db_path: Path) -> None:
