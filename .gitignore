@@ -71,3 +71,6 @@ qbr_legacy_e2e.db
 
 # Local OAuth tokens
 .google_slides_token.json
+
+# Local debug traces
+data/debug/
