@@ -29,6 +29,10 @@ class SearchResults(BaseModel):
     """List of search results."""
 
     results: list[SearchResult]
+    needs_clarification: bool = False
+    clarification_question: str | None = None
+    suggested_filters: list[str] = Field(default_factory=list)
+    candidate_document_count: int | None = None
 
 
 class FinalAnswer(BaseModel):
@@ -83,6 +87,7 @@ class MetricQueryArgs(BaseModel):
 
     question: str
     debug: bool = False
+    intent: ResolvedMetricIntent | None = None
 
 
 class PeriodSpec(BaseModel):

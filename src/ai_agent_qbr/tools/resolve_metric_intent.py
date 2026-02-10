@@ -124,5 +124,8 @@ async def resolve_metric_intent(
     )
 
     result = ResolveMetricIntentResult(intent=resolved, confidence=confidence)
+    interaction_metadata = ctx.tool_context.get("interaction_metadata")
+    if isinstance(interaction_metadata, dict):
+        interaction_metadata["resolved_metric_intent"] = result.intent.model_dump(mode="json")
     logging.getLogger(__name__).info("RESOLVE_INTENT_RESULT %s", result.model_dump())
     return result

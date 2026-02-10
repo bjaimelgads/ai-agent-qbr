@@ -3,196 +3,36 @@
 from __future__ import annotations
 
 import logging
-import re
-from dataclasses import dataclass
-from datetime import date
 
 from penguiflow.catalog import tool
 from penguiflow.planner import ToolContext
 
 from ai_agent_qbr.infrastructure.region_filter import filter_items_by_region
 from ai_agent_qbr.models import Query, SearchResult, SearchResults
+from ai_agent_qbr.tools.intent_filters import (
+    DocumentFilters,
+    build_document_filters_from_query,
+    score_document_match,
+)
 from ai_agent_qbr.tools.question_normalization import normalize_question_arg
 from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_agent.application.use_cases import HybridSearchKnowledge
 from qbr_agent.domain.entities import Document
 from qbr_agent.domain.value_objects import DocumentId
 from qbr_intelligence.metric_qa import MetricQueryEngine
-from qbr_intelligence.metric_qa.intent import DeterministicIntentExtractor
-
-
-_REGION_ALIAS = {
-    "US": {"US", "USA", "UNITED STATES"},
-    "EMEA": {"EMEA"},
-    "GLOBAL": {"GLOBAL"},
-}
-
-_PERIOD_HALF_RE = re.compile(r"\b(H[12])\s*(?:FY)?\s*(20\d{2}|\d{2})\b", re.IGNORECASE)
-_PERIOD_FY_HALF_RE = re.compile(r"\bFY\s*(20\d{2}|\d{2})\s*(H[12])\b", re.IGNORECASE)
-_PERIOD_QUARTER_RE = re.compile(r"\b(Q[1-4])\s*(?:FY)?\s*(20\d{2}|\d{2})\b", re.IGNORECASE)
-
-
-@dataclass(frozen=True)
-class _DocumentFilters:
-    clients: set[str]
-    regions: set[str]
-    periods: set[str]
-
-    def enabled(self) -> bool:
-        return bool(self.clients or self.regions or self.periods)
-
-
-def _normalize_token(value: str) -> str:
-    normalized = re.sub(r"[^A-Z0-9]+", " ", value.upper()).strip()
-    return re.sub(r"\s+", " ", normalized)
-
-
-def _normalize_year(raw: str) -> str:
-    if len(raw) == 2:
-        return f"20{raw}"
-    return raw
-
-
-def _period_tokens_from_text(text: str | None) -> set[str]:
-    if not text:
-        return set()
-    source = _normalize_token(text)
-    tokens: set[str] = set()
-    for half, year in _PERIOD_HALF_RE.findall(source):
-        year4 = _normalize_year(year)
-        tokens.add(f"{half.upper()} {year4}")
-        tokens.add(f"FY{year4[2:]} {half.upper()}")
-    for year, half in _PERIOD_FY_HALF_RE.findall(source):
-        year4 = _normalize_year(year)
-        tokens.add(f"{half.upper()} {year4}")
-        tokens.add(f"FY{year4[2:]} {half.upper()}")
-    for quarter, year in _PERIOD_QUARTER_RE.findall(source):
-        year4 = _normalize_year(year)
-        tokens.add(f"{quarter.upper()} {year4}")
-        tokens.add(f"FY{year4[2:]} {quarter.upper()}")
-    return tokens
-
-
-def _region_tokens_from_text(text: str | None) -> set[str]:
-    if not text:
-        return set()
-    source = _normalize_token(text)
-    found: set[str] = set()
-    for canonical, aliases in _REGION_ALIAS.items():
-        if any(alias in source for alias in aliases):
-            found.add(canonical)
-    return found
-
-
-def _client_tokens_from_document(document: Document) -> set[str]:
-    tokens: set[str] = set()
-    if document.client_name:
-        tokens.add(_normalize_token(document.client_name))
-    if document.filename:
-        filename = _normalize_token(document.filename)
-        if "DISNEY" in filename:
-            tokens.add("DISNEY")
-            tokens.add("DISNEY+")
-        if "NETFLIX" in filename:
-            tokens.add("NETFLIX")
-        if "HULU" in filename:
-            tokens.add("HULU")
-    return tokens
-
-
-def _period_tokens_from_document(document: Document) -> set[str]:
-    tokens = _period_tokens_from_text(document.period)
-    if document.filename:
-        tokens.update(_period_tokens_from_text(document.filename))
-    return tokens
-
-
-def _region_tokens_from_document(document: Document) -> set[str]:
-    text = " ".join(
-        part for part in (document.filename, document.file_path, document.period) if part
-    )
-    return _region_tokens_from_text(text)
-
-
-def _score_document_match(document: Document, filters: _DocumentFilters) -> tuple[bool, float]:
-    """Return (passes_filter, score_boost) for a document-level intent filter."""
-    boost = 0.0
-
-    if filters.clients:
-        doc_clients = _client_tokens_from_document(document)
-        if doc_clients:
-            if doc_clients & filters.clients:
-                boost += 0.25
-            else:
-                return False, 0.0
-
-    if filters.regions:
-        doc_regions = _region_tokens_from_document(document)
-        if doc_regions:
-            if doc_regions & filters.regions:
-                boost += 0.20
-            else:
-                return False, 0.0
-
-    if filters.periods:
-        doc_periods = _period_tokens_from_document(document)
-        if doc_periods:
-            if doc_periods & filters.periods:
-                boost += 0.20
-            else:
-                return False, 0.0
-
-    return True, boost
+from qbr_intelligence.metric_qa.planner import build_plan
 
 
 async def _build_document_filters(
     *,
     query: str,
     ctx: ToolContext,
-) -> _DocumentFilters:
+) -> DocumentFilters:
     engine = ctx.tool_context.get("metric_query_engine")
     if not isinstance(engine, MetricQueryEngine):
-        return _DocumentFilters(clients=set(), regions=set(), periods=set())
-
-    await engine._load_catalogs()
-    anchor_date = await engine._select_anchor_date(query)
-    extractor = DeterministicIntentExtractor(engine._catalog or [], engine._clients or [])
-    intent, _ = extractor.extract(query, anchor_date=anchor_date)
-
-    clients: set[str] = set()
-    raw_clients = intent.client if isinstance(intent.client, list) else ([intent.client] if intent.client else [])
-    for client in raw_clients:
-        if client:
-            clients.add(_normalize_token(client))
-
-    regions: set[str] = set()
-    raw_regions = intent.region if isinstance(intent.region, list) else ([intent.region] if intent.region else [])
-    for region in raw_regions:
-        normalized = _normalize_token(region)
-        if normalized in _REGION_ALIAS:
-            regions.add(normalized)
-        else:
-            for canonical, aliases in _REGION_ALIAS.items():
-                if normalized in aliases:
-                    regions.add(canonical)
-
-    periods: set[str] = set()
-    raw_periods = intent.period if isinstance(intent.period, list) else ([intent.period] if intent.period else [])
-    for period in raw_periods:
-        value = getattr(period, "value", None)
-        if isinstance(value, str):
-            periods.update(_period_tokens_from_text(value))
-        start = getattr(period, "start", None)
-        end = getattr(period, "end", None)
-        kind = getattr(period, "type", None)
-        if isinstance(start, date) and isinstance(end, date):
-            year = end.year if end.month >= 7 else start.year
-            if isinstance(kind, str) and kind.lower() == "half":
-                half = "H1" if start.month <= 3 else "H2"
-                periods.add(f"{half} {year}")
-                periods.add(f"FY{str(year)[2:]} {half}")
-
-    return _DocumentFilters(clients=clients, regions=regions, periods=periods)
+        return DocumentFilters(clients=set(), regions=set(), periods=set())
+    filters, _intent = await build_document_filters_from_query(query=query, engine=engine)
+    return filters
 
 
 @tool(desc="Search internal QBR knowledge", side_effects="read", tags=["planner"])
@@ -220,12 +60,92 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
     if comparison_intent:
         await status.step("Comparing across multiple decks.", step_name="Compare decks")
 
-    if comparison_intent:
+    prefiltered_doc_ids: list[int] = []
+    prefilter_intent = None
+    candidate_document_count: int | None = None
+    engine = ctx.tool_context.get("metric_query_engine")
+    if isinstance(engine, MetricQueryEngine):
+        intent, _debug = await engine.resolve_intent(canonical_query)
+        prefilter_intent = intent
+        plan = build_plan(intent)
+        has_filters = bool(plan.client or plan.region or plan.period_ranges)
+        if has_filters:
+            doc_limit = int(ctx.tool_context.get("search_prefilter_doc_limit", 25))
+            prefiltered_doc_ids, _sql, _params = await engine._store.query_document_ids(
+                metric_ids=plan.metric_ids,
+                client_name=plan.client,
+                region=plan.region,
+                period_ranges=plan.period_ranges,
+                limit=doc_limit,
+            )
+            logger.info(
+                "SEARCH_PREFILTER_DOCS count=%s filters(client=%s region=%s periods=%s)",
+                len(prefiltered_doc_ids),
+                plan.client,
+                plan.region,
+                len(plan.period_ranges),
+            )
+            candidate_document_count = len(prefiltered_doc_ids)
+        else:
+            clarify_limit = int(ctx.tool_context.get("search_clarify_doc_threshold", 6))
+            probe_ids, _sql, _params = await engine._store.query_document_ids(
+                metric_ids=plan.metric_ids,
+                client_name=plan.client,
+                region=plan.region,
+                period_ranges=plan.period_ranges,
+                limit=clarify_limit + 1,
+            )
+            candidate_document_count = len(probe_ids)
+            if candidate_document_count > clarify_limit:
+                suggested_filters: list[str] = []
+                if not plan.client:
+                    suggested_filters.append("client")
+                if not plan.region:
+                    suggested_filters.append("region")
+                if not plan.period_ranges:
+                    suggested_filters.append("period")
+                clarification = (
+                    "I found many possible QBR documents. "
+                    "Can you narrow this by client, region, or period (for example: Disney+ US FY25 H1)?"
+                )
+                logger.info(
+                    "SEARCH_CLARIFICATION required candidate_docs>%s suggested=%s intent=%s",
+                    clarify_limit,
+                    suggested_filters,
+                    prefilter_intent.model_dump(mode="json") if prefilter_intent is not None else None,
+                )
+                return SearchResults(
+                    results=[],
+                    needs_clarification=True,
+                    clarification_question=clarification,
+                    suggested_filters=suggested_filters,
+                    candidate_document_count=candidate_document_count,
+                )
+
+    if comparison_intent and prefiltered_doc_ids:
+        results = await _search_prefiltered_documents(
+            query=canonical_query,
+            use_case=use_case,
+            top_k=top_k,
+            min_score=min_score,
+            document_ids=prefiltered_doc_ids,
+            ctx=ctx,
+        )
+    elif comparison_intent:
         results = await _search_comparison_documents(
             query=canonical_query,
             use_case=use_case,
             top_k=top_k,
             min_score=min_score,
+            ctx=ctx,
+        )
+    elif prefiltered_doc_ids:
+        results = await _search_prefiltered_documents(
+            query=canonical_query,
+            use_case=use_case,
+            top_k=top_k,
+            min_score=min_score,
+            document_ids=prefiltered_doc_ids,
             ctx=ctx,
         )
     else:
@@ -250,7 +170,7 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
             if doc is None:
                 kept.append((item.score.value, item))
                 continue
-            passes, boost = _score_document_match(doc, doc_filters)
+            passes, boost = score_document_match(doc, doc_filters)
             if not passes:
                 removed_count += 1
                 continue
@@ -279,6 +199,8 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
         len(formatted.results),
         [item.title for item in formatted.results[:5]],
     )
+    if candidate_document_count is not None:
+        formatted.candidate_document_count = candidate_document_count
     return formatted
 
 
@@ -333,6 +255,34 @@ async def _search_comparison_documents(
     for doc_id, results in zip(top_doc_ids, per_doc_results, strict=False):
         combined.extend(results)
     return combined or stage1_results[:top_k]
+
+
+async def _search_prefiltered_documents(
+    *,
+    query: str,
+    use_case: HybridSearchKnowledge,
+    top_k: int,
+    min_score: float | None,
+    document_ids: list[int],
+    ctx: ToolContext,
+) -> list:
+    per_doc_k = int(ctx.tool_context.get("search_prefilter_per_doc_k", max(2, top_k)))
+    import asyncio
+
+    per_doc_results = await asyncio.gather(
+        *(
+            use_case.execute(
+                query=query,
+                document_id=doc_id,
+                top_k=per_doc_k,
+                min_score=min_score,
+            )
+            for doc_id in document_ids
+        )
+    )
+    merged = [item for group in per_doc_results for item in group]
+    merged.sort(key=lambda item: item.score.value, reverse=True)
+    return merged[: max(top_k, per_doc_k)]
 
 
 async def _format_results(

@@ -77,6 +77,7 @@ def build_catalog_bundle() -> tuple[list[Node], ModelRegistry]:
     registry.register("resolve_metric_intent", ResolveMetricIntentArgs, ResolveMetricIntentResult)
     registry.register("refine_metric_intent", RefineMetricIntentArgs, RefineMetricIntentResult)
     registry.register("search_documents", Query, SearchResults)
+    registry.register("search_qbr", Query, SearchResults)
     registry.register("analyze_results", SearchResults, FinalAnswer)
 
     nodes = [
@@ -87,6 +88,7 @@ def build_catalog_bundle() -> tuple[list[Node], ModelRegistry]:
         Node(resolve_metric_intent, name="resolve_metric_intent"),
         Node(refine_metric_intent, name="refine_metric_intent"),
         Node(search_documents, name="search_documents"),
+        Node(search_documents, name="search_qbr"),
         Node(analyze_results, name="analyze_results"),
     ]
     return nodes, registry

@@ -31,6 +31,7 @@ class SearchKnowledge:
         document_id: int | None = None,
         top_k: int = 5,
         min_score: float | None = None,
+        max_chunks_per_doc: int | None = None,
     ) -> list[RetrievalResult]:
         embedding_result = await self.embeddings.embed_query(query)
         matches = await self.vector_index.search(
@@ -84,6 +85,7 @@ class HybridSearchKnowledge:
         document_id: int | None = None,
         top_k: int = 5,
         min_score: float | None = None,
+        max_chunks_per_doc: int | None = None,
     ) -> list[RetrievalResult]:
         embedding_result = await self.embeddings.embed_query(query)
         candidate_limit = max(top_k * self.candidate_multiplier, top_k)
@@ -150,10 +152,11 @@ class HybridSearchKnowledge:
             top_k=top_k,
             mmr_lambda=self.mmr_lambda,
         )
+        doc_cap = self.max_chunks_per_doc if max_chunks_per_doc is None else max_chunks_per_doc
         final_chunks = _apply_doc_cap(
             selected_chunks=selected_chunks,
             candidate_chunks=reranked_chunks,
-            max_chunks_per_doc=self.max_chunks_per_doc,
+            max_chunks_per_doc=doc_cap,
             top_k=top_k,
         )
         self.last_debug = _build_retrieval_debug(
@@ -197,6 +200,7 @@ class AnswerQuestion:
         document_id: int | None = None,
         top_k: int = 5,
         min_score: float | None = None,
+        max_chunks_per_doc: int | None = None,
     ) -> Answer:
         if self.use_hybrid:
             search = HybridSearchKnowledge(
@@ -216,6 +220,7 @@ class AnswerQuestion:
                 document_id=document_id,
                 top_k=top_k,
                 min_score=min_score,
+                max_chunks_per_doc=max_chunks_per_doc,
             )
             if isinstance(search, HybridSearchKnowledge):
                 self.last_debug = search.last_debug

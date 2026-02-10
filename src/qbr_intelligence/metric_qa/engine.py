@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 from dataclasses import dataclass
@@ -34,6 +35,13 @@ class MetricQueryResult:
     answer: MetricAnswer
     intent: QueryIntent
     debug: dict | None = None
+
+
+@dataclass(frozen=True)
+class RagSlideRange:
+    document_id: int
+    start_slide: int | None = None
+    end_slide: int | None = None
 
 
 def _hash_payload(payload: Any) -> str:
@@ -70,6 +78,24 @@ class MetricQueryEngine:
         self._semantic_min_score = float(os.getenv("METRIC_SEMANTIC_MIN_SCORE", "0.6"))
         self._semantic_score_margin = float(os.getenv("METRIC_SEMANTIC_SCORE_MARGIN", "0.05"))
         self._metric_faiss = MetricFactFaissIndex.from_env()
+
+    async def resolve_intent(
+        self,
+        query: str,
+        *,
+        use_cache: bool = True,
+    ) -> tuple[QueryIntent, IntentDebug | None]:
+        await self._load_catalogs()
+        anchor_date = await self._select_anchor_date(query)
+        cache_key = f"intent::{query.strip().lower()}"
+        if use_cache:
+            cached = self._intent_cache.get(cache_key)
+            if cached:
+                return cached
+        intent, intent_debug = await self._extract_intent(query, anchor_date=anchor_date)
+        if use_cache:
+            self._intent_cache.set(cache_key, (intent, intent_debug))
+        return intent, intent_debug
 
     async def _load_catalogs(self) -> None:
         if self._catalog is not None and self._clients is not None:
@@ -128,17 +154,18 @@ class MetricQueryEngine:
         *,
         debug: bool = False,
         trace_id: str | None = None,
+        intent_override: QueryIntent | None = None,
+        strict_entity_filters: bool = False,
+        rag_document_ids: list[int] | None = None,
+        rag_slide_ranges: list[RagSlideRange] | None = None,
+        rag_slide_ids: list[int] | None = None,
     ) -> MetricQueryResult:
         await self._load_catalogs()
-        anchor_date = await self._select_anchor_date(query)
-
-        cache_key = f"intent::{query.strip().lower()}"
-        cached = self._intent_cache.get(cache_key)
-        if cached:
-            intent, intent_debug = cached
+        if intent_override is not None:
+            intent = intent_override.model_copy(deep=True)
+            intent_debug = None
         else:
-            intent, intent_debug = await self._extract_intent(query, anchor_date=anchor_date)
-            self._intent_cache.set(cache_key, (intent, intent_debug))
+            intent, intent_debug = await self.resolve_intent(query)
 
         intent_type = classify_intent_type(query, intent)
         if intent_type == "DEFINITION":
@@ -152,9 +179,23 @@ class MetricQueryEngine:
 
         plan = build_plan(intent)
         assumptions: list[str] = []
+        rag_scope_ranges = rag_slide_ranges or []
         debug_payload: dict[str, Any] = {
             "intent": intent.model_dump(),
             "intent_debug": intent_debug.__dict__ if intent_debug else None,
+            "strict_entity_filters": bool(strict_entity_filters),
+            "rag_scope": {
+                "document_ids": sorted(set(rag_document_ids or [])),
+                "slide_ids": sorted(set(rag_slide_ids or [])),
+                "slide_ranges": [
+                    {
+                        "document_id": item.document_id,
+                        "start_slide": item.start_slide,
+                        "end_slide": item.end_slide,
+                    }
+                    for item in rag_scope_ranges
+                ],
+            },
         }
         if _debug_log_enabled():
             _LOGGER.info(
@@ -170,21 +211,21 @@ class MetricQueryEngine:
                 plan.limit,
             )
 
-        rows, sql, params = await self._store.query_facts(
-            metric_ids=plan.metric_ids,
-            client_name=plan.client,
-            region=plan.region,
-            period_ranges=plan.period_ranges,
-            limit=plan.limit,
-            order_by=plan.order_by,
+        rows, query_debug = await self._query_plan_rows(
+            query=query,
+            plan=plan,
+            trace_id=trace_id,
+            rag_document_ids=rag_document_ids,
+            rag_slide_ranges=rag_scope_ranges,
+            rag_slide_ids=rag_slide_ids,
         )
-        debug_payload.update({"sql": sql, "params": params, "row_count": len(rows)})
+        debug_payload.update(query_debug)
         if (os.getenv("METRIC_QA_RETRIEVAL_LOG") or "").lower() in {"1", "true", "yes"}:
             _LOGGER.info(
                 "metric_qa_select trace_id=%s sql=%s params=%s row_count=%s",
                 trace_id,
-                sql,
-                params,
+                query_debug.get("sql"),
+                query_debug.get("params"),
                 len(rows),
             )
             for row in rows[:20]:
@@ -212,6 +253,10 @@ class MetricQueryEngine:
                 plan=plan,
                 assumptions=assumptions,
                 debug_payload=debug_payload,
+                strict_entity_filters=strict_entity_filters,
+                rag_document_ids=rag_document_ids,
+                rag_slide_ranges=rag_scope_ranges,
+                rag_slide_ids=rag_slide_ids,
             )
         if _debug_log_enabled():
             _LOGGER.info(
@@ -223,17 +268,6 @@ class MetricQueryEngine:
             )
 
         ambiguous = False
-        if rows and len(rows) > self._semantic_rerank_threshold:
-            rows, rerank_debug = await self._semantic_rerank_rows(query, rows)
-            ambiguous = bool(rerank_debug.get("ambiguous"))
-            debug_payload["semantic_rerank"] = rerank_debug
-            if _debug_log_enabled():
-                _LOGGER.info(
-                    "metric_qa_semantic_rerank trace_id=%s selected_rows=%s details=%s",
-                    trace_id,
-                    len(rows),
-                    rerank_debug,
-                )
 
         answer = AnswerComposer().compose(intent=intent, rows=rows, assumptions=assumptions)
         if self._llm_answer_enabled and self._answer_llm:
@@ -273,6 +307,218 @@ class MetricQueryEngine:
             if anchor:
                 return anchor
         return await self._store.fetch_latest_period_end()
+
+    async def _query_plan_rows(
+        self,
+        *,
+        query: str,
+        plan,
+        trace_id: str | None,
+        rag_document_ids: list[int] | None,
+        rag_slide_ranges: list[RagSlideRange],
+        rag_slide_ids: list[int] | None,
+    ) -> tuple[list[Any], dict[str, Any]]:
+        rag_scope_active = bool((rag_document_ids or []) or rag_slide_ranges or (rag_slide_ids or []))
+        scopes = self._build_comparison_scopes(plan)
+        if not scopes:
+            rows, sql, params = await self._store.query_facts(
+                metric_ids=plan.metric_ids,
+                client_name=plan.client,
+                region=plan.region,
+                period_ranges=plan.period_ranges,
+                limit=plan.limit,
+                order_by=plan.order_by,
+            )
+            filtered = self._apply_rag_scope(
+                rows,
+                rag_document_ids=rag_document_ids,
+                rag_slide_ranges=rag_slide_ranges,
+                rag_slide_ids=rag_slide_ids,
+            )
+            rag_pruned_all_rows = rag_scope_active and bool(rows) and not filtered
+            return filtered, {
+                "sql": sql,
+                "params": params,
+                "row_count": len(filtered),
+                "unscoped_row_count": len(rows),
+                "rag_pruned_all_rows": rag_pruned_all_rows,
+            }
+
+        async def _run_scope(scope: dict[str, Any]) -> tuple[list[Any], int, bool, str, dict[str, Any]]:
+            rows, sql, params = await self._store.query_facts(
+                metric_ids=scope["metric_ids"],
+                client_name=scope["client_name"],
+                region=scope["region"],
+                period_ranges=scope["period_ranges"],
+                limit=scope["limit"],
+                order_by=scope["order_by"],
+            )
+            filtered = self._apply_rag_scope(
+                rows,
+                rag_document_ids=rag_document_ids,
+                rag_slide_ranges=rag_slide_ranges,
+                rag_slide_ids=rag_slide_ids,
+            )
+            rag_pruned_all_rows = rag_scope_active and bool(rows) and not filtered
+            return filtered, len(rows), rag_pruned_all_rows, sql, params
+
+        scope_results = await asyncio.gather(*(_run_scope(scope) for scope in scopes))
+        merged: list[Any] = []
+        seen_fact_ids: set[int] = set()
+        scope_debug: list[dict[str, Any]] = []
+        rag_pruned_all_any = False
+        for idx, (rows, unscoped_count, rag_pruned_all_rows, sql, params) in enumerate(scope_results):
+            rag_pruned_all_any = rag_pruned_all_any or rag_pruned_all_rows
+            scope_debug.append(
+                {
+                    "scope_index": idx,
+                    "scope": scopes[idx],
+                    "sql": sql,
+                    "params": params,
+                    "row_count": len(rows),
+                    "unscoped_row_count": unscoped_count,
+                    "rag_pruned_all_rows": rag_pruned_all_rows,
+                }
+            )
+            for row in rows:
+                fact_id = getattr(row, "fact_id", None)
+                if fact_id is not None:
+                    if fact_id in seen_fact_ids:
+                        continue
+                    seen_fact_ids.add(fact_id)
+                merged.append(row)
+
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_parallel_scopes trace_id=%s scope_count=%s merged_rows=%s",
+                trace_id,
+                len(scopes),
+                len(merged),
+            )
+
+        return merged, {
+            "parallel_scope": True,
+            "scope_count": len(scopes),
+            "scope_debug": scope_debug,
+            "sql": scope_debug[0]["sql"] if scope_debug else None,
+            "params": scope_debug[0]["params"] if scope_debug else {},
+            "row_count": len(merged),
+            "rag_pruned_all_rows": rag_pruned_all_any,
+        }
+
+    def _build_comparison_scopes(self, plan) -> list[dict[str, Any]]:
+        should_split = bool(plan.aggregation == "compare")
+        should_split = should_split or len(plan.period_ranges) > 1
+        should_split = should_split or len(plan.client) > 1
+        should_split = should_split or len(plan.region) > 1
+        if not should_split:
+            return []
+
+        scopes: list[dict[str, Any]] = []
+        if len(plan.period_ranges) > 1:
+            for period_range in plan.period_ranges:
+                scopes.append(
+                    {
+                        "metric_ids": plan.metric_ids,
+                        "client_name": plan.client,
+                        "region": plan.region,
+                        "period_ranges": [period_range],
+                        "limit": plan.limit,
+                        "order_by": plan.order_by,
+                    }
+                )
+            return scopes
+
+        if len(plan.client) > 1:
+            for client in plan.client:
+                scopes.append(
+                    {
+                        "metric_ids": plan.metric_ids,
+                        "client_name": [client],
+                        "region": plan.region,
+                        "period_ranges": plan.period_ranges,
+                        "limit": plan.limit,
+                        "order_by": plan.order_by,
+                    }
+                )
+            return scopes
+
+        if len(plan.region) > 1:
+            for region in plan.region:
+                scopes.append(
+                    {
+                        "metric_ids": plan.metric_ids,
+                        "client_name": plan.client,
+                        "region": [region],
+                        "period_ranges": plan.period_ranges,
+                        "limit": plan.limit,
+                        "order_by": plan.order_by,
+                    }
+                )
+            return scopes
+
+        return []
+
+    def _apply_rag_scope(
+        self,
+        rows: list[Any],
+        *,
+        rag_document_ids: list[int] | None,
+        rag_slide_ranges: list[RagSlideRange],
+        rag_slide_ids: list[int] | None,
+    ) -> list[Any]:
+        if not rows:
+            return rows
+        doc_filter = set(rag_document_ids or [])
+        slide_filter = set(int(value) for value in (rag_slide_ids or []))
+        ranges_by_doc: dict[int, list[tuple[int | None, int | None]]] = {}
+        for item in rag_slide_ranges:
+            ranges_by_doc.setdefault(int(item.document_id), []).append(
+                (item.start_slide, item.end_slide)
+            )
+        if not doc_filter and not ranges_by_doc and not slide_filter:
+            return rows
+
+        filtered: list[Any] = []
+        for row in rows:
+            doc_id = int(getattr(row, "document_id", 0) or 0)
+            if doc_filter and doc_id not in doc_filter:
+                continue
+            row_slide_id = getattr(row, "slide_id", None)
+            if slide_filter:
+                if row_slide_id is None or int(row_slide_id) not in slide_filter:
+                    continue
+
+            doc_ranges = ranges_by_doc.get(doc_id)
+            if not doc_ranges:
+                filtered.append(row)
+                continue
+
+            slide_number = getattr(row, "slide_number", None)
+            if slide_number is None:
+                continue
+            slide_value = int(slide_number)
+            matched = False
+            for start, end in doc_ranges:
+                if start is None and end is None:
+                    matched = True
+                    break
+                if start is None:
+                    if slide_value <= int(end):
+                        matched = True
+                        break
+                    continue
+                if end is None:
+                    if slide_value >= int(start):
+                        matched = True
+                        break
+                    continue
+                if int(start) <= slide_value <= int(end):
+                    matched = True
+                    break
+            if matched:
+                filtered.append(row)
+        return filtered
 
     async def _extract_intent(self, query: str, *, anchor_date):
         if not self._catalog or self._clients is None:
@@ -446,11 +692,15 @@ class MetricQueryEngine:
         plan,
         assumptions: list[str],
         debug_payload: dict[str, Any],
+        strict_entity_filters: bool,
+        rag_document_ids: list[int] | None,
+        rag_slide_ranges: list[RagSlideRange],
+        rag_slide_ids: list[int] | None,
     ):
         rows = []
         reason = []
 
-        if plan.client:
+        if plan.client and not strict_entity_filters:
             assumptions.append("Relaxed client filter")
             reason.append("client")
             rows, sql, params = await self._store.query_facts(
@@ -461,12 +711,18 @@ class MetricQueryEngine:
                 limit=plan.limit,
                 order_by=plan.order_by,
             )
+            rows = self._apply_rag_scope(
+                rows,
+                rag_document_ids=rag_document_ids,
+                rag_slide_ranges=rag_slide_ranges,
+                rag_slide_ids=rag_slide_ids,
+            )
             debug_payload.update({"fallback_client_sql": sql, "fallback_client_params": params})
             if rows:
                 debug_payload["fallback_reason"] = "client"
                 return rows, assumptions, debug_payload
 
-        if plan.region:
+        if plan.region and not strict_entity_filters:
             assumptions.append("Relaxed region filter")
             reason.append("region")
             rows, sql, params = await self._store.query_facts(
@@ -477,10 +733,20 @@ class MetricQueryEngine:
                 limit=plan.limit,
                 order_by=plan.order_by,
             )
+            rows = self._apply_rag_scope(
+                rows,
+                rag_document_ids=rag_document_ids,
+                rag_slide_ranges=rag_slide_ranges,
+                rag_slide_ids=rag_slide_ids,
+            )
             debug_payload.update({"fallback_region_sql": sql, "fallback_region_params": params})
             if rows:
                 debug_payload["fallback_reason"] = "region"
                 return rows, assumptions, debug_payload
+
+        if strict_entity_filters and (plan.client or plan.region or plan.period_ranges):
+            debug_payload["fallback_reason"] = "strict_entity_filters"
+            return rows, assumptions, debug_payload
 
         if not plan.metric_ids:
             matched_ids = await self._embedding_match_metric(query)
@@ -493,6 +759,12 @@ class MetricQueryEngine:
                     period_ranges=plan.period_ranges,
                     limit=plan.limit,
                     order_by=plan.order_by,
+                )
+                rows = self._apply_rag_scope(
+                    rows,
+                    rag_document_ids=rag_document_ids,
+                    rag_slide_ranges=rag_slide_ranges,
+                    rag_slide_ids=rag_slide_ids,
                 )
                 debug_payload.update({"fallback_metric_sql": sql, "fallback_metric_params": params})
                 if rows:
