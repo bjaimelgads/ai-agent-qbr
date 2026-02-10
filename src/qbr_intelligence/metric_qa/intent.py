@@ -54,20 +54,22 @@ class DeterministicIntentExtractor:
         if region_res.confidence < 0.5 and region_res.candidates:
             clarifications.append("Which region should I use?")
 
-        period_spec = None
+        period_specs: list[PeriodSpec] = []
         if bounds:
-            period_spec = PeriodSpec(
-                type=period_type,
-                value=label,
-                start=bounds.start,
-                end=bounds.end,
+            period_specs.append(
+                PeriodSpec(
+                    type=period_type,
+                    value=label,
+                    start=bounds.start,
+                    end=bounds.end,
+                )
             )
 
         intent = QueryIntent(
             metric_ids=metric_ids,
-            client=client_res.value,
-            region=region_res.value,
-            period=period_spec,
+            client=[client_res.value] if client_res.value else list(client_res.candidates),
+            region=[region_res.value] if region_res.value else list(region_res.candidates),
+            period=period_specs,
             aggregation=aggregation,
             grouping=grouping,
             limit=limit,

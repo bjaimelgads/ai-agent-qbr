@@ -42,11 +42,46 @@ class AgentTelemetry:
                 event_type = getattr(event, "event_type")
             if hasattr(event, "extra"):
                 payload = getattr(event, "extra", None)
-            elif hasattr(event, "to_payload"):
-                payload = event.to_payload()
+            if hasattr(event, "to_payload"):
+                raw_payload = event.to_payload()
+                if isinstance(raw_payload, dict):
+                    if isinstance(payload, dict):
+                        merged = dict(raw_payload)
+                        merged.update(payload)
+                        payload = merged
+                    elif payload is None:
+                        payload = raw_payload
         node_name = None
         if isinstance(payload, dict):
             node_name = payload.get("node_name") or payload.get("step_name")
+            if "next_node" in payload:
+                self._logger.info(
+                    "Planner action: next_node=%s",
+                    payload.get("next_node"),
+                )
+            plan = payload.get("plan")
+            if isinstance(plan, list):
+                tool_steps: list[str] = []
+                for item in plan:
+                    if isinstance(item, dict):
+                        node = item.get("next_node")
+                        if isinstance(node, str):
+                            tool_steps.append(node)
+                self._logger.info(
+                    "Planner parallel plan: items=%s nodes=%s",
+                    len(plan),
+                    tool_steps,
+                )
+            join = payload.get("join")
+            if isinstance(join, dict):
+                self._logger.info(
+                    "Planner join config: %s",
+                    {
+                        "strategy": join.get("strategy"),
+                        "mode": join.get("mode"),
+                        "next_node": join.get("next_node"),
+                    },
+                )
 
         debug_events = os.getenv("PLANNER_DEBUG_EVENTS", "false").lower() in {"1", "true", "yes", "on"}
         if debug_events and event_type:
@@ -55,7 +90,20 @@ class AgentTelemetry:
                 # Keep logs concise.
                 payload_preview = {
                     key: payload_preview.get(key)
-                    for key in ("tool_name", "tool_call_id", "message", "step_name", "node_name", "channel", "text")
+                    for key in (
+                        "tool_name",
+                        "tool_call_id",
+                        "next_node",
+                        "args",
+                        "plan",
+                        "join",
+                        "message",
+                        "step_name",
+                        "node_name",
+                        "channel",
+                        "text",
+                        "result_json",
+                    )
                     if key in payload_preview
                 }
             self._logger.info("Planner event: %s node=%s payload=%s", event_type, node_name, payload_preview)

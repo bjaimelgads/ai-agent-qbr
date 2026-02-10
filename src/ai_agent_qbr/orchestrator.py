@@ -252,17 +252,74 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
     if not details_rows and answer.data:
         details_rows = [row.model_dump() if hasattr(row, "model_dump") else dict(row) for row in answer.data]
     if details_rows:
-        lines = ["", "Details:"]
-        for row in details_rows[:5]:
-            metric = row.get("metric") or "metric"
-            period = row.get("period") or "period"
-            value = row.get("value")
-            unit = row.get("unit") or ""
-            context_label = row.get("llm_context_label")
-            context_text = f" — {context_label}" if context_label else ""
-            lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
-        text = f"{text}\n" + "\n".join(lines)
-    if answer.citations:
+        has_doc_context = any(row.get("document_name") or row.get("document_url") for row in details_rows)
+        if has_doc_context:
+            metric_name = details_rows[0].get("metric") or "Metric"
+            lines = ["", f"Metric: {metric_name}"]
+            grouped: dict[tuple[str | None, str | None, int | None, int | None, str | None], list[dict]] = {}
+            for row in details_rows:
+                key = (
+                    row.get("document_name"),
+                    row.get("document_url"),
+                    row.get("slide_number"),
+                    row.get("slide_id"),
+                    row.get("slide_title"),
+                )
+                grouped.setdefault(key, []).append(row)
+
+            doc_order: list[tuple[str | None, str | None]] = []
+            for row in details_rows:
+                doc_key = (row.get("document_name"), row.get("document_url"))
+                if doc_key not in doc_order:
+                    doc_order.append(doc_key)
+
+            def _slide_sort_key(item: tuple) -> tuple:
+                _, _, slide_number, slide_id, _ = item[0]
+                return (slide_number or 0, slide_id or 0)
+
+            for doc_name, doc_url in doc_order:
+                doc_label = doc_name or "Document"
+                doc_line = f"Document: {doc_label}"
+                if doc_url:
+                    doc_line = f"{doc_line} (`{doc_url}`)"
+                lines.append(doc_line)
+
+                slide_items = [
+                    (key, rows)
+                    for key, rows in grouped.items()
+                    if key[0] == doc_name and key[1] == doc_url
+                ]
+                for (key, rows) in sorted(slide_items, key=_slide_sort_key):
+                    _, _, slide_number, slide_id, slide_title = key
+                    slide_label = "Slide"
+                    if slide_number:
+                        slide_label = f"{slide_label} {slide_number}"
+                    elif slide_id:
+                        slide_label = f"{slide_label} {slide_id}"
+                    if slide_title:
+                        slide_label = f"{slide_label}: {slide_title}"
+                    lines.append(f"- {slide_label}")
+
+                    for row in rows[:4]:
+                        value = row.get("value")
+                        unit = row.get("unit") or ""
+                        value_text = f"{value} {unit}".strip()
+                        context = row.get("snippet") or row.get("llm_context_label")
+                        context_text = f" — {context}" if context else ""
+                        lines.append(f"  - {value_text}{context_text}")
+            text = f"{text}\n" + "\n".join(lines)
+        else:
+            lines = ["", "Details:"]
+            for row in details_rows[:5]:
+                metric = row.get("metric") or "metric"
+                period = row.get("period") or "period"
+                value = row.get("value")
+                unit = row.get("unit") or ""
+                context_label = row.get("llm_context_label")
+                context_text = f" — {context_label}" if context_label else ""
+                lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
+            text = f"{text}\n" + "\n".join(lines)
+    if answer.citations and not details_rows:
         def _format_source(citation: AnswerCitation) -> str:
             doc_label = citation.document_name or f"doc {citation.document_id}"
             if citation.slide_number is not None:
@@ -271,7 +328,7 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 doc_label = f"{doc_label} slide {citation.slide_id}"
             doc_url = citation.slide_url or citation.document_url
             if doc_url:
-                return f"{doc_label} ({doc_url})"
+                return f"{doc_label} (`{doc_url}`)"
             return doc_label
 
         sources = ", ".join(_format_source(c) for c in answer.citations)
@@ -523,114 +580,130 @@ class AiAgentQbrOrchestrator:
                 mmr_lambda=self._config.retrieval_mmr_lambda,
                 max_chunks_per_doc=self._config.retrieval_max_chunks_per_doc,
             )
-            answer_use_case = AnswerQuestion(
-                repository=infra.repository,
-                vector_index=infra.vector_index,
-                embeddings=infra.embeddings,
-                reranker=infra.reranker,
-                use_hybrid=True,
-                text_weight=self._config.retrieval_text_weight,
-                vector_weight=self._config.retrieval_vector_weight,
-                candidate_multiplier=self._config.retrieval_candidate_multiplier,
-                include_document_path=self._config.retrieval_include_document_path,
-                rerank_top_n=self._config.rerank_top_n,
-                mmr_lambda=self._config.retrieval_mmr_lambda,
-                max_chunks_per_doc=self._config.retrieval_max_chunks_per_doc,
-            )
-            with self._mlflow_trace.span(
-                name="retrieval",
-                span_type="RETRIEVER",
-                attributes={
-                    "top_k": self._config.retrieval_top_k,
-                    "min_score": self._config.retrieval_min_score,
-                    "text_search_backend": self._config.text_search_backend,
-                    "text_weight": self._config.retrieval_text_weight,
-                    "vector_weight": self._config.retrieval_vector_weight,
-                    "rerank_top_n": self._config.rerank_top_n,
-                    "mmr_lambda": self._config.retrieval_mmr_lambda,
-                    "max_chunks_per_doc": self._config.retrieval_max_chunks_per_doc,
-                },
-                inputs={"query": query},
-            ) as retrieval_span:
-                answer_context = await answer_use_case.execute(
-                    query=query,
-                    top_k=self._config.retrieval_top_k,
-                    min_score=self._config.retrieval_min_score,
+            filtered_citations: list = []
+            filtered_context = ""
+            if self._config.retrieval_enabled:
+                answer_use_case = AnswerQuestion(
+                    repository=infra.repository,
+                    vector_index=infra.vector_index,
+                    embeddings=infra.embeddings,
+                    reranker=infra.reranker,
+                    use_hybrid=True,
+                    text_weight=self._config.retrieval_text_weight,
+                    vector_weight=self._config.retrieval_vector_weight,
+                    candidate_multiplier=self._config.retrieval_candidate_multiplier,
+                    include_document_path=self._config.retrieval_include_document_path,
+                    rerank_top_n=self._config.rerank_top_n,
+                    mmr_lambda=self._config.retrieval_mmr_lambda,
+                    max_chunks_per_doc=self._config.retrieval_max_chunks_per_doc,
                 )
-
-                if region_focus in {"us", "emea"}:
-                    filtered_citations = filter_items_by_region(
-                        answer_context.citations, region_focus
-                    )
-                    filtered_context = (
-                        build_context_from_items(filtered_citations)
-                        if filtered_citations
-                        else ""
-                    )
-                else:
-                    filtered_citations = list(answer_context.citations)
-                    filtered_context = answer_context.context or ""
-
-                self._mlflow_trace.set_outputs(
-                    retrieval_span,
-                    {
-                        "qbr_context": filtered_context,
-                        "citations": [
-                            {
-                                "chunk_id": result.chunk.chunk_id.value,
-                                "document_id": result.chunk.document_id.value,
-                                "score": result.score.value,
-                                "start_slide": result.chunk.start_slide,
-                                "end_slide": result.chunk.end_slide,
-                                "content": result.chunk.content,
-                            }
-                            for result in filtered_citations
-                        ],
-                        "retrieval_debug": answer_use_case.last_debug or {},
+                with self._mlflow_trace.span(
+                    name="retrieval",
+                    span_type="RETRIEVER",
+                    attributes={
+                        "top_k": self._config.retrieval_top_k,
+                        "min_score": self._config.retrieval_min_score,
+                        "text_search_backend": self._config.text_search_backend,
+                        "text_weight": self._config.retrieval_text_weight,
+                        "vector_weight": self._config.retrieval_vector_weight,
+                        "rerank_top_n": self._config.rerank_top_n,
+                        "mmr_lambda": self._config.retrieval_mmr_lambda,
+                        "max_chunks_per_doc": self._config.retrieval_max_chunks_per_doc,
                     },
-                )
+                    inputs={"query": query},
+                ) as retrieval_span:
+                    answer_context = await answer_use_case.execute(
+                        query=query,
+                        top_k=self._config.retrieval_top_k,
+                        min_score=self._config.retrieval_min_score,
+                    )
 
-            with self._mlflow_tracer.nested_run(
-                run_name="retrieval",
-                tags={"trace_id": trace_id},
-            ) as retrieval_run:
-                if retrieval_run:
-                    retrieval_run.log_param("citation_count", len(filtered_citations))
-                    self._mlflow_tracer.log_text(
-                        retrieval_run,
-                        "qbr_context",
-                        filtered_context or "",
+                    if region_focus in {"us", "emea"}:
+                        filtered_citations = filter_items_by_region(
+                            answer_context.citations, region_focus
+                        )
+                        filtered_context = (
+                            build_context_from_items(filtered_citations)
+                            if filtered_citations
+                            else ""
+                        )
+                    else:
+                        filtered_citations = list(answer_context.citations)
+                        filtered_context = answer_context.context or ""
+
+                    self._mlflow_trace.set_outputs(
+                        retrieval_span,
+                        {
+                            "qbr_context": filtered_context,
+                            "citations": [
+                                {
+                                    "chunk_id": result.chunk.chunk_id.value,
+                                    "document_id": result.chunk.document_id.value,
+                                    "score": result.score.value,
+                                    "start_slide": result.chunk.start_slide,
+                                    "end_slide": result.chunk.end_slide,
+                                    "content": result.chunk.content,
+                                }
+                                for result in filtered_citations
+                            ],
+                            "retrieval_debug": answer_use_case.last_debug or {},
+                        },
                     )
-                    self._mlflow_tracer.log_json(
-                        retrieval_run,
-                        "citations",
-                        [
-                            {
-                                "chunk_id": result.chunk.chunk_id.value,
-                                "document_id": result.chunk.document_id.value,
-                                "score": result.score.value,
-                                "start_slide": result.chunk.start_slide,
-                                "end_slide": result.chunk.end_slide,
-                                "content": result.chunk.content,
-                            }
-                            for result in filtered_citations
-                        ],
-                    )
-                    if answer_use_case.last_debug:
+
+                with self._mlflow_tracer.nested_run(
+                    run_name="retrieval",
+                    tags={"trace_id": trace_id},
+                ) as retrieval_run:
+                    if retrieval_run:
+                        retrieval_run.log_param("citation_count", len(filtered_citations))
+                        self._mlflow_tracer.log_text(
+                            retrieval_run,
+                            "qbr_context",
+                            filtered_context or "",
+                        )
                         self._mlflow_tracer.log_json(
                             retrieval_run,
-                            "retrieval_debug",
-                            answer_use_case.last_debug,
+                            "citations",
+                            [
+                                {
+                                    "chunk_id": result.chunk.chunk_id.value,
+                                    "document_id": result.chunk.document_id.value,
+                                    "score": result.score.value,
+                                    "start_slide": result.chunk.start_slide,
+                                    "end_slide": result.chunk.end_slide,
+                                    "content": result.chunk.content,
+                                }
+                                for result in filtered_citations
+                            ],
                         )
+                        if answer_use_case.last_debug:
+                            self._mlflow_tracer.log_json(
+                                retrieval_run,
+                                "retrieval_debug",
+                                answer_use_case.last_debug,
+                            )
 
             conscious = self._session_cache.get(
                 session_key, {"conscious": [], "token_estimate": 0}
             )
+            last_metric_intent = None
+            if hasattr(self._memory, "get_last_metric_intent"):
+                try:
+                    candidate = self._memory.get_last_metric_intent(
+                        tenant_id=tenant_id,
+                        user_id=user_id,
+                        session_id=session_id,
+                    )
+                except Exception:  # noqa: BLE001
+                    candidate = None
+                if isinstance(candidate, dict):
+                    last_metric_intent = candidate
             llm_context = {
                 "conscious_memories": list(conscious.get("conscious", [])),
                 "conversation_memory": {
                     "recent_turns": list(self._recent_turns.get(session_key, []))
                 },
+                "last_metric_intent": last_metric_intent,
                 "qbr_context": filtered_context,
                 "region_verification": (
                     region_result.model_dump() if region_result is not None else None
@@ -650,6 +723,7 @@ class AiAgentQbrOrchestrator:
                 "tenant_id": tenant_id,
                 "user_id": user_id,
                 "session_id": session_id,
+                "original_query": query,
                 "trace_id": trace_id,
                 "status_publisher": self._telemetry.publish_status,
                 "output_protocol": self._config.output_protocol,

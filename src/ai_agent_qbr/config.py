@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 import os
+import re
+from urllib.parse import parse_qsl, quote, urlencode, urlparse, urlunparse
 from dataclasses import dataclass, field
 
 _DEFAULT_RICH_OUTPUT_ALLOWLIST = [
@@ -23,6 +26,9 @@ _DEFAULT_RICH_OUTPUT_ALLOWLIST = [
     "image",
     "video",
 ]
+
+_LOGGER = logging.getLogger(__name__)
+_ENV_REF_RE = re.compile(r"^\$\{([A-Z0-9_]+)\}$")
 
 
 def _env_flag(name: str, default: bool) -> bool:
@@ -74,6 +80,86 @@ def _env_csv(name: str, default: list[str]) -> list[str]:
         return default
     items = [item.strip() for item in raw.split(",") if item.strip()]
     return items
+
+
+def _resolve_env_reference(raw: str) -> str:
+    value = (raw or "").strip()
+    match = _ENV_REF_RE.match(value)
+    if not match:
+        return value
+    return os.getenv(match.group(1), "").strip()
+
+
+def _is_unresolved_placeholder(value: str) -> bool:
+    raw = (value or "").strip()
+    return bool(_ENV_REF_RE.match(raw))
+
+
+def _build_lakebase_database_url() -> str:
+    host = os.getenv("QBR_LAKEBASE_DB_INSTANCE", "")
+    if host and "." not in host:
+        host = f"{host}.database.cloud.databricks.com"
+    db_name = os.getenv("QBR_LAKEBASE_DB_NAME", "")
+    port = os.getenv("QBR_LAKEBASE_DB_PORT", "5432")
+    username = os.getenv("QBR_LAKEBASE_DB_USERNAME", "")
+    has_oauth = bool(os.getenv("DATABRICKS_CLIENT_ID", "").strip()) and bool(
+        os.getenv("DATABRICKS_CLIENT_SECRET", "").strip()
+    )
+    token = _resolve_env_reference(os.getenv("QBR_LAKEBASE_TOKEN", ""))
+    if not token:
+        token = _resolve_env_reference(os.getenv("DATABRICKS_TOKEN", ""))
+    if not token:
+        token = _resolve_env_reference(os.getenv("DATABRICKS_API_KEY", ""))
+    if token in {"DATABRICKS_TOKEN_REDACTED"} or _is_unresolved_placeholder(token):
+        token = ""
+    has_pat = bool(token)
+    if not host or not db_name or not username or not (has_oauth or has_pat):
+        _LOGGER.error(
+            "Lakebase settings missing: host=%s db_name=%s username=%s oauth=%s token_set=%s",
+            bool(host),
+            bool(db_name),
+            bool(username),
+            has_oauth,
+            has_pat,
+        )
+        raise ValueError(
+            "Lakebase settings missing. Require QBR_LAKEBASE_DB_INSTANCE, "
+            "QBR_LAKEBASE_DB_NAME, QBR_LAKEBASE_DB_USERNAME, and Databricks auth: "
+            "OAuth (DATABRICKS_CLIENT_ID + DATABRICKS_CLIENT_SECRET) or token "
+            "(QBR_LAKEBASE_TOKEN, DATABRICKS_TOKEN, or DATABRICKS_API_KEY)."
+        )
+    encoded_username = quote(username, safe="")
+    # Password is injected dynamically by DatabaseGateway for Lakebase.
+    safe_url = f"postgresql+asyncpg://{encoded_username}:***@{host}:{port}/{db_name}"
+    _LOGGER.info("Lakebase DATABASE_URL resolved: %s", safe_url)
+    return f"postgresql+asyncpg://{encoded_username}:@{host}:{port}/{db_name}"
+
+
+def _normalize_database_url(database_url: str) -> str:
+    if not database_url.startswith("postgresql+asyncpg://"):
+        return database_url
+    parsed = urlparse(database_url)
+    query = [
+        (key, value)
+        for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+        if key.lower() not in {"sslmode", "ssl"}
+    ]
+    cleaned = parsed._replace(query=urlencode(query))
+    return urlunparse(cleaned)
+
+
+def _is_placeholder_database_url(database_url: str) -> bool:
+    raw = (database_url or "").strip()
+    if not raw:
+        return True
+    lowered = raw.lower()
+    if "${" in raw:
+        return True
+    if "placeholder-host" in lowered:
+        return True
+    if "databricks_token_redacted" in lowered:
+        return True
+    return False
 
 
 def _parse_optional_float(raw: str | None) -> float | None:
@@ -144,6 +230,11 @@ class Config:
     llm_max_calls_per_query: int = 1
     metric_router_enabled: bool = True
     region_verifier_enabled: bool = False
+    reflection_enabled: bool = True
+    reflection_quality_threshold: float = 0.8
+    reflection_max_revisions: int = 2
+    reflection_use_separate_llm: bool = False
+    reflection_require_search_documents_on_low_confidence: bool = True
 
     # Flag to use stub LLM (for testing)
     use_stub_llm: bool = True
@@ -164,6 +255,7 @@ class Config:
     embeddings_normalize: bool = True
     retrieval_top_k: int = 5
     retrieval_min_score: float | None = None
+    retrieval_enabled: bool = True
     text_search_backend: str = "fts5"
     retrieval_text_weight: float = 0.6
     retrieval_vector_weight: float = 0.4
@@ -208,6 +300,26 @@ class Config:
         output_protocol = _normalize_output_protocol(
             os.getenv("OUTPUT_PROTOCOL", "legacy")
         )
+        storage_backend = os.getenv("STORAGE_BACKEND", "sqlite")
+        text_search_backend = os.getenv("TEXT_SEARCH_BACKEND", "fts5")
+        database_url = os.getenv("QBR_DB_URL")
+        if database_url and _is_placeholder_database_url(database_url):
+            _LOGGER.info("Ignoring placeholder DB URL; using Lakebase env vars.")
+            database_url = None
+        if not database_url and _env_flag("QBR_LAKEBASE_ENABLED", False):
+            try:
+                database_url = _build_lakebase_database_url()
+            except ValueError as exc:
+                _LOGGER.warning(
+                    "Lakebase configuration incomplete; falling back to SQLite. %s",
+                    exc,
+                )
+                database_url = "sqlite+aiosqlite:///qbr_intelligence.db"
+                storage_backend = "sqlite"
+                if text_search_backend == "postgres_fts":
+                    text_search_backend = "fts5"
+        if database_url:
+            database_url = _normalize_database_url(database_url)
         return cls(
             memory_base_url=os.getenv("MEMORY_BASE_URL", "http://localhost:8000"),
             llm_model=os.getenv("LLM_MODEL", "stub-llm"),
@@ -286,22 +398,31 @@ class Config:
             llm_max_calls_per_query=_env_int("LLM_MAX_CALLS_PER_QUERY", 1),
             metric_router_enabled=_env_flag("METRIC_ROUTER_ENABLED", True),
             region_verifier_enabled=_env_flag("REGION_VERIFIER_ENABLED", False),
+            reflection_enabled=_env_flag("REFLECTION_ENABLED", True),
+            reflection_quality_threshold=_env_float("REFLECTION_QUALITY_THRESHOLD", 0.8),
+            reflection_max_revisions=_env_int("REFLECTION_MAX_REVISIONS", 2),
+            reflection_use_separate_llm=_env_flag("REFLECTION_USE_SEPARATE_LLM", False),
+            reflection_require_search_documents_on_low_confidence=_env_flag(
+                "REFLECTION_REQUIRE_SEARCH_DOCUMENTS_ON_LOW_CONFIDENCE",
+                True,
+            ),
             use_stub_llm=_env_flag("USE_STUB_LLM", True),
             mlflow_enabled=_env_flag("MLFLOW_ENABLED", False),
             mlflow_tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),
             mlflow_experiment=os.getenv("MLFLOW_EXPERIMENT")
             or os.getenv("MLFLOW_EXPERIMENT_NAME"),
             mlflow_tracing_enabled=_env_flag("MLFLOW_TRACING_ENABLED", False),
-            database_url=os.getenv("DATABASE_URL", "sqlite+aiosqlite:///qbr_intelligence.db"),
+            database_url=database_url or "sqlite+aiosqlite:///qbr_intelligence.db",
             log_sqlite_status=_env_flag("LOG_SQLITE_STATUS", True),
-            storage_backend=os.getenv("STORAGE_BACKEND", "sqlite"),
+            storage_backend=storage_backend,
             vector_backend=os.getenv("VECTOR_BACKEND", "sqlite_embeddings"),
             embeddings_backend=os.getenv("EMBEDDINGS_BACKEND", "sentence_transformers"),
             embeddings_model=os.getenv("EMBEDDINGS_MODEL", "all-MiniLM-L6-v2"),
             embeddings_normalize=_env_flag("EMBEDDINGS_NORMALIZE", True),
             retrieval_top_k=_env_int("RETRIEVAL_TOP_K", 5),
             retrieval_min_score=_parse_optional_float(os.getenv("RETRIEVAL_MIN_SCORE")),
-            text_search_backend=os.getenv("TEXT_SEARCH_BACKEND", "fts5"),
+            retrieval_enabled=_env_flag("RETRIEVAL_ENABLED", True),
+            text_search_backend=text_search_backend,
             retrieval_text_weight=_env_float("RETRIEVAL_TEXT_WEIGHT", 0.6),
             retrieval_vector_weight=_env_float("RETRIEVAL_VECTOR_WEIGHT", 0.4),
             retrieval_candidate_multiplier=_env_int("RETRIEVAL_CANDIDATE_MULTIPLIER", 4),
@@ -354,15 +475,21 @@ class Config:
         """Validate required configuration and raise ValueError when missing."""
         if self.output_protocol not in {"legacy", "agui"}:
             raise ValueError("OUTPUT_PROTOCOL must be one of: legacy, agui")
-        if self.storage_backend not in {"sqlite"}:
-            raise ValueError("STORAGE_BACKEND must be one of: sqlite")
-        if self.vector_backend not in {"sqlite_embeddings", "faiss"}:
-            raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss")
+        if self.storage_backend not in {"sqlite", "postgres"}:
+            raise ValueError("STORAGE_BACKEND must be one of: sqlite, postgres")
+        if self.vector_backend not in {"sqlite_embeddings", "faiss", "pgvector"}:
+            raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss, pgvector")
         if self.rerank_backend not in {"none", "cross_encoder"}:
             raise ValueError("RERANK_BACKEND must be one of: none, cross_encoder")
-        if self.text_search_backend not in {"fts5", "auto", "like"}:
-            raise ValueError("TEXT_SEARCH_BACKEND must be one of: fts5, auto, like")
+        if self.text_search_backend not in {"fts5", "auto", "like", "postgres_fts"}:
+            raise ValueError(
+                "TEXT_SEARCH_BACKEND must be one of: fts5, auto, like, postgres_fts"
+            )
         if self.guardrails_mode not in {"shadow", "enforce"}:
             raise ValueError("GUARDRAILS_MODE must be one of: shadow, enforce")
         if self.guardrails_router_conversation_turns < 1:
             raise ValueError("GUARDRAILS_ROUTER_CONVERSATION_TURNS must be >= 1")
+        if not 0.0 <= self.reflection_quality_threshold <= 1.0:
+            raise ValueError("REFLECTION_QUALITY_THRESHOLD must be between 0.0 and 1.0")
+        if self.reflection_max_revisions < 1:
+            raise ValueError("REFLECTION_MAX_REVISIONS must be >= 1")

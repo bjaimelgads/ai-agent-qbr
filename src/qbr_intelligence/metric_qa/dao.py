@@ -5,9 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from typing import Any
+import json
 
 from sqlalchemy import bindparam, text
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine
+
+from qbr_agent.infrastructure.sqlalchemy_gateway import DatabaseGateway
 
 
 _VIEW_SQL = """
@@ -31,6 +34,7 @@ SELECT
     d.file_path AS document_url,
     m.slide_id AS slide_id,
     s.slide_number AS slide_number,
+    s.title AS slide_title,
     s.google_slide_id AS google_slide_id,
     m.extraction_confidence AS confidence,
     COALESCE(m.name, mc.name) AS label_text,
@@ -67,6 +71,81 @@ SELECT
     d.file_path AS document_url,
     m.slide_id AS slide_id,
     s.slide_number AS slide_number,
+    s.title AS slide_title,
+    NULL AS google_slide_id,
+    m.extraction_confidence AS confidence,
+    COALESCE(m.name, mc.name) AS label_text,
+    m.raw_value AS raw_value_text,
+    m.raw_context AS snippet,
+    m.llm_context_label AS llm_context_label
+FROM metrics m
+LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
+LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN clients c ON c.id = d.client_id
+LEFT JOIN regions r ON r.id = m.region_id
+LEFT JOIN periods p ON p.id = m.period_id
+LEFT JOIN slides s ON s.id = m.slide_id;
+"""
+
+_VIEW_SQL_NO_TITLE = """
+CREATE VIEW metric_fact AS
+SELECT
+    m.id AS fact_id,
+    COALESCE(mc.slug, m.name) AS metric_id,
+    COALESCE(mc.name, m.name) AS metric_name,
+    m.normalized_value AS value,
+    m.unit AS unit,
+    'ones' AS scale,
+    d.client_id AS client_id,
+    c.name AS client_name,
+    r.code AS region,
+    COALESCE(m.period_start, p.start_date) AS period_start,
+    COALESCE(m.period_end, p.end_date) AS period_end,
+    p.period_type AS period_granularity,
+    COALESCE(m.period_label, p.period_label) AS period_label,
+    m.document_id AS document_id,
+    d.filename AS document_name,
+    d.file_path AS document_url,
+    m.slide_id AS slide_id,
+    s.slide_number AS slide_number,
+    NULL AS slide_title,
+    s.google_slide_id AS google_slide_id,
+    m.extraction_confidence AS confidence,
+    COALESCE(m.name, mc.name) AS label_text,
+    m.raw_value AS raw_value_text,
+    m.raw_context AS snippet,
+    m.llm_context_label AS llm_context_label
+FROM metrics m
+LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
+LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN clients c ON c.id = d.client_id
+LEFT JOIN regions r ON r.id = m.region_id
+LEFT JOIN periods p ON p.id = m.period_id
+LEFT JOIN slides s ON s.id = m.slide_id;
+"""
+
+_VIEW_SQL_NO_TITLE_NO_GOOGLE = """
+CREATE VIEW metric_fact AS
+SELECT
+    m.id AS fact_id,
+    COALESCE(mc.slug, m.name) AS metric_id,
+    COALESCE(mc.name, m.name) AS metric_name,
+    m.normalized_value AS value,
+    m.unit AS unit,
+    'ones' AS scale,
+    d.client_id AS client_id,
+    c.name AS client_name,
+    r.code AS region,
+    COALESCE(m.period_start, p.start_date) AS period_start,
+    COALESCE(m.period_end, p.end_date) AS period_end,
+    p.period_type AS period_granularity,
+    COALESCE(m.period_label, p.period_label) AS period_label,
+    m.document_id AS document_id,
+    d.filename AS document_name,
+    d.file_path AS document_url,
+    m.slide_id AS slide_id,
+    s.slide_number AS slide_number,
+    NULL AS slide_title,
     NULL AS google_slide_id,
     m.extraction_confidence AS confidence,
     COALESCE(m.name, mc.name) AS label_text,
@@ -103,12 +182,14 @@ class MetricFactRow:
     document_url: str | None
     slide_id: int | None
     slide_number: int | None
+    slide_title: str | None
     google_slide_id: str | None
     confidence: float | None
     label_text: str | None
     raw_value_text: str | None
     snippet: str | None
     llm_context_label: str | None
+    semantic_score: float | None = None
 
     @classmethod
     def from_row(cls, row: Any) -> "MetricFactRow":
@@ -117,7 +198,7 @@ class MetricFactRow:
 
 class MetricFactStore:
     def __init__(self, database_url: str) -> None:
-        self._engine: AsyncEngine = create_async_engine(database_url)
+        self._engine: AsyncEngine = DatabaseGateway(database_url=database_url).engine()
         self._view_ready = False
 
     @property
@@ -130,13 +211,37 @@ class MetricFactStore:
         async with self._engine.begin() as conn:
             await conn.execute(text("DROP VIEW IF EXISTS metric_fact;"))
             has_google_slide_id = False
+            has_slide_title = False
+            dialect = conn.engine.dialect.name
             try:
-                result = await conn.execute(text("PRAGMA table_info('slides');"))
-                columns = {row[1] for row in result.fetchall()}
+                if dialect == "sqlite":
+                    result = await conn.execute(text("PRAGMA table_info('slides');"))
+                    columns = {row[1] for row in result.fetchall()}
+                else:
+                    result = await conn.execute(
+                        text(
+                            """
+                            SELECT column_name
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public' AND table_name = 'slides'
+                            """
+                        )
+                    )
+                    columns = {row[0] for row in result.fetchall()}
                 has_google_slide_id = "google_slide_id" in columns
+                has_slide_title = "title" in columns
             except Exception:
                 has_google_slide_id = False
-            await conn.execute(text(_VIEW_SQL if has_google_slide_id else _VIEW_SQL_NO_GOOGLE))
+                has_slide_title = False
+            if has_google_slide_id and has_slide_title:
+                sql = _VIEW_SQL
+            elif has_google_slide_id and not has_slide_title:
+                sql = _VIEW_SQL_NO_TITLE
+            elif not has_google_slide_id and has_slide_title:
+                sql = _VIEW_SQL_NO_GOOGLE
+            else:
+                sql = _VIEW_SQL_NO_TITLE_NO_GOOGLE
+            await conn.execute(text(sql))
         self._view_ready = True
 
     async def fetch_metric_catalog(self) -> list[dict[str, Any]]:
@@ -172,6 +277,81 @@ class MetricFactStore:
         ).bindparams(bindparam("metric_ids", expanding=True))
         async with self._engine.connect() as conn:
             result = await conn.execute(sql, {"metric_ids": metric_ids})
+            return [dict(row._mapping) for row in result]
+
+    async def fetch_metric_fact_embeddings(
+        self,
+        fact_ids: list[int],
+        *,
+        embedding_model: str | None = None,
+    ) -> dict[int, list[float]]:
+        if not fact_ids:
+            return {}
+        await self.ensure_view()
+        sql = text(
+            """
+            SELECT metric_id, embedding
+            FROM metric_fact_embeddings
+            WHERE metric_id IN :fact_ids
+            """
+        ).bindparams(bindparam("fact_ids", expanding=True))
+        params: dict[str, Any] = {"fact_ids": fact_ids}
+        if embedding_model:
+            sql = text(
+                """
+                SELECT metric_id, embedding
+                FROM metric_fact_embeddings
+                WHERE metric_id IN :fact_ids AND embedding_model = :embedding_model
+                """
+            ).bindparams(bindparam("fact_ids", expanding=True))
+            params["embedding_model"] = embedding_model
+        try:
+            async with self._engine.connect() as conn:
+                result = await conn.execute(sql, params)
+                rows = [dict(row._mapping) for row in result]
+        except Exception:
+            return {}
+        embeddings: dict[int, list[float]] = {}
+        for row in rows:
+            metric_id = row.get("metric_id")
+            embedding = row.get("embedding")
+            if metric_id is None or embedding is None:
+                continue
+            if isinstance(embedding, str):
+                try:
+                    embedding = json.loads(embedding)
+                except Exception:
+                    continue
+            embeddings[int(metric_id)] = [float(value) for value in embedding]
+        return embeddings
+
+    async def fetch_metric_fact_embedding_inputs(
+        self,
+        *,
+        limit: int,
+        offset: int,
+    ) -> list[dict[str, Any]]:
+        await self.ensure_view()
+        sql = text(
+            """
+            SELECT
+                fact_id,
+                metric_name,
+                label_text,
+                llm_context_label,
+                snippet,
+                slide_title,
+                period_label,
+                client_name,
+                region,
+                document_name
+            FROM metric_fact
+            ORDER BY fact_id
+            LIMIT :limit OFFSET :offset
+            """
+        )
+        async with self._engine.connect() as conn:
+            result = await conn.execute(sql, {"limit": int(limit), "offset": int(offset)})
             return [dict(row._mapping) for row in result]
 
     async def fetch_latest_period_end(self) -> date | None:
@@ -218,10 +398,9 @@ class MetricFactStore:
         self,
         *,
         metric_ids: list[str] | None = None,
-        client_name: str | None = None,
-        region: str | None = None,
-        period_start: date | None = None,
-        period_end: date | None = None,
+        client_name: list[str] | None = None,
+        region: list[str] | None = None,
+        period_ranges: list[tuple[date, date]] | None = None,
         limit: int = 200,
         order_by: str = "period_end DESC",
     ) -> tuple[list[MetricFactRow], str, dict[str, Any]]:
@@ -232,23 +411,36 @@ class MetricFactStore:
             clauses.append("metric_id IN :metric_ids")
             params["metric_ids"] = metric_ids
         if client_name:
-            clauses.append("client_name LIKE :client_name")
-            params["client_name"] = f"%{client_name}%"
+            client_clauses = []
+            for idx, name in enumerate(client_name):
+                key = f"client_name_{idx}"
+                client_clauses.append(f"client_name LIKE :{key}")
+                params[key] = f"%{name}%"
+            if client_clauses:
+                clauses.append("(" + " OR ".join(client_clauses) + ")")
         if region:
-            clauses.append("region = :region")
-            params["region"] = region
-        if period_start and period_end:
-            clauses.append("period_start IS NOT NULL AND period_end IS NOT NULL")
-            clauses.append("period_end >= :period_start")
-            clauses.append("period_start <= :period_end")
-            params["period_start"] = period_start.isoformat()
-            params["period_end"] = period_end.isoformat()
+            clauses.append("region IN :regions")
+            params["regions"] = region
+        if period_ranges:
+            range_clauses = []
+            for idx, (start, end) in enumerate(period_ranges):
+                start_key = f"period_start_{idx}"
+                end_key = f"period_end_{idx}"
+                range_clauses.append(
+                    f"(period_start IS NOT NULL AND period_end IS NOT NULL AND period_end >= :{start_key} AND period_start <= :{end_key})"
+                )
+                params[start_key] = start.isoformat()
+                params[end_key] = end.isoformat()
+            if range_clauses:
+                clauses.append("(" + " OR ".join(range_clauses) + ")")
         where_clause = " AND ".join(clauses)
         sql_text = f"SELECT * FROM metric_fact WHERE {where_clause} ORDER BY {order_by} LIMIT :limit"
         params["limit"] = int(limit)
         stmt = text(sql_text)
         if metric_ids:
             stmt = stmt.bindparams(bindparam("metric_ids", expanding=True))
+        if region:
+            stmt = stmt.bindparams(bindparam("regions", expanding=True))
         async with self._engine.connect() as conn:
             result = await conn.execute(stmt, params)
             rows = [MetricFactRow.from_row(dict(row._mapping)) for row in result]

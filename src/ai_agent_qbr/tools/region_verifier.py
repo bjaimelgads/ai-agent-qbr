@@ -7,6 +7,7 @@ from penguiflow.planner import ToolContext
 
 from ai_agent_qbr.infrastructure.region_verifier import RegionVerifier
 from ai_agent_qbr.models import RegionFilterVerificationArgs, RegionFilterVerificationResult
+from ai_agent_qbr.tools.status import ToolStatusEmitter
 
 
 @tool(
@@ -21,9 +22,8 @@ async def verify_region_filter(
     args: RegionFilterVerificationArgs,
     ctx: ToolContext,
 ) -> RegionFilterVerificationResult:
-    status_publisher = ctx.tool_context.get("status_publisher")
-    if callable(status_publisher):
-        status_publisher("Verifying regional scope for this QBR.", "Verifies region filter")
+    status = ToolStatusEmitter(ctx, tool_name="verify_region_filter")
+    await status.step("Verifying regional scope for this QBR.", step_name="Verify region")
 
     verifier = ctx.tool_context.get("region_verifier")
     if not isinstance(verifier, RegionVerifier):

@@ -17,11 +17,17 @@ from qbr_intelligence.schemas.metric_qa import MetricAnswer, QueryIntent
 from .cache import LruCache
 from .composer import AnswerComposer
 from .dao import MetricFactStore
+from .faiss_index import MetricFactFaissIndex
 from .intent import DeterministicIntentExtractor, IntentDebug, classify_intent_type
 from .resolvers import ClientResolver, MetricResolver, PeriodResolver, RegionResolver
 from .planner import build_plan
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("uvicorn.error")
+
+
+def _debug_log_enabled() -> bool:
+    return (os.getenv("METRIC_QA_DEBUG_LOG") or "").lower() in {"1", "true", "yes", "on"}
+
 
 @dataclass
 class MetricQueryResult:
@@ -58,6 +64,12 @@ class MetricQueryEngine:
         self._answer_cache = LruCache(max_size=256)
         self._catalog: list[MetricCatalogEntry] | None = None
         self._clients: list[str] | None = None
+        self._semantic_rerank_threshold = int(os.getenv("METRIC_SEMANTIC_RERANK_THRESHOLD", "5"))
+        self._semantic_rerank_top_k = int(os.getenv("METRIC_SEMANTIC_TOP_K", "5"))
+        self._semantic_faiss_top_k = int(os.getenv("METRIC_FAISS_TOP_K", "200"))
+        self._semantic_min_score = float(os.getenv("METRIC_SEMANTIC_MIN_SCORE", "0.6"))
+        self._semantic_score_margin = float(os.getenv("METRIC_SEMANTIC_SCORE_MARGIN", "0.05"))
+        self._metric_faiss = MetricFactFaissIndex.from_env()
 
     async def _load_catalogs(self) -> None:
         if self._catalog is not None and self._clients is not None:
@@ -65,7 +77,9 @@ class MetricQueryEngine:
         catalog_rows = await self._store.fetch_metric_catalog()
         if not catalog_rows:
             self._catalog = build_metric_catalog()
+            catalog_source = "fallback_builtin"
         else:
+            catalog_source = "database"
             catalog_map: dict[int, dict[str, Any]] = {}
             for row in catalog_rows:
                 key = int(row["id"])
@@ -100,6 +114,13 @@ class MetricQueryEngine:
                 for value in catalog_map.values()
             ]
         self._clients = await self._store.fetch_clients()
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_catalog_loaded source=%s catalog_size=%s client_count=%s",
+                catalog_source,
+                len(self._catalog or []),
+                len(self._clients or []),
+            )
 
     async def query(
         self,
@@ -135,13 +156,25 @@ class MetricQueryEngine:
             "intent": intent.model_dump(),
             "intent_debug": intent_debug.__dict__ if intent_debug else None,
         }
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_plan trace_id=%s intent_type=%s metrics=%s client=%s region=%s periods=%s aggregation=%s grouping=%s limit=%s",
+                trace_id,
+                intent_type,
+                plan.metric_ids,
+                plan.client,
+                plan.region,
+                [getattr(period, "value", None) for period in intent.period],
+                plan.aggregation,
+                plan.grouping,
+                plan.limit,
+            )
 
         rows, sql, params = await self._store.query_facts(
             metric_ids=plan.metric_ids,
             client_name=plan.client,
             region=plan.region,
-            period_start=plan.period_start,
-            period_end=plan.period_end,
+            period_ranges=plan.period_ranges,
             limit=plan.limit,
             order_by=plan.order_by,
         )
@@ -180,13 +213,52 @@ class MetricQueryEngine:
                 assumptions=assumptions,
                 debug_payload=debug_payload,
             )
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_post_query trace_id=%s row_count=%s fallback_reason=%s assumptions=%s",
+                trace_id,
+                len(rows),
+                debug_payload.get("fallback_reason"),
+                assumptions,
+            )
+
+        ambiguous = False
+        if rows and len(rows) > self._semantic_rerank_threshold:
+            rows, rerank_debug = await self._semantic_rerank_rows(query, rows)
+            ambiguous = bool(rerank_debug.get("ambiguous"))
+            debug_payload["semantic_rerank"] = rerank_debug
+            if _debug_log_enabled():
+                _LOGGER.info(
+                    "metric_qa_semantic_rerank trace_id=%s selected_rows=%s details=%s",
+                    trace_id,
+                    len(rows),
+                    rerank_debug,
+                )
 
         answer = AnswerComposer().compose(intent=intent, rows=rows, assumptions=assumptions)
         if self._llm_answer_enabled and self._answer_llm:
             answer = await self._phrase_answer(answer, intent=intent, rows=rows)
 
+        if ambiguous and rows:
+            options = _format_clarification_options(rows, max_items=self._semantic_rerank_top_k)
+            if options:
+                answer.summary = "I found multiple plausible matches and need a bit more detail."
+                answer.summary_text = (
+                    "I found multiple plausible matches and need a bit more detail. "
+                    "Which one did you mean? Options: " + " ".join(options)
+                )
+                answer.followups = options[:3]
+
         if debug:
             answer.debug = debug_payload
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_answer trace_id=%s confidence=%s rows=%s followups=%s",
+                trace_id,
+                answer.confidence,
+                len(answer.data or []),
+                len(answer.followups or []),
+            )
 
         return MetricQueryResult(answer=answer, intent=intent, debug=debug_payload if debug else None)
 
@@ -272,20 +344,20 @@ class MetricQueryEngine:
 
         client_resolution = client_resolver.resolve(query)
         if client_resolution.value:
-            if merged.client and merged.client != client_resolution.value:
+            if merged.client and merged.client != [client_resolution.value]:
                 assumptions.append("Client overridden by deterministic resolver")
-            merged.client = client_resolution.value
+            merged.client = [client_resolution.value]
 
         region_resolution = region_resolver.resolve(query)
         if region_resolution.value:
-            if merged.region and merged.region != region_resolution.value:
+            if merged.region and merged.region != [region_resolution.value]:
                 assumptions.append("Region overridden by deterministic resolver")
-            merged.region = region_resolution.value
+            merged.region = [region_resolution.value]
 
         bounds, label, period_type = period_resolver.resolve(query, anchor_date=anchor_date)
         if bounds:
             merged.period = deterministic.period
-            if merged.period and merged.period.value and merged.period.value != label:
+            if merged.period and merged.period[0].value and merged.period[0].value != label:
                 assumptions.append("Period overridden by deterministic resolver")
             if deterministic.period:
                 merged.period = deterministic.period
@@ -385,8 +457,7 @@ class MetricQueryEngine:
                 metric_ids=plan.metric_ids,
                 client_name=None,
                 region=plan.region,
-                period_start=plan.period_start,
-                period_end=plan.period_end,
+                period_ranges=plan.period_ranges,
                 limit=plan.limit,
                 order_by=plan.order_by,
             )
@@ -402,8 +473,7 @@ class MetricQueryEngine:
                 metric_ids=plan.metric_ids,
                 client_name=plan.client,
                 region=None,
-                period_start=plan.period_start,
-                period_end=plan.period_end,
+                period_ranges=plan.period_ranges,
                 limit=plan.limit,
                 order_by=plan.order_by,
             )
@@ -420,8 +490,7 @@ class MetricQueryEngine:
                     metric_ids=matched_ids,
                     client_name=plan.client,
                     region=plan.region,
-                    period_start=plan.period_start,
-                    period_end=plan.period_end,
+                    period_ranges=plan.period_ranges,
                     limit=plan.limit,
                     order_by=plan.order_by,
                 )
@@ -432,6 +501,87 @@ class MetricQueryEngine:
 
         debug_payload["fallback_reason"] = ",".join(reason) if reason else "none"
         return rows, assumptions, debug_payload
+
+    async def _semantic_rerank_rows(self, query: str, rows):
+        debug: dict[str, Any] = {"skipped": False, "reason": None}
+        if not self._embeddings:
+            debug.update({"skipped": True, "reason": "no_embeddings_provider"})
+            return rows, debug
+        try:
+            query_embedding = await self._embeddings.embed_query(query)
+        except Exception:
+            debug.update({"skipped": True, "reason": "query_embedding_failed"})
+            return rows, debug
+
+        vector = query_embedding.vector
+        if hasattr(vector, "values"):
+            vector = list(vector.values)
+        else:
+            vector = list(vector)
+
+        embedding_model = getattr(query_embedding, "model", None)
+        fact_ids = [row.fact_id for row in rows if row.fact_id is not None]
+        embeddings = await self._store.fetch_metric_fact_embeddings(
+            fact_ids,
+            embedding_model=embedding_model,
+        )
+
+        scores: dict[int, float] = {}
+        faiss_scores = self._metric_faiss.search(
+            vector=vector,
+            top_k=self._semantic_faiss_top_k,
+            embedding_model=embedding_model or self._metric_faiss.embedding_model,
+        )
+        for fact_id, score in faiss_scores:
+            scores[int(fact_id)] = float(score)
+        if not embeddings and not scores:
+            debug.update({"skipped": True, "reason": "no_metric_embeddings"})
+            return rows, debug
+
+        missing_embeddings = 0
+        for row in rows:
+            fact_id = row.fact_id
+            score = scores.get(fact_id)
+            if score is None:
+                embedding = embeddings.get(fact_id)
+                if embedding:
+                    score = _cosine_similarity(vector, embedding)
+                else:
+                    missing_embeddings += 1
+                    score = 0.0
+            row.semantic_score = float(score)
+
+        ranked = sorted(rows, key=lambda r: (r.semantic_score or 0.0), reverse=True)
+        top_score = ranked[0].semantic_score or 0.0
+        second_score = ranked[1].semantic_score if len(ranked) > 1 else None
+        ambiguous = False
+        if top_score < self._semantic_min_score:
+            ambiguous = True
+        if second_score is not None and (top_score - second_score) < self._semantic_score_margin:
+            ambiguous = True
+        top_k = min(self._semantic_rerank_top_k, len(ranked))
+        selected = ranked[:top_k]
+        selected = sorted(
+            selected,
+            key=lambda r: (
+                r.slide_number is None,
+                r.slide_number or r.slide_id or 0,
+                -(r.semantic_score or 0.0),
+            ),
+        )
+
+        debug.update(
+            {
+                "skipped": False,
+                "total_rows": len(rows),
+                "selected_rows": len(selected),
+                "missing_embeddings": missing_embeddings,
+                "top_score": top_score,
+                "second_score": second_score,
+                "ambiguous": ambiguous,
+            }
+        )
+        return selected, debug
 
     async def _embedding_match_metric(self, query: str) -> list[str]:
         if not self._embeddings or not self._catalog:
@@ -467,3 +617,25 @@ def _cosine_similarity(vec_a, vec_b) -> float:
 
 def _mentions_quarter(text: str) -> bool:
     return bool(re.search(r"\bq[1-4]\b", text))
+
+
+def _format_clarification_options(rows, *, max_items: int) -> list[str]:
+    options: list[str] = []
+    for row in rows[:max_items]:
+        parts: list[str] = []
+        if row.metric_name:
+            parts.append(row.metric_name)
+        if row.period_label or row.period_end:
+            parts.append(f"period {row.period_label or row.period_end}")
+        if row.client_name:
+            parts.append(f"client {row.client_name}")
+        if row.region:
+            parts.append(f"region {row.region}")
+        if row.llm_context_label:
+            parts.append(f"context {row.llm_context_label}")
+        if row.value is not None:
+            parts.append(f"value {row.value}")
+        label = ", ".join(parts)
+        if label:
+            options.append(label + ".")
+    return options

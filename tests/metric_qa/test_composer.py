@@ -25,6 +25,7 @@ def _row(value: float, period_end: str, doc_id: int, slide_id: int) -> MetricFac
         document_url=None,
         slide_id=slide_id,
         slide_number=None,
+        slide_title=None,
         google_slide_id=None,
         confidence=0.9,
         label_text="CPA",

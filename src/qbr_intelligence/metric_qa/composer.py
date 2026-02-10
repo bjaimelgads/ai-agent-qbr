@@ -184,11 +184,15 @@ def _row_to_table(row: MetricFactRow) -> dict:
         "client": row.client_name,
         "region": row.region,
         "llm_context_label": row.llm_context_label,
+        "semantic_score": row.semantic_score,
         "document_id": row.document_id,
+        "document_name": row.document_name,
         "document_url": row.document_url,
         "slide_id": row.slide_id,
         "slide_number": row.slide_number,
+        "slide_title": row.slide_title,
         "slide_url": slide_url or row.document_url,
+        "snippet": row.snippet,
     }
 
 
@@ -203,6 +207,7 @@ def _row_to_metric_row(row: MetricFactRow):
         client=row.client_name,
         region=row.region,
         llm_context_label=row.llm_context_label,
+        semantic_score=row.semantic_score,
     )
 
 
@@ -257,7 +262,16 @@ def _collect_citations(rows: Iterable[MetricFactRow]) -> list[AnswerCitation]:
 
 
 def _confidence(rows: list[MetricFactRow]) -> float | None:
-    values = [row.confidence for row in rows if row.confidence is not None]
+    values: list[float] = []
+    for row in rows:
+        if row.semantic_score is not None and row.confidence is not None:
+            values.append((row.semantic_score + row.confidence) / 2)
+            continue
+        if row.semantic_score is not None:
+            values.append(row.semantic_score)
+            continue
+        if row.confidence is not None:
+            values.append(row.confidence)
     if not values:
         return None
     return sum(values) / len(values)
