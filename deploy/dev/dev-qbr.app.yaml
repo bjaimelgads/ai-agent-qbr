@@ -18,6 +18,8 @@ env:
     value: 'agui'
   - name: 'PLANNER_STREAM_FINAL_RESPONSE'
     value: 'true'
+  - name: 'PLANNER_DEBUG_EVENTS'
+    value: 'true'
   - name: 'LOG_LEVEL'
     value: 'INFO'
 
@@ -36,6 +38,16 @@ env:
     value: 'true'
   - name: 'LLM_MAX_CALLS_PER_QUERY'
     value: '1'
+  - name: 'REFLECTION_ENABLED'
+    value: 'false'
+  - name: 'REFLECTION_REQUIRE_SEARCH_DOCUMENTS_ON_LOW_CONFIDENCE'
+    value: 'false'
+  - name: 'REFLECTION_QUALITY_THRESHOLD'
+    value: '0.8'
+  - name: 'REFLECTION_MAX_REVISIONS'
+    value: '2'
+  - name: 'REFLECTION_USE_SEPARATE_LLM'
+    value: 'false'
 
   # ------------------------------------------------------------
   # Region verifier
@@ -74,7 +86,7 @@ env:
   # Retrieval + embeddings
   # ------------------------------------------------------------
   - name: 'VECTOR_BACKEND'
-    value: 'sqlite_embeddings'
+    value: 'pgvector'
   - name: 'EMBEDDINGS_BACKEND'
     value: 'sentence_transformers'
   - name: 'EMBEDDINGS_MODEL'
@@ -102,6 +114,8 @@ env:
   - name: 'RETRIEVAL_MAX_CHUNKS_PER_DOC'
     value: '3'
   - name: 'METRIC_QA_RETRIEVAL_LOG'
+    value: 'true'
+  - name: 'METRIC_QA_DEBUG_LOG'
     value: 'true'
   - name: 'COMPARISON_TOP_DOCS'
     value: '3'

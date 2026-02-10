@@ -8,7 +8,9 @@ from typing import Any
 import json
 
 from sqlalchemy import bindparam, text
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine
+
+from qbr_agent.infrastructure.sqlalchemy_gateway import DatabaseGateway
 
 
 _VIEW_SQL = """
@@ -196,7 +198,7 @@ class MetricFactRow:
 
 class MetricFactStore:
     def __init__(self, database_url: str) -> None:
-        self._engine: AsyncEngine = create_async_engine(database_url)
+        self._engine: AsyncEngine = DatabaseGateway(database_url=database_url).engine()
         self._view_ready = False
 
     @property
@@ -210,9 +212,22 @@ class MetricFactStore:
             await conn.execute(text("DROP VIEW IF EXISTS metric_fact;"))
             has_google_slide_id = False
             has_slide_title = False
+            dialect = conn.engine.dialect.name
             try:
-                result = await conn.execute(text("PRAGMA table_info('slides');"))
-                columns = {row[1] for row in result.fetchall()}
+                if dialect == "sqlite":
+                    result = await conn.execute(text("PRAGMA table_info('slides');"))
+                    columns = {row[1] for row in result.fetchall()}
+                else:
+                    result = await conn.execute(
+                        text(
+                            """
+                            SELECT column_name
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public' AND table_name = 'slides'
+                            """
+                        )
+                    )
+                    columns = {row[0] for row in result.fetchall()}
                 has_google_slide_id = "google_slide_id" in columns
                 has_slide_title = "title" in columns
             except Exception:

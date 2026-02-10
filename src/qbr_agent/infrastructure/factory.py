@@ -49,6 +49,10 @@ async def build_infrastructure(
 
     if vector_backend == "sqlite_embeddings":
         vector_index = SqliteEmbeddingVectorIndex(repository=repository)
+    elif vector_backend == "pgvector":
+        from qbr_agent.infrastructure.pgvector_index import PgVectorIndex  # noqa: PLC0415
+
+        vector_index = PgVectorIndex(sessionmaker=gateway.sessionmaker())
     elif vector_backend == "faiss":
         from qbr_agent.infrastructure.faiss_index import FaissVectorIndex  # noqa: PLC0415
 

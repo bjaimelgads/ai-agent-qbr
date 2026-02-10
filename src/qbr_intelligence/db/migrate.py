@@ -99,6 +99,12 @@ def _widen_postgres_columns(engine: Engine) -> None:
                 "ALTER COLUMN period_label TYPE VARCHAR(200)"
             )
         )
+        conn.execute(
+            text(
+                "ALTER TABLE IF EXISTS metrics "
+                "ADD COLUMN IF NOT EXISTS llm_context_label TEXT"
+            )
+        )
 
 
 def _copy_table(table, src_engine: Engine, dst_engine: Engine, *, batch_size: int) -> int:

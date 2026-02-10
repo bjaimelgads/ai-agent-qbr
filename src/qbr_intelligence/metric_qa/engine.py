@@ -22,7 +22,12 @@ from .intent import DeterministicIntentExtractor, IntentDebug, classify_intent_t
 from .resolvers import ClientResolver, MetricResolver, PeriodResolver, RegionResolver
 from .planner import build_plan
 
-_LOGGER = logging.getLogger(__name__)
+_LOGGER = logging.getLogger("uvicorn.error")
+
+
+def _debug_log_enabled() -> bool:
+    return (os.getenv("METRIC_QA_DEBUG_LOG") or "").lower() in {"1", "true", "yes", "on"}
+
 
 @dataclass
 class MetricQueryResult:
@@ -72,7 +77,9 @@ class MetricQueryEngine:
         catalog_rows = await self._store.fetch_metric_catalog()
         if not catalog_rows:
             self._catalog = build_metric_catalog()
+            catalog_source = "fallback_builtin"
         else:
+            catalog_source = "database"
             catalog_map: dict[int, dict[str, Any]] = {}
             for row in catalog_rows:
                 key = int(row["id"])
@@ -107,6 +114,13 @@ class MetricQueryEngine:
                 for value in catalog_map.values()
             ]
         self._clients = await self._store.fetch_clients()
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_catalog_loaded source=%s catalog_size=%s client_count=%s",
+                catalog_source,
+                len(self._catalog or []),
+                len(self._clients or []),
+            )
 
     async def query(
         self,
@@ -142,6 +156,19 @@ class MetricQueryEngine:
             "intent": intent.model_dump(),
             "intent_debug": intent_debug.__dict__ if intent_debug else None,
         }
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_plan trace_id=%s intent_type=%s metrics=%s client=%s region=%s periods=%s aggregation=%s grouping=%s limit=%s",
+                trace_id,
+                intent_type,
+                plan.metric_ids,
+                plan.client,
+                plan.region,
+                [getattr(period, "value", None) for period in intent.period],
+                plan.aggregation,
+                plan.grouping,
+                plan.limit,
+            )
 
         rows, sql, params = await self._store.query_facts(
             metric_ids=plan.metric_ids,
@@ -186,12 +213,27 @@ class MetricQueryEngine:
                 assumptions=assumptions,
                 debug_payload=debug_payload,
             )
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_post_query trace_id=%s row_count=%s fallback_reason=%s assumptions=%s",
+                trace_id,
+                len(rows),
+                debug_payload.get("fallback_reason"),
+                assumptions,
+            )
 
         ambiguous = False
         if rows and len(rows) > self._semantic_rerank_threshold:
             rows, rerank_debug = await self._semantic_rerank_rows(query, rows)
             ambiguous = bool(rerank_debug.get("ambiguous"))
             debug_payload["semantic_rerank"] = rerank_debug
+            if _debug_log_enabled():
+                _LOGGER.info(
+                    "metric_qa_semantic_rerank trace_id=%s selected_rows=%s details=%s",
+                    trace_id,
+                    len(rows),
+                    rerank_debug,
+                )
 
         answer = AnswerComposer().compose(intent=intent, rows=rows, assumptions=assumptions)
         if self._llm_answer_enabled and self._answer_llm:
@@ -209,6 +251,14 @@ class MetricQueryEngine:
 
         if debug:
             answer.debug = debug_payload
+        if _debug_log_enabled():
+            _LOGGER.info(
+                "metric_qa_answer trace_id=%s confidence=%s rows=%s followups=%s",
+                trace_id,
+                answer.confidence,
+                len(answer.data or []),
+                len(answer.followups or []),
+            )
 
         return MetricQueryResult(answer=answer, intent=intent, debug=debug_payload if debug else None)
 

@@ -477,8 +477,8 @@ class Config:
             raise ValueError("OUTPUT_PROTOCOL must be one of: legacy, agui")
         if self.storage_backend not in {"sqlite", "postgres"}:
             raise ValueError("STORAGE_BACKEND must be one of: sqlite, postgres")
-        if self.vector_backend not in {"sqlite_embeddings", "faiss"}:
-            raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss")
+        if self.vector_backend not in {"sqlite_embeddings", "faiss", "pgvector"}:
+            raise ValueError("VECTOR_BACKEND must be one of: sqlite_embeddings, faiss, pgvector")
         if self.rerank_backend not in {"none", "cross_encoder"}:
             raise ValueError("RERANK_BACKEND must be one of: none, cross_encoder")
         if self.text_search_backend not in {"fts5", "auto", "like", "postgres_fts"}:
