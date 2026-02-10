@@ -19,8 +19,6 @@ except ImportError:  # pragma: no cover - fallback for older penguiflow
         def project(self, event: PlannerEvent):
             return []
 
-from ai_agent_qbr.steps import resolve_step_display
-
 class AGUIWebsocketAdapter(AGUIAdapter):
     """Translate planner events into AG-UI events for WebSocket delivery."""
 
@@ -37,6 +35,7 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         self._session_id: str | None = None
         self._task_id: str | None = None
         self._trace_id: str | None = None
+        self._current_tool_step: str | None = None
 
     @property
     def streamed_answer(self) -> bool:
@@ -47,6 +46,7 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         self._session_id = input.thread_id
         self._task_id = input.run_id
         self._trace_id = input.run_id
+        self._current_tool_step = None
 
     async def run(self, input: RunAgentInput):  # pragma: no cover - required by base class
         raise NotImplementedError("AGUIWebsocketAdapter does not execute runs directly")
@@ -56,6 +56,7 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         self._session_id = None
         self._task_id = None
         self._trace_id = None
+        self._current_tool_step = None
 
     def convert_planner_event(self, event: PlannerEvent) -> list[AGUIEvent]:
         extra = dict(event.extra or {})
@@ -72,18 +73,43 @@ class AGUIWebsocketAdapter(AGUIAdapter):
 
         if event.event_type == "step_start":
             step_name = extra.get("step_name") or event.node_name or f"step_{event.trajectory_step}"
-            display = resolve_step_display(step_name)
-            mapped.append(self.step_start(display.label if display else step_name, **extra))
+            if _should_skip_step(step_name):
+                return mapped
+            step_name = _friendly_step_name(step_name)
+            mapped.extend(self._close_active_steps())
+            mapped.append(self.step_start(step_name, **extra))
             return mapped
 
         if event.event_type == "step_complete":
             step_name = event.node_name or extra.get("step_name") or f"step_{event.trajectory_step}"
-            display = resolve_step_display(step_name)
-            mapped.append(self.step_end(display.label if display else step_name, **extra))
+            if _should_skip_step(step_name):
+                return mapped
+            step_name = _friendly_step_name(step_name)
+            if step_name in self._active_steps:
+                mapped.append(self.step_end(step_name, **extra))
             return mapped
 
         if event.event_type == "stream_chunk":
             text = str(extra.get("text") or "")
+            meta = extra.get("meta", {})
+            if isinstance(meta, Mapping):
+                meta = dict(meta)
+                step_name = meta.get("step_name")
+                if isinstance(step_name, str) and step_name:
+                    if self._current_tool_step != step_name:
+                        if self._current_tool_step and self._current_tool_step in self._active_steps:
+                            mapped.append(self.step_end(self._current_tool_step))
+                        self._current_tool_step = step_name
+                        mapped.append(self.step_start(step_name))
+                if "channel" not in meta:
+                    meta["channel"] = "thinking"
+                tool_name = meta.get("tool_name") or extra.get("tool_name")
+                if tool_name:
+                    meta["tool_name"] = str(tool_name)
+                if "step_name" not in meta:
+                    step_name = extra.get("step_name") or extra.get("node_name") or self._current_tool_step
+                    if step_name:
+                        meta["step_name"] = step_name
             if text:
                 mapped.append(
                     self.custom(
@@ -93,7 +119,7 @@ class AGUIWebsocketAdapter(AGUIAdapter):
                             "done": bool(extra.get("done")),
                             "stream_id": extra.get("stream_id"),
                             "seq": extra.get("seq"),
-                            "meta": extra.get("meta", {}),
+                            "meta": meta if isinstance(meta, Mapping) else {},
                         },
                     )
                 )
@@ -178,6 +204,14 @@ class AGUIWebsocketAdapter(AGUIAdapter):
             return []
         return [self.text_start(), self.text_content(text), self.text_end()]
 
+    def _close_active_steps(self) -> list[AGUIEvent]:
+        if not self._active_steps:
+            return []
+        events: list[AGUIEvent] = []
+        for step_name in list(self._active_steps):
+            events.append(self.step_end(step_name))
+        return events
+
     def _artifact_custom_event(self, extra: Mapping[str, Any]) -> AGUIEvent:
         artifact_id = str(extra.get("artifact_id") or "")
         artifact = {
@@ -196,6 +230,10 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         )
 
     def _artifact_chunk_custom_event(self, extra: Mapping[str, Any]) -> AGUIEvent:
+        message_id = self._current_message_id
+        meta = dict(extra.get("meta") or {}) if isinstance(extra.get("meta"), Mapping) else {}
+        if message_id and "message_id" not in meta:
+            meta["message_id"] = message_id
         return self.custom(
             "artifact_chunk",
             {
@@ -204,7 +242,8 @@ class AGUIWebsocketAdapter(AGUIAdapter):
                 "done": extra.get("done", False),
                 "artifact_type": extra.get("artifact_type"),
                 "chunk": extra.get("chunk"),
-                "meta": extra.get("meta", {}),
+                "message_id": message_id,
+                "meta": meta,
             },
         )
 
@@ -254,12 +293,37 @@ def pick_query(messages: Iterable[Any]) -> str:
         if role is None and isinstance(msg, Mapping):
             role = msg.get("role")
             content = msg.get("content")
+            if content is None:
+                content = msg.get("text")
         if role != "user":
             continue
         text = _extract_text_content(content)
         if text:
             return text
     return ""
+
+
+def _friendly_step_name(step_name: str) -> str:
+    if not step_name.startswith("step_"):
+        return step_name
+    try:
+        index = int(step_name.split("_", 1)[1])
+    except (ValueError, IndexError):
+        return step_name
+    labels = [
+        "Processing request",
+        "Analyzing request",
+        "Gathering data",
+        "Generating response",
+        "Finalizing response",
+    ]
+    if 0 <= index < len(labels):
+        return labels[index]
+    return step_name
+
+
+def _should_skip_step(step_name: str) -> bool:
+    return step_name.startswith("step_")
 
 
 def _extract_text_content(content: Any) -> str:

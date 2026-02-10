@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from datetime import date
+
+from pydantic import BaseModel, Field
 
 
 class Query(BaseModel):
@@ -81,3 +83,71 @@ class MetricQueryArgs(BaseModel):
 
     question: str
     debug: bool = False
+
+
+class PeriodSpec(BaseModel):
+    """Normalized period specification."""
+
+    type: str | None = None
+    value: str | None = None
+    start: date | None = None
+    end: date | None = None
+
+
+class ResolvedMetricIntent(BaseModel):
+    """Structured intent resolved from a metric query."""
+
+    metric_ids: list[str] = Field(default_factory=list)
+    client: list[str] = Field(default_factory=list)
+    region: list[str] = Field(default_factory=list)
+    period: list[PeriodSpec] = Field(default_factory=list)
+    aggregation: str | None = None
+    grouping: str | None = None
+    limit: int | None = None
+
+
+class FieldConfidence(BaseModel):
+    """Confidence scores for resolved intent fields."""
+
+    metric: float = 0.0
+    client: float = 0.0
+    region: float = 0.0
+    period: float = 0.0
+
+
+class ResolveMetricIntentArgs(BaseModel):
+    """Arguments for resolve_metric_intent tool."""
+
+    question: str
+
+
+class ResolveMetricIntentResult(BaseModel):
+    """Resolved metric intent with confidence metadata."""
+
+    intent: ResolvedMetricIntent
+    confidence: FieldConfidence
+
+
+class CandidateSet(BaseModel):
+    """Candidate values proposed by the planner."""
+
+    metric_ids: list[str] = Field(default_factory=list)
+    clients: list[str] = Field(default_factory=list)
+    regions: list[str] = Field(default_factory=list)
+    periods: list[str] = Field(default_factory=list)
+
+
+class RefineMetricIntentArgs(BaseModel):
+    """Arguments for refine_metric_intent tool."""
+
+    question: str
+    intent: ResolvedMetricIntent
+    candidates: CandidateSet
+
+
+class RefineMetricIntentResult(BaseModel):
+    """Validated metric intent after applying candidate refinements."""
+
+    intent: ResolvedMetricIntent
+    assumptions: list[str] = Field(default_factory=list)
+    unresolved_fields: list[str] = Field(default_factory=list)

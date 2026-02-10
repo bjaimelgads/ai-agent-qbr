@@ -87,6 +87,14 @@ def metric_db(tmp_path: Path) -> str:
             country TEXT,
             llm_context_label TEXT
         );
+        CREATE TABLE metric_fact_embeddings (
+            id INTEGER PRIMARY KEY,
+            metric_id INTEGER UNIQUE,
+            embedding JSON,
+            embedding_model TEXT,
+            text_hash TEXT,
+            updated_at TEXT
+        );
         CREATE TABLE slides (
             id INTEGER PRIMARY KEY,
             document_id INTEGER,

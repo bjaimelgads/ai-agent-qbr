@@ -5,7 +5,7 @@ from qbr_intelligence.metric_qa.planner import build_plan
 
 
 def test_build_plan_defaults():
-    intent = QueryIntent(metric_ids=["cpa"], client=None, region=None)
+    intent = QueryIntent(metric_ids=["cpa"])
     plan = build_plan(intent)
     assert plan.limit == 200
     assert plan.order_by == "period_end DESC"

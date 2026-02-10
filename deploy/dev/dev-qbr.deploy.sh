@@ -19,25 +19,34 @@ cp "$ROOT_DIR/app.py" "$DEPLOY_DIR"
 
 # Copy prebuilt FAISS index (assumed to be in $ROOT_DIR/data/faiss)
 
-# Ship local SQLite DB + FAISS index if present
-if [ -f "$ROOT_DIR/qbr_intelligence.db" ]; then
-  cp "$ROOT_DIR/qbr_intelligence.db" "$DEPLOY_DIR/qbr_intelligence.db"
-  mkdir -p "$DEPLOY_DIR/data"
-  cp "$ROOT_DIR/qbr_intelligence.db" "$DEPLOY_DIR/data/qbr_intelligence.db"
+# Ship local SQLite DB + FAISS index if requested
+DEPLOY_DB_BUNDLE="${DEPLOY_DB_BUNDLE:-false}"
+DEPLOY_FAISS_BUNDLE="${DEPLOY_FAISS_BUNDLE:-false}"
+
+if [ "$DEPLOY_DB_BUNDLE" = "true" ]; then
+  if [ -f "$ROOT_DIR/qbr_intelligence.db" ]; then
+    cp "$ROOT_DIR/qbr_intelligence.db" "$DEPLOY_DIR/qbr_intelligence.db"
+  else
+    echo "WARN: Missing $ROOT_DIR/qbr_intelligence.db; skipping DB bundle." >&2
+  fi
 else
-  echo "ERROR: Missing $ROOT_DIR/qbr_intelligence.db; cannot deploy DB." >&2
-  exit 1
+  echo "Skipping DB bundle (DEPLOY_DB_BUNDLE=false)."
 fi
-if [ -d "$ROOT_DIR/data/faiss" ]; then
-  mkdir -p "$DEPLOY_DIR/data"
-  cp -rf "$ROOT_DIR/data/faiss" "$DEPLOY_DIR/data/"
-  if [ ! -f "$DEPLOY_DIR/data/faiss/index.faiss" ] || [ ! -f "$DEPLOY_DIR/data/faiss/index_ids.json" ]; then
-    echo "ERROR: FAISS index files missing in deployment bundle." >&2
+
+if [ "$DEPLOY_FAISS_BUNDLE" = "true" ]; then
+  if [ -d "$ROOT_DIR/data/faiss" ]; then
+    mkdir -p "$DEPLOY_DIR/data"
+    cp -rf "$ROOT_DIR/data/faiss" "$DEPLOY_DIR/data/"
+    if [ ! -f "$DEPLOY_DIR/data/faiss/index.faiss" ] || [ ! -f "$DEPLOY_DIR/data/faiss/index_ids.json" ]; then
+      echo "ERROR: FAISS index files missing in deployment bundle." >&2
+      exit 1
+    fi
+  else
+    echo "ERROR: Missing $ROOT_DIR/data/faiss; cannot deploy FAISS index." >&2
     exit 1
   fi
 else
-  echo "ERROR: Missing $ROOT_DIR/data/faiss; cannot deploy FAISS index." >&2
-  exit 1
+  echo "Skipping FAISS bundle (DEPLOY_FAISS_BUNDLE=false)."
 fi
 
 # Upload files to databricks
@@ -47,8 +56,12 @@ cd "$DEPLOY_DIR"
 cp "$ROOT_DIR/deploy/dev/dev-qbr.app.yaml" app.yaml
 echo "Deployment bundle contents:"
 ls -la "$DEPLOY_DIR"
-ls -la "$DEPLOY_DIR/data"
-ls -la "$DEPLOY_DIR/data/faiss"
+if [ -d "$DEPLOY_DIR/data" ]; then
+  ls -la "$DEPLOY_DIR/data"
+fi
+if [ -d "$DEPLOY_DIR/data/faiss" ]; then
+  ls -la "$DEPLOY_DIR/data/faiss"
+fi
 
 databricks sync . /Workspace/Users/damian.beltritti@consultants.lgads.tv/databricks_apps/dev-qbr-agent
 

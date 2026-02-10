@@ -11,16 +11,21 @@ The agent uses a hybrid retrieval strategy inspired by `pengui_iceberg`:
 - Return the top-k chunks for prompting.
 
 ## Data Source (No Extraction Required)
-Retrieval reads from a SQLite database that already contains QBR documents and chunks.
-If you have a prebuilt DB, you can point the agent at it and skip extraction entirely.
+Retrieval reads from a database that already contains QBR documents and chunks.
+SQLite works for local/dev; Lakebase (Postgres) works for Databricks deployments.
 
 Minimum tables required for retrieval:
 - `documents`
 - `chunks`
 
-Example (repo-shipped DB):
+Example (repo-shipped SQLite DB):
 ```
 DATABASE_URL=sqlite+aiosqlite:///qbr_extraction/qbr_intelligence.db
+```
+Example (Lakebase/Postgres):
+```
+DATABASE_URL=postgresql+asyncpg://token:@<lakebase-host>:5432/<db_name>
+STORAGE_BACKEND=postgres
 ```
 
 If `chunks.embedding` is empty, vector matches are skipped and only text matches contribute
@@ -77,8 +82,9 @@ TEXT_SEARCH_BACKEND=fts5
 ```
 
 Supported values:
-- `fts5` (default)
-- `auto` (use FTS5 if available, otherwise LIKE)
+- `fts5` (default for SQLite)
+- `postgres_fts` (Postgres/Lakebase)
+- `auto` (pick FTS backend based on DB, otherwise LIKE)
 - `like` (legacy fallback)
 
 ## Hybrid Scoring

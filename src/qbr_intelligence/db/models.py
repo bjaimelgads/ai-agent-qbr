@@ -413,8 +413,8 @@ class Period(Base):
     __tablename__ = "periods"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    period_label: Mapped[str] = mapped_column(String(50), nullable=False)
-    period_type: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    period_label: Mapped[str] = mapped_column(String(200), nullable=False)
+    period_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     period_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     fiscal_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     start_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
@@ -515,12 +515,13 @@ class Metric(Base):
     extraction_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Period/brand/baseline context
-    period_label: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    period_label: Mapped[str | None] = mapped_column(String(200), nullable=True)
     period_start: Mapped[str | None] = mapped_column(String(20), nullable=True)
     period_end: Mapped[str | None] = mapped_column(String(20), nullable=True)
     brand: Mapped[str | None] = mapped_column(String(200), nullable=True)
     baseline_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     baseline_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    llm_context_label: Mapped[str | None] = mapped_column(Text, nullable=True)
     period_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
     )
@@ -544,6 +545,30 @@ class Metric(Base):
         Index("idx_metric_name", "name"),
         Index("idx_metric_region", "region_id"),
     )
+
+
+# =============================================================================
+# Metric Fact Embeddings
+# =============================================================================
+
+
+class MetricFactEmbedding(Base):
+    """Stored embeddings for metric facts (one per metric row)."""
+
+    __tablename__ = "metric_fact_embeddings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    metric_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("metrics.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    embedding: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    embedding_model: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    text_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    metric: Mapped["Metric"] = relationship("Metric")
+
+    __table_args__ = (Index("idx_metric_fact_embedding_metric", "metric_id"),)
 
 
 # =============================================================================

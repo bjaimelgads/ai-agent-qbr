@@ -21,9 +21,9 @@ class QueryIntent(BaseModel):
     """Structured intent extracted from a metric query."""
 
     metric_ids: list[str] = Field(default_factory=list)
-    client: str | None = None
-    region: str | None = None
-    period: PeriodSpec | None = None
+    client: list[str] = Field(default_factory=list)
+    region: list[str] = Field(default_factory=list)
+    period: list[PeriodSpec] = Field(default_factory=list)
     aggregation: Literal[
         "latest",
         "all",
@@ -47,6 +47,7 @@ class MetricRow(BaseModel):
     client: str | None = None
     region: str | None = None
     llm_context_label: str | None = None
+    semantic_score: float | None = None
 
 
 class AnswerCitation(BaseModel):
