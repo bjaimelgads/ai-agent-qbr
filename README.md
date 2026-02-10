@@ -1,2 +1,2 @@
-# -ai-agent-qbr
+# ai-agent-qbr
 Agentiv AI initiative, requested by Damian Beltritti
