@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 import json
+import re
 
 from sqlalchemy import bindparam, text
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -445,3 +446,253 @@ class MetricFactStore:
             result = await conn.execute(stmt, params)
             rows = [MetricFactRow.from_row(dict(row._mapping)) for row in result]
         return rows, sql_text, params
+
+    async def query_document_ids(
+        self,
+        *,
+        metric_ids: list[str] | None = None,
+        client_name: list[str] | None = None,
+        region: list[str] | None = None,
+        period_ranges: list[tuple[date, date]] | None = None,
+        period_specs: list[dict[str, Any]] | None = None,
+        limit: int = 100,
+    ) -> tuple[list[int], str, dict[str, Any]]:
+        await self.ensure_view()
+        clauses = ["1=1"]
+        params: dict[str, Any] = {}
+        if client_name:
+            client_clauses = []
+            for idx, name in enumerate(client_name):
+                key = f"client_name_{idx}"
+                client_clauses.append(f"c.name LIKE :{key}")
+                params[key] = f"%{name}%"
+            if client_clauses:
+                clauses.append("(" + " OR ".join(client_clauses) + ")")
+        if region:
+            clauses.append("r.code IN :regions")
+            params["regions"] = region
+        if metric_ids:
+            clauses.append(
+                "("
+                "EXISTS ("
+                "SELECT 1 FROM metrics m "
+                "LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id "
+                "WHERE m.document_id = d.id "
+                "AND COALESCE(mc.slug, m.name) IN :metric_ids"
+                ")"
+                ")"
+            )
+            params["metric_ids"] = metric_ids
+        doc_period_clauses = self._build_document_period_clauses(period_specs, params)
+        if doc_period_clauses:
+            clauses.append("(" + " OR ".join(doc_period_clauses) + ")")
+        if period_ranges:
+            range_clauses = []
+            for idx, (start, end) in enumerate(period_ranges):
+                start_key = f"period_start_{idx}"
+                end_key = f"period_end_{idx}"
+                range_clauses.append(
+                    "(EXISTS ("
+                    "SELECT 1 FROM metrics m "
+                    "LEFT JOIN periods p ON p.id = m.period_id "
+                    "WHERE m.document_id = d.id "
+                    f"AND COALESCE(m.period_start, p.start_date) IS NOT NULL "
+                    f"AND COALESCE(m.period_end, p.end_date) IS NOT NULL "
+                    f"AND COALESCE(m.period_end, p.end_date) >= :{start_key} "
+                    f"AND COALESCE(m.period_start, p.start_date) <= :{end_key}"
+                    "))"
+                )
+                params[start_key] = start.isoformat()
+                params[end_key] = end.isoformat()
+            if range_clauses:
+                clauses.append("(" + " OR ".join(range_clauses) + ")")
+        where_clause = " AND ".join(clauses)
+        sql_text = (
+            "SELECT DISTINCT d.id AS document_id "
+            "FROM documents d "
+            "LEFT JOIN clients c ON c.id = d.client_id "
+            "LEFT JOIN regions r ON r.id = d.region_id "
+            f"WHERE {where_clause} "
+            "ORDER BY d.id ASC LIMIT :limit"
+        )
+        params["limit"] = int(limit)
+        stmt = text(sql_text)
+        if region:
+            stmt = stmt.bindparams(bindparam("regions", expanding=True))
+        if metric_ids:
+            stmt = stmt.bindparams(bindparam("metric_ids", expanding=True))
+        async with self._engine.connect() as conn:
+            result = await conn.execute(stmt, params)
+            rows = [int(row[0]) for row in result.fetchall() if row[0] is not None]
+        return rows, sql_text, params
+
+    def _build_document_period_clauses(
+        self,
+        period_specs: list[dict[str, Any]] | None,
+        params: dict[str, Any],
+    ) -> list[str]:
+        if not period_specs:
+            return []
+
+        clauses: list[str] = []
+        for idx, raw in enumerate(period_specs):
+            if not isinstance(raw, dict):
+                continue
+            ptype = str(raw.get("type") or "").lower()
+            pvalue = str(raw.get("value") or "").upper()
+            start = raw.get("start")
+            end = raw.get("end")
+            fy_candidates = self._derive_fy_candidates(pvalue, start, end)
+            if ptype == "half":
+                half = self._extract_half(pvalue)
+                if not half:
+                    continue
+                half_key = f"doc_half_{idx}"
+                params[half_key] = half
+                fy_checks = []
+                for fy_idx, fy in enumerate(fy_candidates):
+                    fy_key = f"doc_fy_{idx}_{fy_idx}"
+                    params[fy_key] = fy
+                    fy_checks.append(f"d.fiscal_year = :{fy_key}")
+                    fy_checks.append(f"d.report_period LIKE :{fy_key}_report")
+                    params[f"{fy_key}_report"] = f"%{fy}%"
+                fy_clause = "(" + " OR ".join(fy_checks) + ")" if fy_checks else "1=1"
+                clauses.append(
+                    "("
+                    f"(d.half = :{half_key} AND {fy_clause}) "
+                    f"OR (d.report_period LIKE :{half_key}_report AND {fy_clause})"
+                    ")"
+                )
+                params[f"{half_key}_report"] = f"%{half}%"
+                continue
+
+            if ptype == "quarter":
+                quarter = self._extract_quarter(pvalue)
+                if not quarter:
+                    continue
+                q_key = f"doc_quarter_{idx}"
+                params[q_key] = quarter
+                fy_checks = []
+                for fy_idx, fy in enumerate(fy_candidates):
+                    fy_key = f"doc_fy_{idx}_{fy_idx}"
+                    params[fy_key] = fy
+                    fy_checks.append(f"d.fiscal_year = :{fy_key}")
+                    fy_checks.append(f"d.report_period LIKE :{fy_key}_report")
+                    params[f"{fy_key}_report"] = f"%{fy}%"
+                fy_clause = "(" + " OR ".join(fy_checks) + ")" if fy_checks else "1=1"
+                clauses.append(
+                    "("
+                    f"(d.quarter = :{q_key} AND {fy_clause}) "
+                    f"OR (d.report_period LIKE :{q_key}_report AND {fy_clause})"
+                    ")"
+                )
+                params[f"{q_key}_report"] = f"%{quarter}%"
+                continue
+
+            if ptype == "year":
+                fy_checks = []
+                for fy_idx, fy in enumerate(fy_candidates):
+                    fy_key = f"doc_fy_{idx}_{fy_idx}"
+                    params[fy_key] = fy
+                    fy_checks.append(f"d.fiscal_year = :{fy_key}")
+                    fy_checks.append(f"d.report_period LIKE :{fy_key}_report")
+                    params[f"{fy_key}_report"] = f"%{fy}%"
+                if fy_checks:
+                    clauses.append("(" + " OR ".join(fy_checks) + ")")
+
+        return clauses
+
+    @staticmethod
+    def _derive_fy_candidates(value: str, start: Any, end: Any) -> list[str]:
+        candidates: list[str] = []
+        value = (value or "").upper()
+        explicit_matches = re.findall(r"FY\s*(\d{2,4})", value)
+        for match in explicit_matches:
+            if len(match) == 2:
+                candidates.append(f"FY{match}")
+            else:
+                candidates.append(f"FY{match[-2:]}")
+        if candidates:
+            return list(dict.fromkeys(candidates))
+        if isinstance(end, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", end):
+            candidates.append(f"FY{end[2:4]}")
+        if not candidates and isinstance(start, str) and re.match(r"^\d{4}-\d{2}-\d{2}$", start):
+            # Fallback when end is missing.
+            candidates.append(f"FY{start[2:4]}")
+        return list(dict.fromkeys(candidates))
+
+    @staticmethod
+    def _extract_half(value: str) -> str | None:
+        if "H1" in value:
+            return "H1"
+        if "H2" in value:
+            return "H2"
+        return None
+
+    @staticmethod
+    def _extract_quarter(value: str) -> str | None:
+        for q in ("Q1", "Q2", "Q3", "Q4"):
+            if q in value:
+                return q
+        return None
+
+    async def query_slide_ids_for_ranges(
+        self,
+        *,
+        ranges: list[tuple[int, int | None, int | None]],
+        limit: int = 5000,
+    ) -> tuple[list[int], str, dict[str, Any]]:
+        await self.ensure_view()
+        if not ranges:
+            return [], "SELECT id FROM slides WHERE 1=0", {}
+
+        clauses: list[str] = []
+        params: dict[str, Any] = {"limit": int(limit)}
+        for idx, (document_id, start_slide, end_slide) in enumerate(ranges):
+            doc_key = f"doc_{idx}"
+            start_key = f"start_{idx}"
+            end_key = f"end_{idx}"
+            params[doc_key] = int(document_id)
+            if start_slide is None and end_slide is None:
+                clauses.append(f"(document_id = :{doc_key})")
+                continue
+            if start_slide is None:
+                clauses.append(f"(document_id = :{doc_key} AND slide_number <= :{end_key})")
+                params[end_key] = int(end_slide)
+                continue
+            if end_slide is None:
+                clauses.append(f"(document_id = :{doc_key} AND slide_number >= :{start_key})")
+                params[start_key] = int(start_slide)
+                continue
+            clauses.append(
+                f"(document_id = :{doc_key} AND slide_number >= :{start_key} AND slide_number <= :{end_key})"
+            )
+            params[start_key] = int(start_slide)
+            params[end_key] = int(end_slide)
+
+        where = " OR ".join(clauses) if clauses else "1=0"
+        sql_text = f"SELECT DISTINCT id FROM slides WHERE {where} ORDER BY id ASC LIMIT :limit"
+        stmt = text(sql_text)
+        async with self._engine.connect() as conn:
+            result = await conn.execute(stmt, params)
+            slide_ids = [int(row[0]) for row in result.fetchall() if row[0] is not None]
+        return slide_ids, sql_text, params
+
+    async def query_document_names(self, *, document_ids: list[int]) -> dict[int, str | None]:
+        await self.ensure_view()
+        if not document_ids:
+            return {}
+        stmt = (
+            text(
+                """
+                SELECT document_id, MAX(document_name) AS document_name
+                FROM metric_fact
+                WHERE document_id IN :document_ids
+                GROUP BY document_id
+                """
+            )
+            .bindparams(bindparam("document_ids", expanding=True))
+        )
+        async with self._engine.connect() as conn:
+            result = await conn.execute(stmt, {"document_ids": [int(doc_id) for doc_id in document_ids]})
+            return {int(row[0]): row[1] for row in result.fetchall() if row[0] is not None}

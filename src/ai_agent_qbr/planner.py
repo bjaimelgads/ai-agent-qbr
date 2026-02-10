@@ -47,11 +47,11 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - For questions that ask for specific metrics, KPI values, or period comparisons, you MUST call
   `resolve_metric_intent` first. If fields are missing or ambiguous, call `refine_metric_intent`
   with candidate values; if still unresolved, ask a clarifying question. When ready, call
-  `query_metrics` using a concise canonical query string that preserves the user’s intent but
-  replaces only the missing/ambiguous entities with the resolved values. Avoid verbose sentences.
-- For metric/KPI questions, do not call `search_documents` before attempting `query_metrics`.
-  Only call `search_documents` if `query_metrics` returns no useful rows, conflicting units, or
-  insufficient evidence for the requested comparison.
+  `query_metrics` using:
+  1) a concise canonical `args.question` string that preserves user intent, and
+  2) `args.intent` set to the latest structured intent output (`refine_metric_intent.intent`, or
+     `resolve_metric_intent.intent` if refine was not needed).
+  Do not serialize intent into `args.question`; pass it in `args.intent`.
 - For follow-up turns that omit scope (e.g., "what about installs?"), infer missing scope from
   `conversation_memory.recent_turns` and `last_metric_intent` in the LLM context. Preserve the
   user's latest metric change, but carry forward prior client/region/period unless the user
@@ -66,15 +66,16 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - Keep parallel fan-out pragmatic: avoid unnecessary explosion in tool calls. If the request would
   require many cells, ask the user to narrow scope first.
 - Tool argument contract: for tools with `args.question` (`resolve_metric_intent`, `query_metrics`,
-  `search_documents`, `refine_metric_intent`), pass only the latest user utterance or a concise
-  canonical rewrite. Never pass planner internals such as `observation`, `context`, serialized
-  JSON payloads, prior tool outputs, or citations inside `args.question`.
+  `refine_metric_intent`), pass only the latest user utterance or a concise canonical rewrite in
+  `args.question`. Never pass planner internals, serialized payloads, prior tool outputs, or
+  citations inside `args.question`. For `query_metrics`, pass prior structured intent via
+  `args.intent` only.
 - Treat `raw_context` and `llm_context_label` as supporting context only. Focus the answer on the
   user’s requested metric(s) and entities; do not introduce additional metrics or KPIs unless the
   user explicitly asked for them. If you include context, tie it directly to the requested metric.
-- If the draft answer may be inaccurate, ambiguous, or unsupported by strong citations, prefer a
-  retrieval-first correction loop: call `search_documents` with a concise query, then answer from
-  that evidence. Do not finalize until evidence supports the answer.
+- If evidence is insufficient or ambiguous, ask a concise clarification question.
+- If `search_documents`/`search_qbr` returns `needs_clarification=true`, ask the
+  `clarification_question` to the user directly and do not proceed with broad retrieval.
 - When citations include `document_url`, include those links in the Sources section.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
@@ -125,21 +126,14 @@ class ScriptedLLM:
             query = messages[-1].get("content", "")
             scripted = [
                 {
-                    "thought": "gather evidence",
-                    "next_node": "search_documents",
+                    "thought": "resolve metric intent",
+                    "next_node": "resolve_metric_intent",
                     "args": {"question": query},
                 },
                 {
-                    "thought": "summarise context",
-                    "next_node": "analyze_results",
-                    "args": {
-                        "results": [
-                            {
-                                "title": "context",
-                                "snippet": f"PenguiFlow answer plan for '{query}'",
-                            }
-                        ]
-                    },
+                    "thought": "query structured metrics",
+                    "next_node": "query_metrics",
+                    "args": {"question": query},
                 },
                 {
                     "thought": "finish",

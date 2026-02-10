@@ -9,7 +9,7 @@ rm -rf "$DEPLOY_DIR"
 mkdir -p "$DEPLOY_DIR"
 
 # Copy common files for all deployments
-uv export --format requirements-txt --no-hashes --no-dev --extra retrieval --output-file "$DEPLOY_DIR/requirements.txt"
+uv export --format requirements-txt --no-hashes --no-dev --extra retrieval --extra observability --output-file "$DEPLOY_DIR/requirements.txt"
 cp "$ROOT_DIR/pyproject.toml" "$DEPLOY_DIR/"
 if [ -f "$ROOT_DIR/uv.lock" ]; then
   cp "$ROOT_DIR/uv.lock" "$DEPLOY_DIR/"

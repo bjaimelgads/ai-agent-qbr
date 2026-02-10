@@ -34,6 +34,16 @@ def _like_match(values: list[str], candidates: list[str]) -> list[str]:
     return list(dict.fromkeys(matches))
 
 
+def _query_token_match(query: str, candidates: list[str]) -> list[str]:
+    lowered = (query or "").lower()
+    hits: list[str] = []
+    for candidate in candidates:
+        token = candidate.strip().lower()
+        if token and token in lowered:
+            hits.append(candidate)
+    return list(dict.fromkeys(hits))
+
+
 @tool(
     desc=(
         "Validate planner-proposed intent candidates deterministically. "
@@ -107,17 +117,23 @@ async def refine_metric_intent(
             unresolved.append("client")
 
     if not updated.region:
-        region_hits: list[str] = []
-        for candidate in args.candidates.regions:
-            resolution = region_resolver.resolve(candidate)
-            if resolution.value:
-                region_hits.append(resolution.value)
-        region_hits = list(dict.fromkeys(region_hits))
-        if region_hits:
-            updated.region = region_hits
-            assumptions.append("Region inferred from candidate list")
+        region_from_query = region_resolver.resolve(canonical_query)
+        if region_from_query.value:
+            updated.region = [region_from_query.value]
+            assumptions.append("Region inferred from query")
         else:
-            unresolved.append("region")
+            region_hits: list[str] = []
+            candidate_hits = _query_token_match(canonical_query, args.candidates.regions)
+            for candidate in candidate_hits:
+                resolution = region_resolver.resolve(candidate)
+                if resolution.value:
+                    region_hits.append(resolution.value)
+            region_hits = list(dict.fromkeys(region_hits))
+            if len(region_hits) == 1:
+                updated.region = region_hits
+                assumptions.append("Region inferred from query-matched candidate")
+            else:
+                unresolved.append("region")
 
     if not updated.period:
         period_hits: list[PeriodSpec] = []
@@ -143,5 +159,8 @@ async def refine_metric_intent(
         assumptions=assumptions,
         unresolved_fields=unresolved,
     )
+    interaction_metadata = ctx.tool_context.get("interaction_metadata")
+    if isinstance(interaction_metadata, dict):
+        interaction_metadata["refined_metric_intent"] = result.intent.model_dump(mode="json")
     logger.info("REFINE_INTENT_RESULT %s", result.model_dump())
     return result
