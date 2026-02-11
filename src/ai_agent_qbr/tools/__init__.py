@@ -8,6 +8,7 @@ from penguiflow.registry import ModelRegistry
 from .agent_capabilities import agent_capabilities
 from .analyze import analyze_results
 from .comparison_intent import detect_comparison_intent
+from .metadata_catalog import metadata_catalog
 from .refine_metric_intent import refine_metric_intent
 from .query_metrics import query_metrics
 from .region_verifier import verify_region_filter
@@ -22,6 +23,8 @@ from ..models import (
     FinalAnswer,
     FieldConfidence,
     MetricQueryArgs,
+    MetadataCatalogArgs,
+    MetadataCatalogResult,
     Query,
     RefineMetricIntentArgs,
     RefineMetricIntentResult,
@@ -39,6 +42,7 @@ __all__ = [
     "analyze_results",
     "detect_comparison_intent",
     "refine_metric_intent",
+    "metadata_catalog",
     "query_metrics",
     "resolve_metric_intent",
     "search_documents",
@@ -51,6 +55,8 @@ __all__ = [
     "FinalAnswer",
     "FieldConfidence",
     "MetricQueryArgs",
+    "MetadataCatalogArgs",
+    "MetadataCatalogResult",
     "MetricAnswer",
     "RefineMetricIntentArgs",
     "RefineMetricIntentResult",
@@ -74,6 +80,7 @@ def build_catalog_bundle() -> tuple[list[Node], ModelRegistry]:
         RegionFilterVerificationResult,
     )
     registry.register("query_metrics", MetricQueryArgs, MetricAnswer)
+    registry.register("metadata_catalog", MetadataCatalogArgs, MetadataCatalogResult)
     registry.register("resolve_metric_intent", ResolveMetricIntentArgs, ResolveMetricIntentResult)
     registry.register("refine_metric_intent", RefineMetricIntentArgs, RefineMetricIntentResult)
     registry.register("search_documents", Query, SearchResults)
@@ -85,6 +92,7 @@ def build_catalog_bundle() -> tuple[list[Node], ModelRegistry]:
         Node(detect_comparison_intent, name="detect_comparison_intent"),
         Node(verify_region_filter, name="verify_region_filter"),
         Node(query_metrics, name="query_metrics"),
+        Node(metadata_catalog, name="metadata_catalog"),
         Node(resolve_metric_intent, name="resolve_metric_intent"),
         Node(refine_metric_intent, name="refine_metric_intent"),
         Node(search_documents, name="search_documents"),
