@@ -22,6 +22,7 @@ _DOCUMENTS: Table | None = None
 _CHUNKS: Table | None = None
 _SLIDES: Table | None = None
 _CLIENTS: Table | None = None
+_PERIODS: Table | None = None
 _CHUNKS_FTS: Table | None = None
 _WARNED_MISSING_TABLES = False
 _WARNED_MISSING_FTS = False
@@ -37,7 +38,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
     _db_backend: str | None = field(default=None, init=False, repr=False)
 
     async def _ensure_reflection(self, session: AsyncSession) -> None:
-        global _DOCUMENTS, _CHUNKS, _SLIDES, _CLIENTS, _CHUNKS_FTS, _WARNED_MISSING_TABLES
+        global _DOCUMENTS, _CHUNKS, _SLIDES, _CLIENTS, _PERIODS, _CHUNKS_FTS, _WARNED_MISSING_TABLES
         if (
             _DOCUMENTS is not None
             and _CHUNKS is not None
@@ -57,6 +58,7 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
         _CHUNKS = _METADATA.tables.get("chunks")
         _SLIDES = _METADATA.tables.get("slides")
         _CLIENTS = _METADATA.tables.get("clients")
+        _PERIODS = _METADATA.tables.get("periods")
         if self._db_backend == "sqlite":
             _CHUNKS_FTS = _METADATA.tables.get(self.fts_table)
         else:
@@ -89,12 +91,16 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 return []
             documents = _DOCUMENTS
             clients = _CLIENTS
+            periods = _PERIODS
             file_path_col = documents.c.get("file_path")
             if file_path_col is None:
                 file_path_col = literal(None).label("file_path")
             period_col = documents.c.get("period")
             if period_col is None:
-                period_col = documents.c.get("report_period")
+                if periods is not None and documents.c.get("report_period_id") is not None:
+                    period_col = periods.c.get("period_label")
+                else:
+                    period_col = documents.c.get("report_period")
             if period_col is None:
                 period_col = literal(None).label("period")
             client_name_col = None
@@ -117,6 +123,11 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 query = query.outerjoin(
                     clients,
                     clients.c.id == documents.c.client_id,
+                )
+            if periods is not None and documents.c.get("report_period_id") is not None:
+                query = query.outerjoin(
+                    periods,
+                    periods.c.id == documents.c.report_period_id,
                 )
             if client_name:
                 query = query.where(client_name_col.ilike(f"%{client_name}%"))
@@ -152,12 +163,16 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 return []
             documents = _DOCUMENTS
             clients = _CLIENTS
+            periods = _PERIODS
             file_path_col = documents.c.get("file_path")
             if file_path_col is None:
                 file_path_col = literal(None).label("file_path")
             period_col = documents.c.get("period")
             if period_col is None:
-                period_col = documents.c.get("report_period")
+                if periods is not None and documents.c.get("report_period_id") is not None:
+                    period_col = periods.c.get("period_label")
+                else:
+                    period_col = documents.c.get("report_period")
             if period_col is None:
                 period_col = literal(None).label("period")
             client_name_col = None
@@ -180,6 +195,11 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                 query = query.outerjoin(
                     clients,
                     clients.c.id == documents.c.client_id,
+                )
+            if periods is not None and documents.c.get("report_period_id") is not None:
+                query = query.outerjoin(
+                    periods,
+                    periods.c.id == documents.c.report_period_id,
                 )
             result = await session.execute(query)
             rows = result.fetchall()

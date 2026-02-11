@@ -689,6 +689,23 @@ def _extract_answer_from_mapping(payload: Mapping[str, Any]) -> str | None:
 
 
 def _format_metric_answer(answer: MetricAnswer) -> str:
+    def _format_source_from_row(row: Mapping[str, Any]) -> str | None:
+        doc_name = row.get("document_name")
+        doc_id = row.get("document_id")
+        slide_number = row.get("slide_number")
+        slide_id = row.get("slide_id")
+        source_label = doc_name or (f"doc {doc_id}" if doc_id is not None else None)
+        if source_label is None:
+            return None
+        if slide_number is not None:
+            source_label = f"{source_label} slide {slide_number}"
+        elif slide_id is not None:
+            source_label = f"{source_label} slide {slide_id}"
+        source_url = row.get("slide_url") or row.get("document_url")
+        if source_url:
+            return f"[{source_label}]({source_url})"
+        return source_label
+
     text = answer.summary_text.strip()
     details_rows = answer.table_data
     if not details_rows and answer.data:
@@ -748,7 +765,9 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                         value_text = f"{value} {unit}".strip()
                         context = row.get("snippet") or row.get("llm_context_label")
                         context_text = f" — {context}" if context else ""
-                        lines.append(f"  - {value_text}{context_text}")
+                        source_text = _format_source_from_row(row)
+                        source_suffix = f" | {source_text}" if source_text else ""
+                        lines.append(f"  - {value_text}{context_text}{source_suffix}")
             text = f"{text}\n" + "\n".join(lines)
         else:
             lines = ["", "Details:"]
@@ -762,20 +781,87 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
             text = f"{text}\n" + "\n".join(lines)
     if answer.citations:
-        def _format_source(citation: AnswerCitation) -> str:
+        doc_sources: list[str] = []
+        seen_docs: set[tuple[str, str | None]] = set()
+        for citation in answer.citations:
             doc_label = citation.document_name or f"doc {citation.document_id}"
-            if citation.slide_number is not None:
-                doc_label = f"{doc_label} slide {citation.slide_number}"
-            elif citation.slide_id is not None:
-                doc_label = f"{doc_label} slide {citation.slide_id}"
-            doc_url = citation.slide_url or citation.document_url
+            doc_url = citation.document_url
+            key = (doc_label, doc_url)
+            if key in seen_docs:
+                continue
+            seen_docs.add(key)
             if doc_url:
-                return f"{doc_label} (`{doc_url}`)"
-            return doc_label
-
-        sources = ", ".join(_format_source(c) for c in answer.citations)
+                doc_sources.append(f"[{doc_label}]({doc_url})")
+            else:
+                doc_sources.append(doc_label)
+        sources = ", ".join(doc_sources)
         text = f"{text}\n\nSources: {sources}"
     return text
+
+
+def _tool_calls_include_search(tool_calls: list[dict[str, Any]]) -> bool:
+    for call in tool_calls:
+        tool_name = str(call.get("tool_name") or "").strip()
+        if tool_name in {"search_documents", "search_qbr"}:
+            return True
+    return False
+
+
+def _format_rag_slide_refs(qbr_citations: list[dict[str, Any]]) -> list[str]:
+    refs: list[str] = []
+    seen: set[tuple[int | None, int | None, int | None]] = set()
+    for citation in qbr_citations:
+        if not isinstance(citation, dict):
+            continue
+        doc_id_raw = citation.get("document_id")
+        try:
+            doc_id = int(doc_id_raw) if doc_id_raw is not None else None
+        except (TypeError, ValueError):
+            doc_id = None
+        start_raw = citation.get("start_slide")
+        end_raw = citation.get("end_slide")
+        try:
+            start = int(start_raw) if start_raw is not None else None
+        except (TypeError, ValueError):
+            start = None
+        try:
+            end = int(end_raw) if end_raw is not None else None
+        except (TypeError, ValueError):
+            end = None
+        key = (doc_id, start, end)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        doc_label = f"doc {doc_id}" if doc_id is not None else "doc ?"
+        if start is None and end is None:
+            slide_label = "slide ?"
+        elif start is None:
+            slide_label = f"slides ?-{end}"
+        elif end is None or end == start:
+            slide_label = f"slide {start}"
+        else:
+            slide_label = f"slides {start}-{end}"
+        refs.append(f"{doc_label} {slide_label}")
+    return refs
+
+
+def _append_search_slide_refs_to_answer(
+    answer_text: str,
+    *,
+    tool_calls: list[dict[str, Any]],
+    qbr_citations: list[dict[str, Any]],
+) -> str:
+    if not answer_text.strip():
+        return answer_text
+    if not _tool_calls_include_search(tool_calls):
+        return answer_text
+    slide_refs = _format_rag_slide_refs(qbr_citations)
+    if not slide_refs:
+        return answer_text
+    if "slides:" in answer_text.lower():
+        return answer_text
+    return f"{answer_text}\n\nSlides: {', '.join(slide_refs)}"
 
 
 def _make_tool_context(payload: dict[str, Any]) -> Any:
@@ -1237,6 +1323,12 @@ class AiAgentQbrOrchestrator:
             if metric_answer is not None:
                 # Prefer deterministic metric formatting with slide-level citations.
                 answer_text = _format_metric_answer(metric_answer)
+            else:
+                answer_text = _append_search_slide_refs_to_answer(
+                    answer_text,
+                    tool_calls=tool_calls,
+                    qbr_citations=llm_context.get("qbr_citations", []),
+                )
             rag_scope_payload = _extract_rag_scope_from_interaction_metadata(interaction_metadata)
             if (
                 isinstance(rag_scope_payload, dict)

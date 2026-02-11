@@ -35,7 +35,11 @@ def metric_db(tmp_path: Path) -> str:
             file_path TEXT,
             client_id INTEGER,
             region_id INTEGER,
-            report_period TEXT
+            report_period TEXT,
+            report_period_id INTEGER,
+            fiscal_year TEXT,
+            quarter TEXT,
+            half TEXT
         );
         CREATE TABLE periods (
             id INTEGER PRIMARY KEY,
@@ -65,7 +69,6 @@ def metric_db(tmp_path: Path) -> str:
         );
         CREATE TABLE metrics (
             id INTEGER PRIMARY KEY,
-            document_id INTEGER NOT NULL,
             slide_id INTEGER,
             raw_value TEXT NOT NULL,
             raw_context TEXT,
@@ -76,9 +79,6 @@ def metric_db(tmp_path: Path) -> str:
             unit TEXT,
             category TEXT,
             extraction_confidence FLOAT,
-            period_label TEXT,
-            period_start TEXT,
-            period_end TEXT,
             brand TEXT,
             baseline_text TEXT,
             baseline_type TEXT,
@@ -113,11 +113,12 @@ def metric_db(tmp_path: Path) -> str:
         [(1, "US", "United States"), (2, "EMEA", "EMEA")],
     )
     cur.executemany(
-        "INSERT INTO documents (id, filename, file_path, client_id, region_id, report_period) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO documents (id, filename, file_path, client_id, region_id, report_period, report_period_id, fiscal_year, quarter, half) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
-            (10, "nike_q2_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 1, 1, "Q2 2025"),
-            (11, "adidas_q2_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 2, 2, "Q2 2025"),
-            (12, "brandx_q1_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 3, 1, "Q1 2025"),
+            (10, "nike_q2_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 1, 1, "Q2 2025", 2, "FY25", "Q2", None),
+            (11, "adidas_q2_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 2, 2, "Q2 2025", 2, "FY25", "Q2", None),
+            (12, "brandx_q1_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 3, 1, "Q1 2025", 1, "FY25", "Q1", None),
+            (13, "nike_q1_2025.pptx", "https://docs.google.com/presentation/d/testdeck/edit", 1, 1, "Q1 2025", 1, "FY25", "Q1", None),
         ],
     )
     cur.executemany(
@@ -128,6 +129,7 @@ def metric_db(tmp_path: Path) -> str:
             (6, 11, 6, "slide-6"),
             (7, 11, 7, "slide-7"),
             (2, 12, 2, "slide-2"),
+            (5, 13, 4, "slide-5"),
         ],
     )
     cur.executemany(
@@ -158,19 +160,19 @@ def metric_db(tmp_path: Path) -> str:
     cur.executemany(
         """
         INSERT INTO metrics (
-            id, document_id, slide_id, raw_value, raw_context, raw_metric_type,
+            id, slide_id, raw_value, raw_context, raw_metric_type,
             metric_catalog_id, name, normalized_value, unit, category,
-            extraction_confidence, period_label, period_start, period_end,
+            extraction_confidence,
             brand, baseline_text, baseline_type, period_id, region_id, country,
             llm_context_label
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         [
-            (101, 10, 3, "$12.00", "CPA in US Q2", "currency", 1, "CPA", 12.0, "currency", "cost", 0.9, "Q2 2025", "2025-04-01", "2025-06-30", "Nike", None, None, 2, 1, None, "Nike US Q2"),
-            (102, 10, 4, "$10.00", "CPA in US Q1", "currency", 1, "CPA", 10.0, "currency", "cost", 0.9, "Q1 2025", "2025-01-01", "2025-03-31", "Nike", None, None, 1, 1, None, "Nike US Q1"),
-            (103, 11, 6, "1.2%", "CTR in EMEA", "percent", 2, "CTR", 1.2, "percent", "engagement", 0.8, "Q2 2025", "2025-04-01", "2025-06-30", "Adidas", None, None, 2, 2, None, "Adidas EMEA Q2"),
-            (104, 11, 7, "1.0%", "CTR in EMEA", "percent", 2, "CTR", 1.0, "percent", "engagement", 0.8, "Q3 2024", "2024-07-01", "2024-09-30", "Adidas", None, None, 3, 2, None, "Adidas EMEA Q3"),
-            (105, 12, 2, "120000", "Unique reach EMEA", "count", 3, "Unique Reach", 120000, "count", "reach", 0.7, "H2 2024", "2024-07-01", "2024-12-31", "Brand X", None, None, 4, 2, None, "Brand X EMEA H2"),
+            (101, 3, "$12.00", "CPA in US Q2", "currency", 1, "CPA", 12.0, "currency", "cost", 0.9, "Nike", None, None, 2, 1, None, "Nike US Q2"),
+            (102, 5, "$10.00", "CPA in US Q1", "currency", 1, "CPA", 10.0, "currency", "cost", 0.9, "Nike", None, None, 1, 1, None, "Nike US Q1"),
+            (103, 6, "1.2%", "CTR in EMEA", "percent", 2, "CTR", 1.2, "percent", "engagement", 0.8, "Adidas", None, None, 2, 2, None, "Adidas EMEA Q2"),
+            (104, 7, "1.0%", "CTR in EMEA", "percent", 2, "CTR", 1.0, "percent", "engagement", 0.8, "Adidas", None, None, 3, 2, None, "Adidas EMEA Q3"),
+            (105, 2, "120000", "Unique reach EMEA", "count", 3, "Unique Reach", 120000, "count", "reach", 0.7, "Brand X", None, None, 4, 2, None, "Brand X EMEA H2"),
         ],
     )
     conn.commit()

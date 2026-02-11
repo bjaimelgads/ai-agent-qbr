@@ -229,7 +229,9 @@ async def _build_documents_section(conn, schema: _SchemaSnapshot, limit: int) ->
 
     has_clients = schema.has_table("clients") and schema.has_column("documents", "client_id")
     has_regions = schema.has_table("regions") and schema.has_column("documents", "region_id")
-    has_period = schema.has_column("documents", "report_period")
+    has_period_fk = schema.has_column("documents", "report_period_id") and schema.has_table("periods")
+    has_period_legacy = schema.has_column("documents", "report_period")
+    has_period = has_period_fk or has_period_legacy
 
     select_fields = [
         "d.id AS document_id",
@@ -237,7 +239,12 @@ async def _build_documents_section(conn, schema: _SchemaSnapshot, limit: int) ->
         "d.file_path AS file_path",
     ]
     if has_period:
-        select_fields.append("d.report_period AS report_period")
+        if has_period_fk and has_period_legacy:
+            select_fields.append("COALESCE(p.period_label, d.report_period) AS report_period")
+        elif has_period_fk:
+            select_fields.append("p.period_label AS report_period")
+        else:
+            select_fields.append("d.report_period AS report_period")
     if has_clients:
         select_fields.append("COALESCE(c.name, 'Unknown') AS client")
     if has_regions:
@@ -248,6 +255,8 @@ async def _build_documents_section(conn, schema: _SchemaSnapshot, limit: int) ->
         joins.append("LEFT JOIN clients c ON c.id = d.client_id")
     if has_regions:
         joins.append("LEFT JOIN regions r ON r.id = d.region_id")
+    if has_period_fk:
+        joins.append("LEFT JOIN periods p ON p.id = d.report_period_id")
 
     docs = await _fetch_rows(
         conn,
@@ -293,17 +302,36 @@ async def _build_documents_section(conn, schema: _SchemaSnapshot, limit: int) ->
 
     period_values: list[str] = []
     if has_period:
-        rows = await _fetch_rows(
-            conn,
-            """
-            SELECT DISTINCT report_period
-            FROM documents
-            WHERE report_period IS NOT NULL AND TRIM(report_period) <> ''
-            ORDER BY report_period DESC
-            LIMIT :limit
-            """,
-            {"limit": limit},
-        )
+        if has_period_fk:
+            period_select = (
+                "COALESCE(p.period_label, d.report_period)"
+                if has_period_legacy
+                else "p.period_label"
+            )
+            rows = await _fetch_rows(
+                conn,
+                f"""
+                SELECT DISTINCT {period_select} AS report_period
+                FROM documents d
+                LEFT JOIN periods p ON p.id = d.report_period_id
+                WHERE {period_select} IS NOT NULL AND TRIM({period_select}) <> ''
+                ORDER BY report_period DESC
+                LIMIT :limit
+                """,
+                {"limit": limit},
+            )
+        else:
+            rows = await _fetch_rows(
+                conn,
+                """
+                SELECT DISTINCT report_period
+                FROM documents
+                WHERE report_period IS NOT NULL AND TRIM(report_period) <> ''
+                ORDER BY report_period DESC
+                LIMIT :limit
+                """,
+                {"limit": limit},
+            )
         period_values = [str(row["report_period"]) for row in rows]
 
     return {
@@ -384,19 +412,41 @@ async def _build_periods_section(conn, schema: _SchemaSnapshot, limit: int) -> d
             {"limit": limit},
         )
 
-    if schema.has_table("documents") and schema.has_column("documents", "report_period"):
-        doc_periods = await _fetch_rows(
-            conn,
-            """
-            SELECT report_period, COUNT(*) AS document_count
-            FROM documents
-            WHERE report_period IS NOT NULL AND TRIM(report_period) <> ''
-            GROUP BY report_period
-            ORDER BY report_period DESC
-            LIMIT :limit
-            """,
-            {"limit": limit},
-        )
+    has_doc_period_fk = schema.has_table("documents") and schema.has_column("documents", "report_period_id")
+    has_doc_period_legacy = schema.has_table("documents") and schema.has_column("documents", "report_period")
+    if has_doc_period_fk or has_doc_period_legacy:
+        if has_doc_period_fk and schema.has_table("periods"):
+            period_expr = (
+                "COALESCE(p.period_label, d.report_period)"
+                if has_doc_period_legacy
+                else "p.period_label"
+            )
+            doc_periods = await _fetch_rows(
+                conn,
+                f"""
+                SELECT {period_expr} AS report_period, COUNT(*) AS document_count
+                FROM documents d
+                LEFT JOIN periods p ON p.id = d.report_period_id
+                WHERE {period_expr} IS NOT NULL AND TRIM({period_expr}) <> ''
+                GROUP BY {period_expr}
+                ORDER BY report_period DESC
+                LIMIT :limit
+                """,
+                {"limit": limit},
+            )
+        else:
+            doc_periods = await _fetch_rows(
+                conn,
+                """
+                SELECT report_period, COUNT(*) AS document_count
+                FROM documents
+                WHERE report_period IS NOT NULL AND TRIM(report_period) <> ''
+                GROUP BY report_period
+                ORDER BY report_period DESC
+                LIMIT :limit
+                """,
+                {"limit": limit},
+            )
         payload["available"] = True
         payload["document_periods"] = doc_periods
 
@@ -486,9 +536,10 @@ async def _build_coverage_section(conn, schema: _SchemaSnapshot, limit: int) -> 
                 COALESCE(mc.slug, m.name) AS metric_id,
                 COALESCE(mc.name, m.name) AS metric_name,
                 COUNT(*) AS fact_count,
-                COUNT(DISTINCT m.document_id) AS document_count,
+                COUNT(DISTINCT s.document_id) AS document_count,
                 COUNT(DISTINCT m.slide_id) AS slide_count
             FROM metrics m
+            LEFT JOIN slides s ON s.id = m.slide_id
             LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
             GROUP BY COALESCE(mc.slug, m.name), COALESCE(mc.name, m.name)
             ORDER BY fact_count DESC, metric_name
@@ -503,7 +554,8 @@ async def _build_coverage_section(conn, schema: _SchemaSnapshot, limit: int) -> 
                 """
                 SELECT COALESCE(c.name, 'Unknown') AS client, COUNT(*) AS metric_fact_count
                 FROM metrics m
-                LEFT JOIN documents d ON d.id = m.document_id
+                LEFT JOIN slides s ON s.id = m.slide_id
+                LEFT JOIN documents d ON d.id = s.document_id
                 LEFT JOIN clients c ON c.id = d.client_id
                 GROUP BY COALESCE(c.name, 'Unknown')
                 ORDER BY metric_fact_count DESC, client
@@ -512,13 +564,15 @@ async def _build_coverage_section(conn, schema: _SchemaSnapshot, limit: int) -> 
                 {"limit": limit},
             )
 
-        if schema.has_table("regions") and schema.has_column("metrics", "region_id"):
+        if schema.has_table("regions") and schema.has_table("documents"):
             payload["metrics_by_region"] = await _fetch_rows(
                 conn,
                 """
                 SELECT COALESCE(r.code, 'Unknown') AS region, COUNT(*) AS metric_fact_count
                 FROM metrics m
-                LEFT JOIN regions r ON r.id = m.region_id
+                LEFT JOIN slides s ON s.id = m.slide_id
+                LEFT JOIN documents d ON d.id = s.document_id
+                LEFT JOIN regions r ON r.id = d.region_id
                 GROUP BY COALESCE(r.code, 'Unknown')
                 ORDER BY metric_fact_count DESC, region
                 LIMIT :limit

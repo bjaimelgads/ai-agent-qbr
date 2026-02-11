@@ -64,6 +64,7 @@ async def init_db(
         await conn.run_sync(Base.metadata.create_all)
         await conn.run_sync(_ensure_metric_columns)
         await conn.run_sync(_ensure_document_columns)
+        await conn.run_sync(_backfill_document_period_ids)
 
     return engine
 
@@ -77,13 +78,8 @@ def _ensure_metric_columns(conn) -> None:
     existing = {col["name"] for col in inspector.get_columns("metrics")}
     needed = {
         "metric_catalog_id": "INTEGER",
-        "period_label": "TEXT",
-        "period_start": "TEXT",
-        "period_end": "TEXT",
-        "brand": "TEXT",
         "baseline_text": "TEXT",
         "baseline_type": "TEXT",
-        "period_id": "INTEGER",
     }
     missing = {name: ddl for name, ddl in needed.items() if name not in existing}
     if not missing:
@@ -102,12 +98,79 @@ def _ensure_document_columns(conn) -> None:
     needed = {
         "half": "TEXT",
         "client_id": "INTEGER",
+        "report_period_id": "INTEGER",
     }
     missing = {name: ddl for name, ddl in needed.items() if name not in existing}
     if not missing:
         return
     for name, ddl in missing.items():
         conn.execute(text(f"ALTER TABLE documents ADD COLUMN {name} {ddl}"))
+
+
+def _backfill_document_period_ids(conn) -> None:
+    if conn.engine.dialect.name != "sqlite":
+        return
+    inspector = inspect(conn)
+    tables = set(inspector.get_table_names())
+    if "documents" not in tables or "periods" not in tables:
+        return
+    doc_cols = {col["name"] for col in inspector.get_columns("documents")}
+    period_cols = {col["name"] for col in inspector.get_columns("periods")}
+    if "report_period_id" not in doc_cols or "report_period" not in doc_cols:
+        return
+    if "id" not in period_cols or "period_label" not in period_cols:
+        return
+
+    rows = conn.execute(
+        text(
+            """
+            SELECT DISTINCT TRIM(report_period) AS report_period
+            FROM documents
+            WHERE report_period_id IS NULL
+              AND report_period IS NOT NULL
+              AND TRIM(report_period) <> ''
+            """
+        )
+    ).fetchall()
+
+    for row in rows:
+        label = row[0]
+        if not label:
+            continue
+        period_row = conn.execute(
+            text(
+                """
+                SELECT id
+                FROM periods
+                WHERE UPPER(TRIM(period_label)) = UPPER(TRIM(:label))
+                ORDER BY id
+                LIMIT 1
+                """
+            ),
+            {"label": label},
+        ).fetchone()
+        period_id = period_row[0] if period_row else None
+        if period_id is None:
+            conn.execute(
+                text("INSERT INTO periods (period_label) VALUES (:label)"),
+                {"label": label},
+            )
+            inserted = conn.execute(text("SELECT last_insert_rowid()")).scalar()
+            period_id = int(inserted) if inserted is not None else None
+        if period_id is None:
+            continue
+        conn.execute(
+            text(
+                """
+                UPDATE documents
+                SET report_period_id = :period_id
+                WHERE report_period_id IS NULL
+                  AND report_period IS NOT NULL
+                  AND UPPER(TRIM(report_period)) = UPPER(TRIM(:label))
+                """
+            ),
+            {"period_id": period_id, "label": label},
+        )
 
 
 __all__ = [
