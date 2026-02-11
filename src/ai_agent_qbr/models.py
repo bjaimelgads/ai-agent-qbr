@@ -140,6 +140,7 @@ class ResolveMetricIntentArgs(BaseModel):
     """Arguments for resolve_metric_intent tool."""
 
     question: str
+    proposed_entities: CandidateSet | None = None
 
 
 class ResolveMetricIntentResult(BaseModel):
