@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 from dataclasses import dataclass
+from datetime import date
 import logging
 import re
 from typing import Any, Callable
@@ -24,6 +25,22 @@ from .resolvers import ClientResolver, MetricResolver, PeriodResolver, RegionRes
 from .planner import build_plan
 
 _LOGGER = logging.getLogger("uvicorn.error")
+_CONTEXT_QUALIFIER_TOKENS = (
+    "campaign",
+    "roadblock",
+    "bundle",
+    "creative",
+    "spotlight",
+    "sponsorship",
+    "carousel",
+    "video",
+    "static",
+    "segment",
+    "targeting",
+    "lapsed",
+    "installed",
+    "ros",
+)
 
 
 def _debug_log_enabled() -> bool:
@@ -159,6 +176,7 @@ class MetricQueryEngine:
         rag_document_ids: list[int] | None = None,
         rag_slide_ranges: list[RagSlideRange] | None = None,
         rag_slide_ids: list[int] | None = None,
+        rag_hit_chunks: list[dict[str, Any]] | None = None,
     ) -> MetricQueryResult:
         await self._load_catalogs()
         if intent_override is not None:
@@ -180,10 +198,21 @@ class MetricQueryEngine:
         plan = build_plan(intent)
         assumptions: list[str] = []
         rag_scope_ranges = rag_slide_ranges or []
+        requested_context_terms = _extract_requested_context_terms(query)
+        rag_context_signal = _assess_rag_context_signal(
+            requested_context_terms=requested_context_terms,
+            rag_hit_chunks=rag_hit_chunks,
+        )
+        prioritize_overall_context_override: bool | None = None
+        if requested_context_terms:
+            prioritize_overall_context_override = not bool(rag_context_signal.get("is_confident"))
         debug_payload: dict[str, Any] = {
             "intent": intent.model_dump(),
             "intent_debug": intent_debug.__dict__ if intent_debug else None,
             "strict_entity_filters": bool(strict_entity_filters),
+            "requested_context_terms": requested_context_terms,
+            "rag_context_signal": rag_context_signal,
+            "prioritize_overall_context_override": prioritize_overall_context_override,
             "rag_scope": {
                 "document_ids": sorted(set(rag_document_ids or [])),
                 "slide_ids": sorted(set(rag_slide_ids or [])),
@@ -218,7 +247,9 @@ class MetricQueryEngine:
             rag_document_ids=rag_document_ids,
             rag_slide_ranges=rag_scope_ranges,
             rag_slide_ids=rag_slide_ids,
+            prioritize_overall_context_override=prioritize_overall_context_override,
         )
+        rows = _filter_rows_by_explicit_periods(rows, intent.period)
         debug_payload.update(query_debug)
         if (os.getenv("METRIC_QA_RETRIEVAL_LOG") or "").lower() in {"1", "true", "yes"}:
             _LOGGER.info(
@@ -254,10 +285,12 @@ class MetricQueryEngine:
                 assumptions=assumptions,
                 debug_payload=debug_payload,
                 strict_entity_filters=strict_entity_filters,
+                prioritize_overall_context=bool(query_debug.get("prioritize_overall_context")),
                 rag_document_ids=rag_document_ids,
                 rag_slide_ranges=rag_scope_ranges,
                 rag_slide_ids=rag_slide_ids,
             )
+            rows = _filter_rows_by_explicit_periods(rows, intent.period)
         if _debug_log_enabled():
             _LOGGER.info(
                 "metric_qa_post_query trace_id=%s row_count=%s fallback_reason=%s assumptions=%s",
@@ -317,9 +350,25 @@ class MetricQueryEngine:
         rag_document_ids: list[int] | None,
         rag_slide_ranges: list[RagSlideRange],
         rag_slide_ids: list[int] | None,
+        prioritize_overall_context_override: bool | None = None,
     ) -> tuple[list[Any], dict[str, Any]]:
+        default_prioritize_overall_context = _should_prioritize_overall_context(
+            query=query,
+            aggregation=plan.aggregation,
+            grouping=plan.grouping,
+            metric_ids=plan.metric_ids,
+        )
+        prioritize_overall_context = (
+            prioritize_overall_context_override
+            if prioritize_overall_context_override is not None
+            else default_prioritize_overall_context
+        )
+        order_by = _build_order_by_with_overall_priority(
+            base_order_by=plan.order_by,
+            prioritize_overall_context=prioritize_overall_context,
+        )
         rag_scope_active = bool((rag_document_ids or []) or rag_slide_ranges or (rag_slide_ids or []))
-        scopes = self._build_comparison_scopes(plan)
+        scopes = self._build_comparison_scopes(plan, order_by=order_by)
         if not scopes:
             rows, sql, params = await self._store.query_facts(
                 metric_ids=plan.metric_ids,
@@ -327,7 +376,7 @@ class MetricQueryEngine:
                 region=plan.region,
                 period_ranges=plan.period_ranges,
                 limit=plan.limit,
-                order_by=plan.order_by,
+                order_by=order_by,
             )
             filtered = self._apply_rag_scope(
                 rows,
@@ -342,6 +391,9 @@ class MetricQueryEngine:
                 "row_count": len(filtered),
                 "unscoped_row_count": len(rows),
                 "rag_pruned_all_rows": rag_pruned_all_rows,
+                "prioritize_overall_context": prioritize_overall_context,
+                "default_prioritize_overall_context": default_prioritize_overall_context,
+                "prioritize_overall_context_override": prioritize_overall_context_override,
             }
 
         async def _run_scope(scope: dict[str, Any]) -> tuple[list[Any], int, bool, str, dict[str, Any]]:
@@ -404,9 +456,12 @@ class MetricQueryEngine:
             "params": scope_debug[0]["params"] if scope_debug else {},
             "row_count": len(merged),
             "rag_pruned_all_rows": rag_pruned_all_any,
+            "prioritize_overall_context": prioritize_overall_context,
+            "default_prioritize_overall_context": default_prioritize_overall_context,
+            "prioritize_overall_context_override": prioritize_overall_context_override,
         }
 
-    def _build_comparison_scopes(self, plan) -> list[dict[str, Any]]:
+    def _build_comparison_scopes(self, plan, *, order_by: str) -> list[dict[str, Any]]:
         should_split = bool(plan.aggregation == "compare")
         should_split = should_split or len(plan.period_ranges) > 1
         should_split = should_split or len(plan.client) > 1
@@ -424,7 +479,7 @@ class MetricQueryEngine:
                         "region": plan.region,
                         "period_ranges": [period_range],
                         "limit": plan.limit,
-                        "order_by": plan.order_by,
+                        "order_by": order_by,
                     }
                 )
             return scopes
@@ -438,7 +493,7 @@ class MetricQueryEngine:
                         "region": plan.region,
                         "period_ranges": plan.period_ranges,
                         "limit": plan.limit,
-                        "order_by": plan.order_by,
+                        "order_by": order_by,
                     }
                 )
             return scopes
@@ -452,7 +507,7 @@ class MetricQueryEngine:
                         "region": [region],
                         "period_ranges": plan.period_ranges,
                         "limit": plan.limit,
-                        "order_by": plan.order_by,
+                        "order_by": order_by,
                     }
                 )
             return scopes
@@ -693,12 +748,17 @@ class MetricQueryEngine:
         assumptions: list[str],
         debug_payload: dict[str, Any],
         strict_entity_filters: bool,
+        prioritize_overall_context: bool,
         rag_document_ids: list[int] | None,
         rag_slide_ranges: list[RagSlideRange],
         rag_slide_ids: list[int] | None,
     ):
         rows = []
         reason = []
+        order_by = _build_order_by_with_overall_priority(
+            base_order_by=plan.order_by,
+            prioritize_overall_context=prioritize_overall_context,
+        )
 
         if plan.client and not strict_entity_filters:
             assumptions.append("Relaxed client filter")
@@ -709,7 +769,7 @@ class MetricQueryEngine:
                 region=plan.region,
                 period_ranges=plan.period_ranges,
                 limit=plan.limit,
-                order_by=plan.order_by,
+                order_by=order_by,
             )
             rows = self._apply_rag_scope(
                 rows,
@@ -731,7 +791,7 @@ class MetricQueryEngine:
                 region=None,
                 period_ranges=plan.period_ranges,
                 limit=plan.limit,
-                order_by=plan.order_by,
+                order_by=order_by,
             )
             rows = self._apply_rag_scope(
                 rows,
@@ -758,7 +818,7 @@ class MetricQueryEngine:
                     region=plan.region,
                     period_ranges=plan.period_ranges,
                     limit=plan.limit,
-                    order_by=plan.order_by,
+                    order_by=order_by,
                 )
                 rows = self._apply_rag_scope(
                     rows,
@@ -889,6 +949,185 @@ def _cosine_similarity(vec_a, vec_b) -> float:
 
 def _mentions_quarter(text: str) -> bool:
     return bool(re.search(r"\bq[1-4]\b", text))
+
+
+def _extract_requested_context_terms(query: str) -> list[str]:
+    lowered = query.lower()
+    requested = [token for token in _CONTEXT_QUALIFIER_TOKENS if token in lowered]
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for token in requested:
+        if token in seen:
+            continue
+        seen.add(token)
+        deduped.append(token)
+    return deduped
+
+
+def _assess_rag_context_signal(
+    *,
+    requested_context_terms: list[str],
+    rag_hit_chunks: list[dict[str, Any]] | None,
+) -> dict[str, Any]:
+    threshold = float(os.getenv("METRIC_CONTEXT_RAG_CONFIDENCE_MIN", "0.35"))
+    if not requested_context_terms:
+        return {
+            "explicit_context_requested": False,
+            "is_confident": False,
+            "matched_term": None,
+            "best_score": None,
+            "threshold": threshold,
+            "reason": "no_context_requested",
+        }
+    if not rag_hit_chunks:
+        return {
+            "explicit_context_requested": True,
+            "is_confident": False,
+            "matched_term": None,
+            "best_score": None,
+            "threshold": threshold,
+            "reason": "no_rag_hits",
+        }
+    best_score = -1.0
+    matched_term: str | None = None
+    for chunk in rag_hit_chunks:
+        content = str(chunk.get("content") or "").lower()
+        summary = str(chunk.get("summary") or "").lower()
+        topics = chunk.get("topics") or []
+        topics_text = " ".join(str(item) for item in topics).lower()
+        metadata = chunk.get("metadata") or {}
+        metadata_text = " ".join(f"{k} {v}" for k, v in metadata.items()).lower()
+        haystack = " ".join([content, summary, topics_text, metadata_text])
+        score = float(chunk.get("score") or 0.0)
+        for term in requested_context_terms:
+            if term not in haystack:
+                continue
+            if score > best_score:
+                best_score = score
+                matched_term = term
+    if matched_term is None:
+        return {
+            "explicit_context_requested": True,
+            "is_confident": False,
+            "matched_term": None,
+            "best_score": None,
+            "threshold": threshold,
+            "reason": "no_context_match_in_hits",
+        }
+    return {
+        "explicit_context_requested": True,
+        "is_confident": best_score >= threshold,
+        "matched_term": matched_term,
+        "best_score": best_score,
+        "threshold": threshold,
+        "reason": "matched_context_in_hits",
+    }
+
+
+def _should_prioritize_overall_context(
+    *,
+    query: str,
+    aggregation: str | None,
+    grouping: str | None,
+    metric_ids: list[str],
+) -> bool:
+    if not metric_ids:
+        return False
+    del aggregation, grouping
+    lowered = query.lower()
+    return not any(token in lowered for token in _CONTEXT_QUALIFIER_TOKENS)
+
+
+def _build_order_by_with_overall_priority(
+    *,
+    base_order_by: str,
+    prioritize_overall_context: bool,
+) -> str:
+    if not prioritize_overall_context:
+        return base_order_by
+    return (
+        f"{base_order_by}, "
+        "CASE "
+        "WHEN lower(coalesce(llm_context_label, '')) = 'overall' THEN 0 "
+        "WHEN lower(coalesce(llm_context_label, '')) LIKE '%overall%' THEN 0 "
+        "WHEN lower(coalesce(llm_context_label, '')) LIKE '%at a glance%' THEN 0 "
+        "WHEN lower(coalesce(llm_context_label, '')) LIKE '%at-a-glance%' THEN 0 "
+        "ELSE 1 END ASC"
+    )
+
+
+def _filter_rows_by_explicit_periods(rows: list[Any], periods: list[Any] | None) -> list[Any]:
+    if not rows or not periods:
+        return rows
+    explicit_specs = []
+    for period in periods:
+        start = getattr(period, "start", None)
+        end = getattr(period, "end", None)
+        if isinstance(start, date) and isinstance(end, date):
+            explicit_specs.append(
+                {
+                    "start": start,
+                    "end": end,
+                    "value": str(getattr(period, "value", "") or "").strip().lower(),
+                }
+            )
+    if not explicit_specs:
+        return rows
+
+    filtered: list[Any] = []
+    for row in rows:
+        row_start = _safe_parse_date(getattr(row, "period_start", None))
+        row_end = _safe_parse_date(getattr(row, "period_end", None))
+        row_label = str(getattr(row, "period_label", "") or "").strip().lower()
+        matched = False
+        for spec in explicit_specs:
+            if row_label and spec["value"] and not _period_label_compatible(row_label, spec["value"]):
+                continue
+            if row_start and row_end:
+                # Keep original overlap semantics for inferred periods,
+                # while label compatibility above prevents H1/H2 leakage.
+                if row_end >= spec["start"] and row_start <= spec["end"]:
+                    matched = True
+                    break
+            if spec["value"] and row_label and row_label == spec["value"]:
+                matched = True
+                break
+        if matched:
+            filtered.append(row)
+    return filtered
+
+
+def _safe_parse_date(raw: Any) -> date | None:
+    if raw is None:
+        return None
+    try:
+        return date.fromisoformat(str(raw))
+    except ValueError:
+        return None
+
+
+def _period_label_compatible(row_label: str, spec_label: str) -> bool:
+    row = row_label.lower()
+    spec = spec_label.lower()
+
+    row_half = re.search(r"\bh([12])\b", row)
+    spec_halves = set(re.findall(r"\bh([12])\b", spec))
+    if spec_halves:
+        if not row_half or row_half.group(1) not in spec_halves:
+            return False
+
+    row_quarter = re.search(r"\bq([1-4])\b", row)
+    spec_quarters = set(re.findall(r"\bq([1-4])\b", spec))
+    if spec_quarters:
+        if not row_quarter or row_quarter.group(1) not in spec_quarters:
+            return False
+
+    spec_year = re.search(r"\b(20\d{2})\b", spec)
+    if spec_year:
+        year = spec_year.group(1)
+        if year not in row and f"fy{year[-2:]}" not in row:
+            return False
+    return True
 
 
 def _format_clarification_options(rows, *, max_items: int) -> list[str]:

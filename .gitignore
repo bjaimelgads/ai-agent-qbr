@@ -74,3 +74,6 @@ qbr_legacy_e2e.db
 
 # Local debug traces
 data/debug/
+
+# Local run notes
+docs/LOCAL_RUN_LLM.md

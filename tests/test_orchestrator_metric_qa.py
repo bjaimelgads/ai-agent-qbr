@@ -13,6 +13,7 @@ from qbr_agent.infrastructure.reranker import NoopReranker
 from qbr_agent.infrastructure.sqlalchemy_repository import SqlAlchemyKnowledgeRepository
 from qbr_agent.infrastructure.vector_index import SqliteEmbeddingVectorIndex
 from qbr_intelligence.metric_qa import MetricQueryEngine
+from qbr_intelligence.schemas.metric_qa import AnswerCitation, MetricAnswer
 
 
 class MetricPlanner:
@@ -115,3 +116,58 @@ async def test_orchestrator_returns_metric_grid_for_multiple_values(metric_db, m
     assert "Cost per Acquisition" in response.answer
     if response.artifacts is not None:
         assert response.artifacts.get("type") == "datagrid"
+
+
+def test_format_metric_answer_attaches_source_after_each_value() -> None:
+    answer = MetricAnswer(
+        summary_text="Found 2 values for Cost per Acquisition across contexts.",
+        table_data=[
+            {
+                "metric": "Cost per Acquisition",
+                "value": 45.44,
+                "unit": "currency",
+                "document_id": 1,
+                "document_name": "Disney+ US FY24 H2.pptx",
+                "document_url": "https://docs.google.com/presentation/d/abc123/edit",
+                "slide_number": 26,
+                "slide_id": 100,
+                "slide_url": "https://docs.google.com/presentation/d/abc123/edit#slide=id.g1",
+                "snippet": "CPA $45.44",
+            },
+            {
+                "metric": "Cost per Acquisition",
+                "value": 53.05,
+                "unit": "currency",
+                "document_id": 2,
+                "document_name": "Disney+ US FY24 H1.pptx",
+                "document_url": "https://docs.google.com/presentation/d/xyz456/edit",
+                "slide_number": 20,
+                "slide_id": 200,
+                "slide_url": "https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2",
+                "snippet": "CPA $53.05",
+            },
+        ],
+        citations=[
+            AnswerCitation(
+                document_id=1,
+                document_name="Disney+ US FY24 H2.pptx",
+                document_url="https://docs.google.com/presentation/d/abc123/edit",
+                slide_number=26,
+                slide_url="https://docs.google.com/presentation/d/abc123/edit#slide=id.g1",
+            ),
+            AnswerCitation(
+                document_id=2,
+                document_name="Disney+ US FY24 H1.pptx",
+                document_url="https://docs.google.com/presentation/d/xyz456/edit",
+                slide_number=20,
+                slide_url="https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2",
+            ),
+        ],
+    )
+
+    formatted = _format_metric_answer(answer)
+
+    assert "45.44 currency — CPA $45.44 | [Disney+ US FY24 H2.pptx slide 26](https://docs.google.com/presentation/d/abc123/edit#slide=id.g1)" in formatted
+    assert "53.05 currency — CPA $53.05 | [Disney+ US FY24 H1.pptx slide 20](https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2)" in formatted
+    assert "Sources: [Disney+ US FY24 H2.pptx](https://docs.google.com/presentation/d/abc123/edit), [Disney+ US FY24 H1.pptx](https://docs.google.com/presentation/d/xyz456/edit)" in formatted
+    assert "#slide=id" not in formatted.split("Sources:", 1)[1]

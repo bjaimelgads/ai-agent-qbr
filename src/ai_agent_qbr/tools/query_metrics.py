@@ -49,6 +49,56 @@ class _RagScope:
     debug: dict[str, object]
 
 
+def _is_overall_context_label(label: str | None) -> bool:
+    lowered = (label or "").strip().lower()
+    if not lowered:
+        return False
+    return (
+        lowered == "overall"
+        or "overall" in lowered
+        or "at a glance" in lowered
+        or "at-a-glance" in lowered
+    )
+
+
+async def _load_overall_metric_rows(engine: MetricQueryEngine, plan) -> list[Any]:
+    rows, _, _ = await engine._store.query_facts(
+        metric_ids=plan.metric_ids,
+        client_name=plan.client,
+        region=plan.region,
+        period_ranges=plan.period_ranges,
+        limit=max(int(plan.limit), 400),
+        order_by="period_end DESC",
+    )
+    return [row for row in rows if _is_overall_context_label(getattr(row, "llm_context_label", None))]
+
+
+def _rows_to_slide_ranges(rows: list[Any]) -> list[RagSlideRange]:
+    ranges: list[RagSlideRange] = []
+    seen: set[tuple[int, int | None, int | None]] = set()
+    for row in rows:
+        doc_id = int(getattr(row, "document_id", 0) or 0)
+        if not doc_id:
+            continue
+        slide_number = getattr(row, "slide_number", None)
+        key = (
+            doc_id,
+            int(slide_number) if slide_number is not None else None,
+            int(slide_number) if slide_number is not None else None,
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        ranges.append(
+            RagSlideRange(
+                document_id=doc_id,
+                start_slide=key[1],
+                end_slide=key[2],
+            )
+        )
+    return ranges
+
+
 async def _build_rag_scope_for_metric_query(
     *,
     query: str,
@@ -253,11 +303,20 @@ async def _build_rag_scope_for_metric_query(
         prev = per_doc_max_score.get(doc_id)
         if prev is None or score > prev:
             per_doc_max_score[doc_id] = score
+    overall_rows = await _load_overall_metric_rows(engine, plan)
+    overall_doc_ids = sorted(
+        {int(getattr(row, "document_id", 0) or 0) for row in overall_rows if getattr(row, "document_id", None)}
+    )
+    overall_slide_ids = sorted(
+        {int(getattr(row, "slide_id", 0) or 0) for row in overall_rows if getattr(row, "slide_id", None)}
+    )
+    overall_slide_ranges = _rows_to_slide_ranges(overall_rows)
     if not hits:
+        combined_doc_ids = sorted(set(filtered_doc_ids) | set(overall_doc_ids))
         return _RagScope(
-            document_ids=filtered_doc_ids,
-            slide_ids=[],
-            slide_ranges=[],
+            document_ids=combined_doc_ids,
+            slide_ids=overall_slide_ids,
+            slide_ranges=overall_slide_ranges,
             debug={
                 "enabled": True,
                 "prefiltered_doc_ids": filtered_doc_ids,
@@ -265,6 +324,10 @@ async def _build_rag_scope_for_metric_query(
                 "prefilter_sql": doc_sql,
                 "prefilter_params": doc_params,
                 "retrieved_hits": 0,
+                "appended_overall_row_count": len(overall_rows),
+                "appended_overall_doc_ids": overall_doc_ids,
+                "appended_overall_slide_ids_count": len(overall_slide_ids),
+                "appended_overall_slide_ranges_count": len(overall_slide_ranges),
                 "post_rerank_hit_count": 0,
                 "per_doc_hit_count": {},
                 "per_doc_max_score": {},
@@ -309,6 +372,13 @@ async def _build_rag_scope_for_metric_query(
         limit=int(ctx.tool_context.get("metric_prefilter_slide_limit", 5000)),
     )
     selected_doc_list = sorted(selected_doc_ids)
+    combined_doc_list = sorted(set(selected_doc_list) | set(overall_doc_ids))
+    combined_slide_ids = sorted(set(slide_ids) | set(overall_slide_ids))
+    range_keyed: dict[tuple[int, int | None, int | None], RagSlideRange] = {}
+    for item in slide_ranges + overall_slide_ranges:
+        key = (int(item.document_id), item.start_slide, item.end_slide)
+        range_keyed[key] = item
+    combined_slide_ranges = list(range_keyed.values())
     selected_doc_names = await engine._store.query_document_names(document_ids=selected_doc_list)
     selected_docs = [
         {
@@ -321,9 +391,9 @@ async def _build_rag_scope_for_metric_query(
     ]
 
     return _RagScope(
-        document_ids=selected_doc_list,
-        slide_ids=slide_ids,
-        slide_ranges=slide_ranges,
+        document_ids=combined_doc_list,
+        slide_ids=combined_slide_ids,
+        slide_ranges=combined_slide_ranges,
         debug={
             "enabled": True,
             "prefiltered_doc_ids": filtered_doc_ids,
@@ -332,18 +402,22 @@ async def _build_rag_scope_for_metric_query(
             "prefilter_params": doc_params,
             "retrieved_hits": len(hits),
             "post_rerank_hit_count": len(hits),
-            "document_ids": selected_doc_list,
+            "document_ids": combined_doc_list,
             "selected_docs": selected_docs,
+            "appended_overall_row_count": len(overall_rows),
+            "appended_overall_doc_ids": overall_doc_ids,
+            "appended_overall_slide_ids_count": len(overall_slide_ids),
+            "appended_overall_slide_ranges_count": len(overall_slide_ranges),
             "per_doc_hit_count": per_doc_hit_count,
             "per_doc_max_score": per_doc_max_score,
             "retrieved_hit_chunks": hit_chunks,
             "post_rerank_chunks_full": hit_chunks,
             "prefilter_raw_retrieved_hits": len(raw_hits),
             "pre_rerank_hit_count": len(raw_hits),
-            "slide_ids_count": len(slide_ids),
+            "slide_ids_count": len(combined_slide_ids),
             "slide_id_sql": slide_sql,
             "slide_id_params": slide_params,
-            "slide_range_count": len(slide_ranges),
+            "slide_range_count": len(combined_slide_ranges),
             "prefilter_candidate_total_limit": candidate_total_limit,
             "prefilter_candidate_single_doc_limit": candidate_single_doc_limit,
             "prefilter_candidate_min_per_doc": candidate_min_per_doc,
@@ -532,11 +606,56 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
         rag_document_ids=rag_scope.document_ids,
         rag_slide_ids=rag_scope.slide_ids,
         rag_slide_ranges=rag_scope.slide_ranges,
+        rag_hit_chunks=(
+            rag_scope.debug.get("post_rerank_chunks_full")
+            if isinstance(rag_scope.debug.get("post_rerank_chunks_full"), list)
+            else None
+        ),
     )
     answer = result.answer
+    citation_before_count = len(answer.citations)
+    if intent.region:
+        allowed_regions = {str(code).upper() for code in intent.region if code}
+        cited_doc_ids = sorted({int(c.document_id) for c in answer.citations if c.document_id is not None})
+        doc_regions = await engine._store.query_document_regions(document_ids=cited_doc_ids)
+        filtered_citations = [
+            citation
+            for citation in answer.citations
+            if doc_regions.get(int(citation.document_id)) in allowed_regions
+        ]
+        answer.citations = filtered_citations
     debug_payload = dict(answer.debug) if isinstance(answer.debug, dict) else {}
     debug_payload["rag_scope"] = rag_scope.debug
+    if intent.region:
+        debug_payload["citation_region_filter"] = {
+            "requested_regions": [str(code).upper() for code in intent.region if code],
+            "before_count": citation_before_count,
+            "after_count": len(answer.citations),
+        }
     answer.debug = debug_payload
+    if mlflow_trace is not None and hasattr(mlflow_trace, "span") and hasattr(mlflow_trace, "set_outputs"):
+        with mlflow_trace.span(
+            name="query_metrics.result",
+            span_type="TOOL",
+            attributes={
+                "source_tool": "query_metrics",
+                "intent_source": intent_source,
+            },
+            inputs={
+                "query": canonical_query,
+                "intent": intent.model_dump(mode="json"),
+                "debug_requested": bool(args.debug),
+            },
+        ) as result_span:
+            mlflow_trace.set_outputs(
+                result_span,
+                {
+                    "metric_intent": result.intent.model_dump(mode="json"),
+                    "metric_answer": answer.model_dump(mode="json"),
+                    "metric_answer_row_count": len(answer.data or []),
+                    "metric_rag_scope": rag_scope.debug,
+                },
+            )
     _LOGGER.info("METRIC_QA_RAW_ANSWER %s", answer.model_dump(mode="json"))
     _LOGGER.info("Metric query done: %.2fs rows=%s", time.perf_counter() - start, len(answer.data or []))
     if isinstance(interaction_metadata, dict):

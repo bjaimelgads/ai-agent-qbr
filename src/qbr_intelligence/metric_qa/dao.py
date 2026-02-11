@@ -26,11 +26,11 @@ SELECT
     d.client_id AS client_id,
     c.name AS client_name,
     r.code AS region,
-    COALESCE(m.period_start, p.start_date) AS period_start,
-    COALESCE(m.period_end, p.end_date) AS period_end,
-    p.period_type AS period_granularity,
-    COALESCE(m.period_label, p.period_label) AS period_label,
-    m.document_id AS document_id,
+    dp.start_date AS period_start,
+    dp.end_date AS period_end,
+    dp.period_type AS period_granularity,
+    COALESCE(dp.period_label, d.report_period) AS period_label,
+    d.id AS document_id,
     d.filename AS document_name,
     d.file_path AS document_url,
     m.slide_id AS slide_id,
@@ -43,12 +43,13 @@ SELECT
     m.raw_context AS snippet,
     m.llm_context_label AS llm_context_label
 FROM metrics m
+LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
-LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN documents d ON d.id = s.document_id
 LEFT JOIN clients c ON c.id = d.client_id
-LEFT JOIN regions r ON r.id = m.region_id
-LEFT JOIN periods p ON p.id = m.period_id
-LEFT JOIN slides s ON s.id = m.slide_id;
+LEFT JOIN regions r ON r.id = d.region_id
+LEFT JOIN periods dp ON dp.id = d.report_period_id
+;
 """
 
 _VIEW_SQL_NO_GOOGLE = """
@@ -63,11 +64,11 @@ SELECT
     d.client_id AS client_id,
     c.name AS client_name,
     r.code AS region,
-    COALESCE(m.period_start, p.start_date) AS period_start,
-    COALESCE(m.period_end, p.end_date) AS period_end,
-    p.period_type AS period_granularity,
-    COALESCE(m.period_label, p.period_label) AS period_label,
-    m.document_id AS document_id,
+    dp.start_date AS period_start,
+    dp.end_date AS period_end,
+    dp.period_type AS period_granularity,
+    COALESCE(dp.period_label, d.report_period) AS period_label,
+    d.id AS document_id,
     d.filename AS document_name,
     d.file_path AS document_url,
     m.slide_id AS slide_id,
@@ -80,12 +81,13 @@ SELECT
     m.raw_context AS snippet,
     m.llm_context_label AS llm_context_label
 FROM metrics m
+LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
-LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN documents d ON d.id = s.document_id
 LEFT JOIN clients c ON c.id = d.client_id
-LEFT JOIN regions r ON r.id = m.region_id
-LEFT JOIN periods p ON p.id = m.period_id
-LEFT JOIN slides s ON s.id = m.slide_id;
+LEFT JOIN regions r ON r.id = d.region_id
+LEFT JOIN periods dp ON dp.id = d.report_period_id
+;
 """
 
 _VIEW_SQL_NO_TITLE = """
@@ -100,11 +102,11 @@ SELECT
     d.client_id AS client_id,
     c.name AS client_name,
     r.code AS region,
-    COALESCE(m.period_start, p.start_date) AS period_start,
-    COALESCE(m.period_end, p.end_date) AS period_end,
-    p.period_type AS period_granularity,
-    COALESCE(m.period_label, p.period_label) AS period_label,
-    m.document_id AS document_id,
+    dp.start_date AS period_start,
+    dp.end_date AS period_end,
+    dp.period_type AS period_granularity,
+    COALESCE(dp.period_label, d.report_period) AS period_label,
+    d.id AS document_id,
     d.filename AS document_name,
     d.file_path AS document_url,
     m.slide_id AS slide_id,
@@ -117,12 +119,13 @@ SELECT
     m.raw_context AS snippet,
     m.llm_context_label AS llm_context_label
 FROM metrics m
+LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
-LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN documents d ON d.id = s.document_id
 LEFT JOIN clients c ON c.id = d.client_id
-LEFT JOIN regions r ON r.id = m.region_id
-LEFT JOIN periods p ON p.id = m.period_id
-LEFT JOIN slides s ON s.id = m.slide_id;
+LEFT JOIN regions r ON r.id = d.region_id
+LEFT JOIN periods dp ON dp.id = d.report_period_id
+;
 """
 
 _VIEW_SQL_NO_TITLE_NO_GOOGLE = """
@@ -137,11 +140,11 @@ SELECT
     d.client_id AS client_id,
     c.name AS client_name,
     r.code AS region,
-    COALESCE(m.period_start, p.start_date) AS period_start,
-    COALESCE(m.period_end, p.end_date) AS period_end,
-    p.period_type AS period_granularity,
-    COALESCE(m.period_label, p.period_label) AS period_label,
-    m.document_id AS document_id,
+    dp.start_date AS period_start,
+    dp.end_date AS period_end,
+    dp.period_type AS period_granularity,
+    COALESCE(dp.period_label, d.report_period) AS period_label,
+    d.id AS document_id,
     d.filename AS document_name,
     d.file_path AS document_url,
     m.slide_id AS slide_id,
@@ -154,12 +157,13 @@ SELECT
     m.raw_context AS snippet,
     m.llm_context_label AS llm_context_label
 FROM metrics m
+LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
-LEFT JOIN documents d ON d.id = m.document_id
+LEFT JOIN documents d ON d.id = s.document_id
 LEFT JOIN clients c ON c.id = d.client_id
-LEFT JOIN regions r ON r.id = m.region_id
-LEFT JOIN periods p ON p.id = m.period_id
-LEFT JOIN slides s ON s.id = m.slide_id;
+LEFT JOIN regions r ON r.id = d.region_id
+LEFT JOIN periods dp ON dp.id = d.report_period_id
+;
 """
 
 
@@ -210,10 +214,38 @@ class MetricFactStore:
         if self._view_ready:
             return
         async with self._engine.begin() as conn:
-            await conn.execute(text("DROP VIEW IF EXISTS metric_fact;"))
+            dialect = conn.engine.dialect.name
+            view_exists = False
+            try:
+                if dialect == "sqlite":
+                    view_row = await conn.execute(
+                        text("SELECT 1 FROM sqlite_master WHERE type = 'view' AND name = 'metric_fact' LIMIT 1")
+                    )
+                else:
+                    view_row = await conn.execute(
+                        text(
+                            """
+                            SELECT 1
+                            FROM information_schema.views
+                            WHERE table_schema = 'public' AND table_name = 'metric_fact'
+                            LIMIT 1
+                            """
+                        )
+                    )
+                view_exists = view_row.first() is not None
+            except Exception:
+                view_exists = False
+
+            # In managed/shared Postgres, app users may not own the view.
+            # If it already exists, avoid DROP/CREATE DDL at runtime there.
+            if view_exists and dialect != "sqlite":
+                self._view_ready = True
+                return
+            if view_exists and dialect == "sqlite":
+                await conn.execute(text("DROP VIEW IF EXISTS metric_fact"))
+
             has_google_slide_id = False
             has_slide_title = False
-            dialect = conn.engine.dialect.name
             try:
                 if dialect == "sqlite":
                     result = await conn.execute(text("PRAGMA table_info('slides');"))
@@ -242,7 +274,12 @@ class MetricFactStore:
                 sql = _VIEW_SQL_NO_GOOGLE
             else:
                 sql = _VIEW_SQL_NO_TITLE_NO_GOOGLE
-            await conn.execute(text(sql))
+            try:
+                await conn.execute(text(sql))
+            except Exception as exc:
+                message = str(exc).lower()
+                if "already exists" not in message:
+                    raise
         self._view_ready = True
 
     async def fetch_metric_catalog(self) -> list[dict[str, Any]]:
@@ -476,8 +513,9 @@ class MetricFactStore:
                 "("
                 "EXISTS ("
                 "SELECT 1 FROM metrics m "
+                "LEFT JOIN slides s ON s.id = m.slide_id "
                 "LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id "
-                "WHERE m.document_id = d.id "
+                "WHERE s.document_id = d.id "
                 "AND COALESCE(mc.slug, m.name) IN :metric_ids"
                 ")"
                 ")"
@@ -492,15 +530,12 @@ class MetricFactStore:
                 start_key = f"period_start_{idx}"
                 end_key = f"period_end_{idx}"
                 range_clauses.append(
-                    "(EXISTS ("
-                    "SELECT 1 FROM metrics m "
-                    "LEFT JOIN periods p ON p.id = m.period_id "
-                    "WHERE m.document_id = d.id "
-                    f"AND COALESCE(m.period_start, p.start_date) IS NOT NULL "
-                    f"AND COALESCE(m.period_end, p.end_date) IS NOT NULL "
-                    f"AND COALESCE(m.period_end, p.end_date) >= :{start_key} "
-                    f"AND COALESCE(m.period_start, p.start_date) <= :{end_key}"
-                    "))"
+                    "("
+                    f"COALESCE(dp.start_date, '') <> '' "
+                    f"AND COALESCE(dp.end_date, '') <> '' "
+                    f"AND dp.end_date >= :{start_key} "
+                    f"AND dp.start_date <= :{end_key}"
+                    ")"
                 )
                 params[start_key] = start.isoformat()
                 params[end_key] = end.isoformat()
@@ -512,6 +547,7 @@ class MetricFactStore:
             "FROM documents d "
             "LEFT JOIN clients c ON c.id = d.client_id "
             "LEFT JOIN regions r ON r.id = d.region_id "
+            "LEFT JOIN periods dp ON dp.id = d.report_period_id "
             f"WHERE {where_clause} "
             "ORDER BY d.id ASC LIMIT :limit"
         )
@@ -553,17 +589,17 @@ class MetricFactStore:
                 for fy_idx, fy in enumerate(fy_candidates):
                     fy_key = f"doc_fy_{idx}_{fy_idx}"
                     params[fy_key] = fy
-                    fy_checks.append(f"d.fiscal_year = :{fy_key}")
-                    fy_checks.append(f"d.report_period LIKE :{fy_key}_report")
-                    params[f"{fy_key}_report"] = f"%{fy}%"
+                    fy_checks.append(f"UPPER(COALESCE(d.fiscal_year, '')) = :{fy_key}")
+                    fy_checks.append(f"UPPER(COALESCE(dp.period_label, '')) LIKE :{fy_key}_label")
+                    params[f"{fy_key}_label"] = f"%{fy}%"
                 fy_clause = "(" + " OR ".join(fy_checks) + ")" if fy_checks else "1=1"
                 clauses.append(
                     "("
-                    f"(d.half = :{half_key} AND {fy_clause}) "
-                    f"OR (d.report_period LIKE :{half_key}_report AND {fy_clause})"
+                    f"(UPPER(COALESCE(d.half, '')) = :{half_key} AND {fy_clause}) "
+                    f"OR (UPPER(COALESCE(dp.period_label, '')) LIKE :{half_key}_label AND {fy_clause})"
                     ")"
                 )
-                params[f"{half_key}_report"] = f"%{half}%"
+                params[f"{half_key}_label"] = f"%{half}%"
                 continue
 
             if ptype == "quarter":
@@ -576,17 +612,17 @@ class MetricFactStore:
                 for fy_idx, fy in enumerate(fy_candidates):
                     fy_key = f"doc_fy_{idx}_{fy_idx}"
                     params[fy_key] = fy
-                    fy_checks.append(f"d.fiscal_year = :{fy_key}")
-                    fy_checks.append(f"d.report_period LIKE :{fy_key}_report")
-                    params[f"{fy_key}_report"] = f"%{fy}%"
+                    fy_checks.append(f"UPPER(COALESCE(d.fiscal_year, '')) = :{fy_key}")
+                    fy_checks.append(f"UPPER(COALESCE(dp.period_label, '')) LIKE :{fy_key}_label")
+                    params[f"{fy_key}_label"] = f"%{fy}%"
                 fy_clause = "(" + " OR ".join(fy_checks) + ")" if fy_checks else "1=1"
                 clauses.append(
                     "("
-                    f"(d.quarter = :{q_key} AND {fy_clause}) "
-                    f"OR (d.report_period LIKE :{q_key}_report AND {fy_clause})"
+                    f"(UPPER(COALESCE(d.quarter, '')) = :{q_key} AND {fy_clause}) "
+                    f"OR (UPPER(COALESCE(dp.period_label, '')) LIKE :{q_key}_label AND {fy_clause})"
                     ")"
                 )
-                params[f"{q_key}_report"] = f"%{quarter}%"
+                params[f"{q_key}_label"] = f"%{quarter}%"
                 continue
 
             if ptype == "year":
@@ -594,9 +630,9 @@ class MetricFactStore:
                 for fy_idx, fy in enumerate(fy_candidates):
                     fy_key = f"doc_fy_{idx}_{fy_idx}"
                     params[fy_key] = fy
-                    fy_checks.append(f"d.fiscal_year = :{fy_key}")
-                    fy_checks.append(f"d.report_period LIKE :{fy_key}_report")
-                    params[f"{fy_key}_report"] = f"%{fy}%"
+                    fy_checks.append(f"UPPER(COALESCE(d.fiscal_year, '')) = :{fy_key}")
+                    fy_checks.append(f"UPPER(COALESCE(dp.period_label, '')) LIKE :{fy_key}_label")
+                    params[f"{fy_key}_label"] = f"%{fy}%"
                 if fy_checks:
                     clauses.append("(" + " OR ".join(fy_checks) + ")")
 
@@ -696,3 +732,26 @@ class MetricFactStore:
         async with self._engine.connect() as conn:
             result = await conn.execute(stmt, {"document_ids": [int(doc_id) for doc_id in document_ids]})
             return {int(row[0]): row[1] for row in result.fetchall() if row[0] is not None}
+
+    async def query_document_regions(self, *, document_ids: list[int]) -> dict[int, str | None]:
+        await self.ensure_view()
+        if not document_ids:
+            return {}
+        stmt = (
+            text(
+                """
+                SELECT d.id AS document_id, r.code AS region_code
+                FROM documents d
+                LEFT JOIN regions r ON r.id = d.region_id
+                WHERE d.id IN :document_ids
+                """
+            )
+            .bindparams(bindparam("document_ids", expanding=True))
+        )
+        async with self._engine.connect() as conn:
+            result = await conn.execute(stmt, {"document_ids": [int(doc_id) for doc_id in document_ids]})
+            return {
+                int(row[0]): (str(row[1]).upper() if row[1] is not None else None)
+                for row in result.fetchall()
+                if row[0] is not None
+            }

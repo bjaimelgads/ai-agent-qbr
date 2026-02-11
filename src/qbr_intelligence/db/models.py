@@ -150,7 +150,6 @@ class Region(Base):
     documents: Mapped[list["Document"]] = relationship(
         "Document", back_populates="region"
     )
-    metrics: Mapped[list["Metric"]] = relationship("Metric", back_populates="region")
 
 
 class RegionCountry(Base):
@@ -225,7 +224,9 @@ class Document(Base):
     region_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("regions.id", ondelete="SET NULL"), nullable=True
     )
-    report_period: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    report_period_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
+    )
     fiscal_year: Mapped[str | None] = mapped_column(String(20), nullable=True)
     quarter: Mapped[str | None] = mapped_column(String(10), nullable=True)
     half: Mapped[str | None] = mapped_column(String(10), nullable=True)
@@ -236,9 +237,6 @@ class Document(Base):
     )
     slides: Mapped[list["Slide"]] = relationship(
         "Slide", back_populates="document", cascade="all, delete-orphan"
-    )
-    metrics: Mapped[list["Metric"]] = relationship(
-        "Metric", back_populates="document", cascade="all, delete-orphan"
     )
     region: Mapped["Region | None"] = relationship(
         "Region", back_populates="documents"
@@ -262,6 +260,7 @@ class Document(Base):
         "Keyword", back_populates="document", cascade="all, delete-orphan"
     )
     client: Mapped["Client | None"] = relationship("Client", back_populates="documents")
+    report_period_ref: Mapped["Period | None"] = relationship("Period", back_populates="documents")
 
     @property
     def client_name(self) -> str | None:
@@ -276,8 +275,18 @@ class Document(Base):
 
     @property
     def period(self) -> str | None:
-        """Alias for report_period for convenience."""
-        return self.report_period
+        """Canonical period label from periods table."""
+        from sqlalchemy import inspect as sa_inspect
+
+        state = sa_inspect(self)
+        if "report_period_ref" not in state.unloaded and self.report_period_ref is not None:
+            return self.report_period_ref.period_label
+        return None
+
+    @property
+    def report_period(self) -> str | None:
+        """Backward-compatible alias used by older call sites."""
+        return self.period
 
 
 # =============================================================================
@@ -420,8 +429,8 @@ class Period(Base):
     start_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
     end_date: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    metrics: Mapped[list["Metric"]] = relationship(
-        "Metric", back_populates="period"
+    documents: Mapped[list["Document"]] = relationship(
+        "Document", back_populates="report_period_ref"
     )
 
     __table_args__ = (
@@ -486,9 +495,6 @@ class Metric(Base):
     __tablename__ = "metrics"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    document_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
-    )
     slide_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("slides.id", ondelete="SET NULL"), nullable=True
     )
@@ -515,36 +521,31 @@ class Metric(Base):
     extraction_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     # Period/brand/baseline context
-    period_label: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    period_start: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    period_end: Mapped[str | None] = mapped_column(String(20), nullable=True)
-    brand: Mapped[str | None] = mapped_column(String(200), nullable=True)
     baseline_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     baseline_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     llm_context_label: Mapped[str | None] = mapped_column(Text, nullable=True)
-    period_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("periods.id", ondelete="SET NULL"), nullable=True
-    )
-    region_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("regions.id", ondelete="SET NULL"), nullable=True
-    )
     country: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Relationships
-    document: Mapped["Document"] = relationship("Document", back_populates="metrics")
     slide: Mapped["Slide | None"] = relationship("Slide", back_populates="metrics")
-    period: Mapped["Period | None"] = relationship("Period", back_populates="metrics")
     metric_catalog: Mapped["MetricCatalog | None"] = relationship(
         "MetricCatalog", back_populates="metrics"
     )
-    region: Mapped["Region | None"] = relationship("Region", back_populates="metrics")
 
     __table_args__ = (
-        Index("idx_metric_document", "document_id"),
+        Index("idx_metric_slide", "slide_id"),
         Index("idx_metric_category", "category"),
         Index("idx_metric_name", "name"),
-        Index("idx_metric_region", "region_id"),
     )
+
+    @property
+    def document_id(self) -> int | None:
+        from sqlalchemy import inspect as sa_inspect
+
+        state = sa_inspect(self)
+        if "slide" not in state.unloaded and self.slide is not None:
+            return self.slide.document_id
+        return None
 
 
 # =============================================================================
