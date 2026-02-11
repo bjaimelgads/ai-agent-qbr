@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -52,6 +53,21 @@ class AgentCapabilitiesResult(BaseModel):
 
     capabilities_text: str
     sample_queries: list[str]
+
+
+class MetadataCatalogArgs(BaseModel):
+    """Arguments for metadata_catalog tool."""
+
+    question: str
+    limit: int = Field(default=20, ge=1, le=200)
+
+
+class MetadataCatalogResult(BaseModel):
+    """Structured metadata catalog response."""
+
+    summary_text: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    suggested_queries: list[str] = Field(default_factory=list)
 
 
 class ComparisonIntentArgs(BaseModel):
