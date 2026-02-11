@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+import re
 from typing import Any
 from urllib.parse import quote
 
@@ -27,15 +28,18 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         *,
         artifact_url_prefix: str = "/artifacts",
         resource_url_prefix: str = "/resources",
+        reasoning_source: str = "status",
     ) -> None:
         super().__init__()
         self._artifact_url_prefix = artifact_url_prefix.rstrip("/")
         self._resource_url_prefix = resource_url_prefix.rstrip("/")
+        self._reasoning_source = reasoning_source if reasoning_source in {"status", "thinking"} else "status"
         self._streamed_answer = False
         self._session_id: str | None = None
         self._task_id: str | None = None
         self._trace_id: str | None = None
         self._current_tool_step: str | None = None
+        self._reasoning_message_id: str | None = None
 
     @property
     def streamed_answer(self) -> bool:
@@ -47,6 +51,7 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         self._task_id = input.run_id
         self._trace_id = input.run_id
         self._current_tool_step = None
+        self._reasoning_message_id = None
 
     async def run(self, input: RunAgentInput):  # pragma: no cover - required by base class
         raise NotImplementedError("AGUIWebsocketAdapter does not execute runs directly")
@@ -57,10 +62,19 @@ class AGUIWebsocketAdapter(AGUIAdapter):
         self._task_id = None
         self._trace_id = None
         self._current_tool_step = None
+        self._reasoning_message_id = None
 
     def convert_planner_event(self, event: PlannerEvent) -> list[AGUIEvent]:
         extra = dict(event.extra or {})
         mapped: list[AGUIEvent] = []
+        suppress_reasoning_from_state_update = self._reasoning_source == "thinking"
+        if event.event_type == "stream_chunk":
+            stream_id = str(extra.get("stream_id") or "")
+            meta = extra.get("meta")
+            if stream_id == "status":
+                suppress_reasoning_from_state_update = True
+            elif isinstance(meta, Mapping) and meta.get("tool_name"):
+                suppress_reasoning_from_state_update = True
 
         if self._session_id and self._task_id:
             projector = PlannerEventProjector(
@@ -69,7 +83,14 @@ class AGUIWebsocketAdapter(AGUIAdapter):
                 trace_id=self._trace_id,
             )
             for state_update in projector.project(event):
-                mapped.append(self.custom("state_update", state_update.model_dump(mode="json")))
+                state_payload = state_update.model_dump(mode="json")
+                state_payload = _sanitize_state_update_reasoning_payload(state_payload)
+                mapped.append(self.custom("state_update", state_payload))
+                if suppress_reasoning_from_state_update:
+                    continue
+                reasoning_text = _reasoning_text_from_state_update(state_payload)
+                if reasoning_text:
+                    mapped.extend(self._emit_reasoning_events(text=reasoning_text, done=False))
 
         if event.event_type == "step_start":
             step_name = extra.get("step_name") or event.node_name or f"step_{event.trajectory_step}"
@@ -84,13 +105,24 @@ class AGUIWebsocketAdapter(AGUIAdapter):
             step_name = event.node_name or extra.get("step_name") or f"step_{event.trajectory_step}"
             if _should_skip_step(step_name):
                 return mapped
+            if self._reasoning_source == "thinking":
+                reasoning_text = _reasoning_text_from_planner_event(event)
+                if reasoning_text:
+                    mapped.extend(self._emit_reasoning_events(text=reasoning_text, done=False))
             step_name = _friendly_step_name(step_name)
             if step_name in self._active_steps:
                 mapped.append(self.step_end(step_name, **extra))
             return mapped
 
         if event.event_type == "stream_chunk":
-            text = str(extra.get("text") or "")
+            stream_id = str(extra.get("stream_id") or "")
+            if stream_id == "status" and self._reasoning_source == "status":
+                text = str(extra.get("text") or "")
+                if text.endswith("\n"):
+                    text = text.rstrip("\n")
+                if text:
+                    text = f"{text}\n"
+                    mapped.extend(self._emit_reasoning_events(text=text, done=False))
             meta = extra.get("meta", {})
             if isinstance(meta, Mapping):
                 meta = dict(meta)
@@ -101,44 +133,16 @@ class AGUIWebsocketAdapter(AGUIAdapter):
                             mapped.append(self.step_end(self._current_tool_step))
                         self._current_tool_step = step_name
                         mapped.append(self.step_start(step_name))
-                if "channel" not in meta:
-                    meta["channel"] = "thinking"
-                tool_name = meta.get("tool_name") or extra.get("tool_name")
-                if tool_name:
-                    meta["tool_name"] = str(tool_name)
-                if "step_name" not in meta:
-                    step_name = extra.get("step_name") or extra.get("node_name") or self._current_tool_step
-                    if step_name:
-                        meta["step_name"] = step_name
-            if text:
-                mapped.append(
-                    self.custom(
-                        "thinking",
-                        {
-                            "text": text,
-                            "done": bool(extra.get("done")),
-                            "stream_id": extra.get("stream_id"),
-                            "seq": extra.get("seq"),
-                            "meta": meta if isinstance(meta, Mapping) else {},
-                        },
-                    )
-                )
             return mapped
 
         if event.event_type == "llm_stream_chunk":
             channel = extra.get("channel")
             text = str(extra.get("text") or "")
             done = bool(extra.get("done"))
-            phase = extra.get("phase")
 
             if channel == "thinking":
-                if text:
-                    mapped.append(
-                        self.custom(
-                            "thinking",
-                            {"text": text, "phase": phase, "done": done},
-                        )
-                    )
+                if self._reasoning_source == "thinking" and (text or done):
+                    mapped.extend(self._emit_reasoning_events(text=text, done=False))
                 return mapped
 
             if channel == "revision":
@@ -186,7 +190,9 @@ class AGUIWebsocketAdapter(AGUIAdapter):
             return mapped
 
         if event.event_type == "artifact_chunk":
-            mapped.append(self._artifact_chunk_custom_event(extra))
+            custom_event = self._artifact_chunk_custom_event(extra)
+            if custom_event is not None:
+                mapped.append(custom_event)
             return mapped
 
         if event.event_type == "artifact_stored":
@@ -212,6 +218,60 @@ class AGUIWebsocketAdapter(AGUIAdapter):
             events.append(self.step_end(step_name))
         return events
 
+    def _emit_reasoning_events(self, *, text: str, done: bool) -> list[AGUIEvent | dict[str, Any]]:
+        events: list[AGUIEvent | dict[str, Any]] = []
+        text = _sanitize_reasoning_text(text)
+        if text and done and not text.endswith("\n"):
+            # Delimit completed reasoning chunks so UIs can render each step on a new line.
+            text = f"{text}\n"
+        if not text and done and self._reasoning_message_id is None:
+            return events
+        if self._reasoning_message_id is None:
+            self._reasoning_message_id = generate_id("reasoning")
+            events.append(
+                {
+                    "type": "CUSTOM",
+                    "name": "REASONING_START",
+                    "messageId": self._reasoning_message_id,
+                    "value": {"messageId": self._reasoning_message_id},
+                }
+            )
+        if text:
+            events.append(
+                {
+                    "type": "CUSTOM",
+                    "name": "REASONING_MESSAGE_CONTENT",
+                    "messageId": self._reasoning_message_id,
+                    "delta": text,
+                    "value": {"text": text, "delta": text},
+                }
+            )
+        if done and self._reasoning_message_id is not None:
+            events.append(
+                {
+                    "type": "CUSTOM",
+                    "name": "REASONING_END",
+                    "messageId": self._reasoning_message_id,
+                    "value": {"done": True, "messageId": self._reasoning_message_id},
+                }
+            )
+            self._reasoning_message_id = None
+        return events
+
+    def flush_reasoning(self) -> list[dict[str, Any]]:
+        if self._reasoning_message_id is None:
+            return []
+        message_id = self._reasoning_message_id
+        self._reasoning_message_id = None
+        return [
+            {
+                "type": "CUSTOM",
+                "name": "REASONING_END",
+                "messageId": message_id,
+                "value": {"done": True, "messageId": message_id},
+            }
+        ]
+
     def _artifact_custom_event(self, extra: Mapping[str, Any]) -> AGUIEvent:
         artifact_id = str(extra.get("artifact_id") or "")
         artifact = {
@@ -229,11 +289,12 @@ class AGUIWebsocketAdapter(AGUIAdapter):
             },
         )
 
-    def _artifact_chunk_custom_event(self, extra: Mapping[str, Any]) -> AGUIEvent:
+    def _artifact_chunk_custom_event(self, extra: Mapping[str, Any]) -> AGUIEvent | None:
         message_id = self._current_message_id
         meta = dict(extra.get("meta") or {}) if isinstance(extra.get("meta"), Mapping) else {}
         if message_id and "message_id" not in meta:
             meta["message_id"] = message_id
+        chunk = extra.get("chunk")
         return self.custom(
             "artifact_chunk",
             {
@@ -241,7 +302,7 @@ class AGUIWebsocketAdapter(AGUIAdapter):
                 "seq": extra.get("seq"),
                 "done": extra.get("done", False),
                 "artifact_type": extra.get("artifact_type"),
-                "chunk": extra.get("chunk"),
+                "chunk": chunk,
                 "message_id": message_id,
                 "meta": meta,
             },
@@ -350,3 +411,65 @@ def _extract_text_content(content: Any) -> str:
         if parts:
             return "\n".join(parts)
     return ""
+
+
+def _reasoning_text_from_state_update(state_update: Mapping[str, Any]) -> str | None:
+    update_type = str(state_update.get("update_type") or "").upper()
+    if update_type and update_type not in {"THINKING"}:
+        return None
+
+    content = state_update.get("content")
+    if not isinstance(content, Mapping):
+        return None
+
+    channel = str(content.get("channel") or "").lower()
+    if channel == "answer":
+        return None
+
+    text = content.get("text")
+    if isinstance(text, str) and text.strip():
+        return text
+
+    thought = content.get("thought")
+    if isinstance(thought, str) and thought.strip():
+        return thought
+
+    message = content.get("message")
+    if isinstance(message, str) and message.strip():
+        return message
+
+    return None
+
+
+def _reasoning_text_from_planner_event(event: PlannerEvent) -> str | None:
+    thought = (getattr(event, "thought", None) or "").strip()
+    if not thought:
+        return None
+    if thought.lower() in {"planning next step", "finish"}:
+        return None
+    return thought
+
+
+def _sanitize_reasoning_text(text: str) -> str:
+    if not text:
+        return text
+    text = text.replace("\\n", "\n")
+    text = re.sub(r"\btools\b", "steps", text, flags=re.IGNORECASE)
+    text = re.sub(r"\btool\b", "step", text, flags=re.IGNORECASE)
+    return text
+
+
+def _sanitize_state_update_reasoning_payload(state_update: Mapping[str, Any]) -> dict[str, Any]:
+    payload = dict(state_update)
+    content = payload.get("content")
+    if not isinstance(content, Mapping):
+        return payload
+
+    content_out = dict(content)
+    for key in ("text", "thought", "message"):
+        value = content_out.get(key)
+        if isinstance(value, str) and value:
+            content_out[key] = _sanitize_reasoning_text(value)
+
+    payload["content"] = content_out
+    return payload
