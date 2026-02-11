@@ -134,6 +134,7 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
                 "document_name": "Disney+ US FY24 H2.pptx",
                 "document_url": "https://docs.google.com/presentation/d/abc123/edit",
                 "slide_number": 26,
+                "slide_title": "CPA Performance Summary",
                 "slide_id": 100,
                 "slide_url": "https://docs.google.com/presentation/d/abc123/edit#slide=id.g1",
                 "snippet": "CPA $45.44",
@@ -146,6 +147,7 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
                 "document_name": "Disney+ US FY24 H1.pptx",
                 "document_url": "https://docs.google.com/presentation/d/xyz456/edit",
                 "slide_number": 20,
+                "slide_title": "Regional CPA Benchmark",
                 "slide_id": 200,
                 "slide_url": "https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2",
                 "snippet": "CPA $53.05",
@@ -157,6 +159,7 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
                 document_name="Disney+ US FY24 H2.pptx",
                 document_url="https://docs.google.com/presentation/d/abc123/edit",
                 slide_number=26,
+                slide_title="CPA Performance Summary",
                 slide_url="https://docs.google.com/presentation/d/abc123/edit#slide=id.g1",
             ),
             AnswerCitation(
@@ -164,6 +167,7 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
                 document_name="Disney+ US FY24 H1.pptx",
                 document_url="https://docs.google.com/presentation/d/xyz456/edit",
                 slide_number=20,
+                slide_title="Regional CPA Benchmark",
                 slide_url="https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2",
             ),
         ],
@@ -171,8 +175,8 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
 
     formatted = _format_metric_answer(answer)
 
-    assert "45.44 currency — CPA $45.44 | [Disney+ US FY24 H2.pptx slide 26](https://docs.google.com/presentation/d/abc123/edit#slide=id.g1)" in formatted
-    assert "53.05 currency — CPA $53.05 | [Disney+ US FY24 H1.pptx slide 20](https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2)" in formatted
+    assert "45.44 currency — CPA $45.44 | [Disney+ US FY24 H2.pptx - CPA Performance Summary](https://docs.google.com/presentation/d/abc123/edit#slide=id.g1)" in formatted
+    assert "53.05 currency — CPA $53.05 | [Disney+ US FY24 H1.pptx - Regional CPA Benchmark](https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2)" in formatted
     assert "Sources: [Disney+ US FY24 H2.pptx](https://docs.google.com/presentation/d/abc123/edit), [Disney+ US FY24 H1.pptx](https://docs.google.com/presentation/d/xyz456/edit)" in formatted
     assert "#slide=id" not in formatted.split("Sources:", 1)[1]
 
@@ -180,18 +184,32 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
 def test_finalize_answer_text_prefers_streamed_answer_for_agui() -> None:
     metric_answer = MetricAnswer(
         summary_text="The total value is 488,609,626.09 across 75 records.",
+        table_data=[
+            {
+                "document_name": "Disney+ EMEA FY25 H2.pptx",
+                "slide_number": 4,
+                "slide_title": "Total Media Investment",
+            }
+        ],
     )
 
     formatted = _finalize_answer_text(
         output_protocol="agui",
         extracted_answer_text="fallback",
         metric_answer=metric_answer,
-        streamed_answer_text="Disney+ total media investment in H2 2025 in EMEA was $2.8M.",
+        streamed_answer_text=(
+            "Disney+ total media investment in H2 2025 in EMEA was $2.8M | "
+            "Disney+ EMEA FY25 H2.pptx slide 4."
+        ),
         tool_calls=[],
         qbr_citations=[],
     )
 
-    assert formatted == "Disney+ total media investment in H2 2025 in EMEA was $2.8M."
+    assert (
+        formatted
+        == "Disney+ total media investment in H2 2025 in EMEA was $2.8M | "
+        "Disney+ EMEA FY25 H2.pptx - Total Media Investment."
+    )
 
 
 def test_finalize_answer_text_keeps_metric_format_outside_agui() -> None:

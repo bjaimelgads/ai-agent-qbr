@@ -58,6 +58,7 @@ class AnswerCitation(BaseModel):
     document_url: str | None = None
     slide_id: int | None = None
     slide_number: int | None = None
+    slide_title: str | None = None
     slide_google_id: str | None = None
     slide_url: str | None = None
     snippet: str | None = None

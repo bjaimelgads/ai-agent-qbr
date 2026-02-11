@@ -253,6 +253,7 @@ def _collect_citations(rows: Iterable[MetricFactRow]) -> list[AnswerCitation]:
                 document_url=row.document_url,
                 slide_id=row.slide_id,
                 slide_number=row.slide_number,
+                slide_title=row.slide_title,
                 slide_google_id=row.google_slide_id,
                 slide_url=slide_url,
                 snippet=row.snippet,

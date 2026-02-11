@@ -51,7 +51,10 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
   with candidate values; if still unresolved, ask a clarifying question. When ready, call
   `query_metrics` using:
   1) a concise canonical `args.question` string that preserves user intent, and
-  2) `args.intent` set to the latest structured intent output (`refine_metric_intent.intent`, or
+  2) optionally provide `resolve_metric_intent.args.proposed_entities` with LLM-proposed metric/client/
+     region/period candidates parsed from the same user utterance (these are proposals and must be
+     validated by tools), and
+  3) `args.intent` set to the latest structured intent output (`refine_metric_intent.intent`, or
      `resolve_metric_intent.intent` if refine was not needed).
   Do not serialize intent into `args.question`; pass it in `args.intent`.
 - Treat metric rows labeled `overall` or `at a glance` as the default generic context when the
@@ -66,6 +69,11 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
   possible. Keep each atomic lookup narrowly scoped so results are easy to compare and cite.
 - For explicit comparisons (e.g., H1 vs H2, client A vs client B), prefer separate scoped
   `query_metrics` calls per comparison side over one broad query that mixes contexts.
+- If the latest resolved intent contains multiple values in any entity axis (`metric_ids`, `client`,
+  `region`, or `period`), you MUST fan out into multiple `query_metrics` calls using `plan` + `join`.
+  Each call should keep exactly one value for each axis being compared so retrieval scope and citations
+  stay tied to a single entity slice (for example one region per call, one period per call, one client
+  per call). Do not issue one broad `query_metrics` call that mixes those values.
 - After parallel lookups, synthesize a comparison only from compatible values (same metric and
   unit). If values are ambiguous or incompatible, ask a brief clarification instead of guessing.
 - Keep parallel fan-out pragmatic: avoid unnecessary explosion in tool calls. If the request would
@@ -84,10 +92,10 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
 - When citations include `document_url`, include those links in the Sources section.
 - If you used `search_documents`/`search_qbr`, include slide identifiers for cited evidence
   (`slide N` or `slides N-M`) in the final response.
-- When citations include slide metadata, include the slide identifier in every source reference
-  (prefer `slide_number`; otherwise use `slide_id`).
+- When citations include slide metadata, include the slide title in every source reference when
+  available. Only fall back to `slide_number` (or `slide_id`) when title is missing.
 - When listing multiple metric values, attach each value's citation inline as a clickable link
-  (for example: `value ... | [<document> slide <id>](<slide_url>)`), and do not prepend the word
+  (for example: `value ... | [<document> - <slide title>](<slide_url>)`), and do not prepend the word
   `Source`.
 - In the final `Sources:` line, include only document-level links (`document_url`), not slide URLs.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
@@ -577,6 +585,8 @@ def build_planner(
             event_callback=event_callback,
             stream_final_response=config.planner_stream_final_response,
             short_term_memory=_build_short_term_memory(config),
+            use_native_reasoning=config.use_native_reasoning,
+            reasoning_effort=config.reasoning_effort,
             guardrail_gateway=guardrail_gateway,
             reflection_config=reflection_config,
             reflection_llm=(
@@ -599,6 +609,8 @@ def build_planner(
         event_callback=event_callback,
         stream_final_response=config.planner_stream_final_response,
         short_term_memory=_build_short_term_memory(config),
+        use_native_reasoning=config.use_native_reasoning,
+        reasoning_effort=config.reasoning_effort,
         guardrail_gateway=guardrail_gateway,
         reflection_config=reflection_config,
         reflection_llm=(
