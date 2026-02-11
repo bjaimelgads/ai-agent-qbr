@@ -700,12 +700,15 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
     def _format_source_from_row(row: Mapping[str, Any]) -> str | None:
         doc_name = row.get("document_name")
         doc_id = row.get("document_id")
+        slide_title = row.get("slide_title")
         slide_number = row.get("slide_number")
         slide_id = row.get("slide_id")
         source_label = doc_name or (f"doc {doc_id}" if doc_id is not None else None)
         if source_label is None:
             return None
-        if slide_number is not None:
+        if slide_title:
+            source_label = f"{source_label} - {slide_title}"
+        elif slide_number is not None:
             source_label = f"{source_label} slide {slide_number}"
         elif slide_id is not None:
             source_label = f"{source_label} slide {slide_id}"
@@ -759,12 +762,12 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 for (key, rows) in sorted(slide_items, key=_slide_sort_key):
                     _, _, slide_number, slide_id, slide_title = key
                     slide_label = "Slide"
-                    if slide_number:
+                    if slide_title:
+                        slide_label = f"{slide_label}: {slide_title}"
+                    elif slide_number:
                         slide_label = f"{slide_label} {slide_number}"
                     elif slide_id:
                         slide_label = f"{slide_label} {slide_id}"
-                    if slide_title:
-                        slide_label = f"{slide_label}: {slide_title}"
                     lines.append(f"- {slide_label}")
 
                     for row in rows[:4]:
@@ -872,6 +875,39 @@ def _append_search_slide_refs_to_answer(
     return f"{answer_text}\n\nSlides: {', '.join(slide_refs)}"
 
 
+def _replace_slide_number_refs_with_titles(
+    text: str,
+    *,
+    metric_answer: MetricAnswer | None,
+) -> str:
+    if not text or metric_answer is None:
+        return text
+    rows = metric_answer.table_data or []
+    if not rows:
+        return text
+
+    updated = text
+    replacements: list[tuple[str, str]] = []
+    for row in rows:
+        doc_name = row.get("document_name")
+        slide_number = row.get("slide_number")
+        slide_title = row.get("slide_title")
+        if not doc_name or slide_number is None or not slide_title:
+            continue
+        source_pattern = rf"{re.escape(str(doc_name))}\s+slide\s+{re.escape(str(slide_number))}\b"
+        source_label = f"{doc_name} - {slide_title}"
+        replacements.append((source_pattern, source_label))
+
+    if not replacements:
+        return text
+
+    # Replace longer patterns first to avoid partial collisions for similarly named decks.
+    replacements.sort(key=lambda item: len(item[0]), reverse=True)
+    for pattern, replacement in replacements:
+        updated = re.sub(pattern, replacement, updated)
+    return updated
+
+
 def _finalize_answer_text(
     *,
     output_protocol: str,
@@ -882,7 +918,10 @@ def _finalize_answer_text(
     qbr_citations: list[dict[str, Any]],
 ) -> str | None:
     if output_protocol == "agui" and streamed_answer_text:
-        return streamed_answer_text
+        return _replace_slide_number_refs_with_titles(
+            streamed_answer_text,
+            metric_answer=metric_answer,
+        )
     if metric_answer is not None:
         return _format_metric_answer(metric_answer)
     base_text = extracted_answer_text or ""
