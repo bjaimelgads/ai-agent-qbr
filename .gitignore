@@ -77,3 +77,9 @@ data/debug/
 
 # Local run notes
 docs/LOCAL_RUN_LLM.md
+
+# Local/generated retrieval artifacts
+data/faiss/index.faiss
+data/faiss/index_ids.json
+artifacts/local_run_*.json
+qbr_intelligence.db.bak*
