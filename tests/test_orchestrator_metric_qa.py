@@ -6,7 +6,11 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from ai_agent_qbr.config import Config
 from ai_agent_qbr.infrastructure.memory_store import InMemoryMemoryStore
-from ai_agent_qbr.orchestrator import AiAgentQbrOrchestrator, _format_metric_answer
+from ai_agent_qbr.orchestrator import (
+    AiAgentQbrOrchestrator,
+    _finalize_answer_text,
+    _format_metric_answer,
+)
 from qbr_agent.infrastructure.embeddings import HashEmbeddingsProvider
 from qbr_agent.infrastructure.factory import InfrastructureBundle
 from qbr_agent.infrastructure.reranker import NoopReranker
@@ -171,3 +175,37 @@ def test_format_metric_answer_attaches_source_after_each_value() -> None:
     assert "53.05 currency — CPA $53.05 | [Disney+ US FY24 H1.pptx slide 20](https://docs.google.com/presentation/d/xyz456/edit#slide=id.g2)" in formatted
     assert "Sources: [Disney+ US FY24 H2.pptx](https://docs.google.com/presentation/d/abc123/edit), [Disney+ US FY24 H1.pptx](https://docs.google.com/presentation/d/xyz456/edit)" in formatted
     assert "#slide=id" not in formatted.split("Sources:", 1)[1]
+
+
+def test_finalize_answer_text_prefers_streamed_answer_for_agui() -> None:
+    metric_answer = MetricAnswer(
+        summary_text="The total value is 488,609,626.09 across 75 records.",
+    )
+
+    formatted = _finalize_answer_text(
+        output_protocol="agui",
+        extracted_answer_text="fallback",
+        metric_answer=metric_answer,
+        streamed_answer_text="Disney+ total media investment in H2 2025 in EMEA was $2.8M.",
+        tool_calls=[],
+        qbr_citations=[],
+    )
+
+    assert formatted == "Disney+ total media investment in H2 2025 in EMEA was $2.8M."
+
+
+def test_finalize_answer_text_keeps_metric_format_outside_agui() -> None:
+    metric_answer = MetricAnswer(
+        summary_text="The total value is 488,609,626.09 across 75 records.",
+    )
+
+    formatted = _finalize_answer_text(
+        output_protocol="legacy",
+        extracted_answer_text="fallback",
+        metric_answer=metric_answer,
+        streamed_answer_text="Disney+ total media investment in H2 2025 in EMEA was $2.8M.",
+        tool_calls=[],
+        qbr_citations=[],
+    )
+
+    assert formatted == "The total value is 488,609,626.09 across 75 records."

@@ -209,6 +209,7 @@ class _PlannerMlflowEventCollector:
         self._llm_chunk_count = 0
         self._llm_last_chunk: dict[str, Any] | None = None
         self._query_metrics_rag_emit_count = 0
+        self._streamed_answer_text = ""
 
     @property
     def tool_calls(self) -> list[dict[str, Any]]:
@@ -221,6 +222,11 @@ class _PlannerMlflowEventCollector:
     @property
     def query_metrics_rag_emitted(self) -> bool:
         return self._query_metrics_rag_emit_count > 0
+
+    @property
+    def streamed_answer_text(self) -> str | None:
+        text = self._streamed_answer_text.strip()
+        return text or None
 
     def on_event(self, event: Any) -> None:
         event_type, payload = _planner_event_payload(event)
@@ -284,6 +290,8 @@ class _PlannerMlflowEventCollector:
         if text:
             existing = self._llm_outputs.get(channel, "")
             self._llm_outputs[channel] = f"{existing}{text}"
+            if channel == "answer":
+                self._streamed_answer_text = f"{self._streamed_answer_text}{text}"
 
         if bool(payload.get("done")):
             self._close_llm_span()
@@ -864,6 +872,29 @@ def _append_search_slide_refs_to_answer(
     return f"{answer_text}\n\nSlides: {', '.join(slide_refs)}"
 
 
+def _finalize_answer_text(
+    *,
+    output_protocol: str,
+    extracted_answer_text: str | None,
+    metric_answer: MetricAnswer | None,
+    streamed_answer_text: str | None,
+    tool_calls: list[dict[str, Any]],
+    qbr_citations: list[dict[str, Any]],
+) -> str | None:
+    if output_protocol == "agui" and streamed_answer_text:
+        return streamed_answer_text
+    if metric_answer is not None:
+        return _format_metric_answer(metric_answer)
+    base_text = extracted_answer_text or ""
+    if not base_text.strip():
+        return None
+    return _append_search_slide_refs_to_answer(
+        base_text,
+        tool_calls=tool_calls,
+        qbr_citations=qbr_citations,
+    )
+
+
 def _make_tool_context(payload: dict[str, Any]) -> Any:
     """Create a tool context compatible with PenguiFlow Protocols."""
     try:
@@ -1320,15 +1351,14 @@ class AiAgentQbrOrchestrator:
                 metric_answer = _coerce_metric_answer(metric_payload)
             if metric_answer is None:
                 metric_answer = _coerce_metric_answer(payload)
-            if metric_answer is not None:
-                # Prefer deterministic metric formatting with slide-level citations.
-                answer_text = _format_metric_answer(metric_answer)
-            else:
-                answer_text = _append_search_slide_refs_to_answer(
-                    answer_text,
-                    tool_calls=tool_calls,
-                    qbr_citations=llm_context.get("qbr_citations", []),
-                )
+            answer_text = _finalize_answer_text(
+                output_protocol=self._config.output_protocol,
+                extracted_answer_text=answer_text,
+                metric_answer=metric_answer,
+                streamed_answer_text=planner_event_collector.streamed_answer_text,
+                tool_calls=tool_calls,
+                qbr_citations=llm_context.get("qbr_citations", []),
+            )
             rag_scope_payload = _extract_rag_scope_from_interaction_metadata(interaction_metadata)
             if (
                 isinstance(rag_scope_payload, dict)
