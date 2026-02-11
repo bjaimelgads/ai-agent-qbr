@@ -39,7 +39,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Backfill chunk slide ranges.")
     parser.add_argument(
         "--db",
-        default="qbr_extraction/qbr_intelligence.db",
+        default="qbr_intelligence.db",
         help="Path to SQLite database",
     )
     args = parser.parse_args()

@@ -252,15 +252,10 @@ class QBRProcessor:
         existing = {col["name"] for col in inspector.get_columns("metrics")}
         needed = {
             "metric_catalog_id": "INTEGER",
-            "period_label": "TEXT",
-            "period_start": "TEXT",
-            "period_end": "TEXT",
-            "brand": "TEXT",
             "baseline_text": "TEXT",
             "baseline_type": "TEXT",
-            "period_id": "INTEGER",
-            "region_id": "INTEGER",
             "country": "TEXT",
+            "llm_context_label": "TEXT",
         }
         missing = {name: ddl for name, ddl in needed.items() if name not in existing}
         if not missing:
@@ -280,13 +275,55 @@ class QBRProcessor:
             "half": "TEXT",
             "client_id": "INTEGER",
             "region_id": "INTEGER",
+            "report_period_id": "INTEGER",
         }
         missing = {name: ddl for name, ddl in needed.items() if name not in existing}
-        if not missing:
-            return
         with self.engine.begin() as conn:
             for name, ddl in missing.items():
                 conn.execute(text(f"ALTER TABLE documents ADD COLUMN {name} {ddl}"))
+            refreshed = inspect(self.engine)
+            doc_cols = {col["name"] for col in refreshed.get_columns("documents")}
+            period_cols = (
+                {col["name"] for col in refreshed.get_columns("periods")}
+                if "periods" in refreshed.get_table_names()
+                else set()
+            )
+            if (
+                "report_period" in doc_cols
+                and "report_period_id" in doc_cols
+                and {"id", "period_label"}.issubset(period_cols)
+            ):
+                conn.execute(
+                    text(
+                        """
+                        INSERT INTO periods (period_label, period_type, period_number, fiscal_year, start_date, end_date)
+                        SELECT DISTINCT TRIM(d.report_period), NULL, NULL, NULL, NULL, NULL
+                        FROM documents d
+                        LEFT JOIN periods p
+                          ON UPPER(TRIM(p.period_label)) = UPPER(TRIM(d.report_period))
+                        WHERE d.report_period IS NOT NULL
+                          AND TRIM(d.report_period) <> ''
+                          AND p.id IS NULL
+                        """
+                    )
+                )
+                conn.execute(
+                    text(
+                        """
+                        UPDATE documents
+                        SET report_period_id = (
+                            SELECT p.id
+                            FROM periods p
+                            WHERE UPPER(TRIM(p.period_label)) = UPPER(TRIM(documents.report_period))
+                            ORDER BY p.id
+                            LIMIT 1
+                        )
+                        WHERE report_period_id IS NULL
+                          AND report_period IS NOT NULL
+                          AND TRIM(report_period) <> ''
+                        """
+                    )
+                )
 
     def _ensure_slide_columns(self) -> None:
         if self.engine.dialect.name != "sqlite":
@@ -1769,6 +1806,31 @@ Categories:
         session.flush()
         return client
 
+    def _ensure_document_period(self, session, report_period: str | None) -> Period | None:
+        if not report_period:
+            return None
+
+        label = self._normalize_period_label(report_period) or report_period.strip()
+        if not label:
+            return None
+
+        period = session.query(Period).filter(Period.period_label == label).one_or_none()
+        if period:
+            return period
+
+        fields = self._infer_period_fields(label)
+        period = Period(
+            period_label=label,
+            period_type=fields["period_type"],
+            period_number=fields["period_number"],
+            fiscal_year=fields["fiscal_year"],
+            start_date=None,
+            end_date=None,
+        )
+        session.add(period)
+        session.flush()
+        return period
+
     def _infer_period_from_title(
         self, title: str
     ) -> tuple[str | None, str | None, str | None, str | None]:
@@ -2269,6 +2331,7 @@ Categories:
 
         with self.SessionLocal() as session:
             client = self._ensure_client(session, inferred_client) if inferred_client else None
+            doc_period = self._ensure_document_period(session, report_period)
             # Create document
             document = Document(
                 filename=file_path.name,
@@ -2283,7 +2346,7 @@ Categories:
                 detected_languages=result.detected_languages,
                 client_id=client.id if client else None,
                 region_id=inferred_region_id,
-                report_period=report_period,
+                report_period_id=doc_period.id if doc_period else None,
                 fiscal_year=fiscal_year,
                 quarter=quarter,
                 half=half,
@@ -2313,20 +2376,20 @@ Categories:
             slide_map = {s.slide_number: s for s in slides_to_add}
             print(f"  - Slides created: {len(slide_map)}")
 
-            period_map = self._upsert_periods(session, metrics_for_db)
-
             # Create metrics (bulk insert)
             metrics_to_add: list[Metric] = []
+            skipped_without_slide = 0
             for m in metrics_for_db:
-                region_id, country = self._infer_metric_region(
+                slide = slide_map.get(m.slide_number)
+                if slide is None:
+                    skipped_without_slide += 1
+                    continue
+                _, country = self._infer_metric_region(
                     m, document_region_id=inferred_region_id
                 )
                 metrics_to_add.append(
                     Metric(
-                        document_id=document.id,
-                        slide_id=slide_map.get(m.slide_number).id
-                        if slide_map.get(m.slide_number)
-                        else None,
+                        slide_id=slide.id,
                         raw_value=m.raw_value,
                         raw_context=m.raw_context,
                         raw_metric_type=m.metric_type,
@@ -2336,21 +2399,14 @@ Categories:
                         unit=m.unit,
                         category=m.category,
                         extraction_confidence=m.extraction_confidence,
-                        period_label=m.period_label,
-                        period_start=m.period_start,
-                        period_end=m.period_end,
-                        brand=m.brand,
                         baseline_text=m.baseline_text,
                         baseline_type=m.baseline_type,
-                        period_id=period_map.get(
-                            (m.period_label, m.period_start, m.period_end)
-                        ).id
-                        if period_map.get((m.period_label, m.period_start, m.period_end))
-                        else None,
-                        region_id=region_id,
                         country=country,
+                        llm_context_label=m.llm_context_label,
                     )
                 )
+            if skipped_without_slide:
+                print(f"  - Metrics skipped (missing slide mapping): {skipped_without_slide}")
             # Final guard: drop metrics whose raw_context matches notes text for the slide.
             notes_by_slide_id = {}
             for slide in slides_to_add:
@@ -2725,7 +2781,8 @@ Categories:
                 # This is a simplified version - production would need better matching
                 db_metrics = (
                     session.query(Metric)
-                    .filter(Metric.document_id == document_id)
+                    .join(Slide, Slide.id == Metric.slide_id)
+                    .filter(Slide.document_id == document_id)
                     .all()
                 )
 

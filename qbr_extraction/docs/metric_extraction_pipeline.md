@@ -26,7 +26,7 @@
 - Outputs are sorted by slide, metric id, raw value, label for stable golden comparisons.
 
 ## Extending the Catalog
-- Update `qbr_extraction/qbr_intelligence/metrics/catalog.py`.
+- Update `src/qbr_intelligence/metrics/catalog.py`.
 - Add aliases and disambiguation tokens.
 - If a new metric is added to the legacy DB catalog, ensure names match for catalog mapping.
 

@@ -181,6 +181,9 @@ class Config:
     memory_base_url: str = "http://localhost:8000"
     llm_model: str = "stub-llm"
     output_protocol: str = "legacy"
+    agui_reasoning_source: str = "status"
+    use_native_reasoning: bool = True
+    reasoning_effort: str | None = "medium"
     planner_stream_final_response: bool = False
     keepalive_interval_seconds: float = 20.0
     receive_timeout_seconds: float = 60.0
@@ -324,6 +327,9 @@ class Config:
             memory_base_url=os.getenv("MEMORY_BASE_URL", "http://localhost:8000"),
             llm_model=os.getenv("LLM_MODEL", "stub-llm"),
             output_protocol=output_protocol,
+            agui_reasoning_source=_env_str("AGUI_REASONING_SOURCE", "status").lower(),
+            use_native_reasoning=_env_flag("USE_NATIVE_REASONING", True),
+            reasoning_effort=_env_optional_str("REASONING_EFFORT", "medium"),
             planner_stream_final_response=_env_flag(
                 "PLANNER_STREAM_FINAL_RESPONSE",
                 output_protocol == "agui",
@@ -475,6 +481,10 @@ class Config:
         """Validate required configuration and raise ValueError when missing."""
         if self.output_protocol not in {"legacy", "agui"}:
             raise ValueError("OUTPUT_PROTOCOL must be one of: legacy, agui")
+        if self.agui_reasoning_source not in {"status", "thinking"}:
+            raise ValueError("AGUI_REASONING_SOURCE must be one of: status, thinking")
+        if self.reasoning_effort is not None and self.reasoning_effort not in {"low", "medium", "high"}:
+            raise ValueError("REASONING_EFFORT must be one of: low, medium, high")
         if self.storage_backend not in {"sqlite", "postgres"}:
             raise ValueError("STORAGE_BACKEND must be one of: sqlite, postgres")
         if self.vector_backend not in {"sqlite_embeddings", "faiss", "pgvector"}:

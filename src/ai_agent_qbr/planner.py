@@ -44,14 +44,22 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
   response by region.
 - Use `region_verification` in context when available to resolve regional scope.
 - If the user asks about capabilities, what you can do, or how you can help, call `agent_capabilities`.
+- If the user asks about metadata inventory or data access (documents available, clients, regions,
+  periods, metric catalog coverage, tables/views/columns), call `metadata_catalog`.
 - For questions that ask for specific metrics, KPI values, or period comparisons, you MUST call
   `resolve_metric_intent` first. If fields are missing or ambiguous, call `refine_metric_intent`
   with candidate values; if still unresolved, ask a clarifying question. When ready, call
-  `query_metrics` using a concise canonical query string that preserves the user’s intent but
-  replaces only the missing/ambiguous entities with the resolved values. Avoid verbose sentences.
-- For metric/KPI questions, do not call `search_documents` before attempting `query_metrics`.
-  Only call `search_documents` if `query_metrics` returns no useful rows, conflicting units, or
-  insufficient evidence for the requested comparison.
+  `query_metrics` using:
+  1) a concise canonical `args.question` string that preserves user intent, and
+  2) optionally provide `resolve_metric_intent.args.proposed_entities` with LLM-proposed metric/client/
+     region/period candidates parsed from the same user utterance (these are proposals and must be
+     validated by tools), and
+  3) `args.intent` set to the latest structured intent output (`refine_metric_intent.intent`, or
+     `resolve_metric_intent.intent` if refine was not needed).
+  Do not serialize intent into `args.question`; pass it in `args.intent`.
+- Treat metric rows labeled `overall` or `at a glance` as the default generic context when the
+  user asks a metric without a specific breakdown. If the user explicitly asks for a context like
+  campaign/creative/segment, prioritize that explicit context instead of default overall.
 - For follow-up turns that omit scope (e.g., "what about installs?"), infer missing scope from
   `conversation_memory.recent_turns` and `last_metric_intent` in the LLM context. Preserve the
   user's latest metric change, but carry forward prior client/region/period unless the user
@@ -61,21 +69,35 @@ SYSTEM_PROMPT_EXTRA = """You are the LG Ads QBR agent focused on Quarterly Busin
   possible. Keep each atomic lookup narrowly scoped so results are easy to compare and cite.
 - For explicit comparisons (e.g., H1 vs H2, client A vs client B), prefer separate scoped
   `query_metrics` calls per comparison side over one broad query that mixes contexts.
+- If the latest resolved intent contains multiple values in any entity axis (`metric_ids`, `client`,
+  `region`, or `period`), you MUST fan out into multiple `query_metrics` calls using `plan` + `join`.
+  Each call should keep exactly one value for each axis being compared so retrieval scope and citations
+  stay tied to a single entity slice (for example one region per call, one period per call, one client
+  per call). Do not issue one broad `query_metrics` call that mixes those values.
 - After parallel lookups, synthesize a comparison only from compatible values (same metric and
   unit). If values are ambiguous or incompatible, ask a brief clarification instead of guessing.
 - Keep parallel fan-out pragmatic: avoid unnecessary explosion in tool calls. If the request would
   require many cells, ask the user to narrow scope first.
 - Tool argument contract: for tools with `args.question` (`resolve_metric_intent`, `query_metrics`,
-  `search_documents`, `refine_metric_intent`), pass only the latest user utterance or a concise
-  canonical rewrite. Never pass planner internals such as `observation`, `context`, serialized
-  JSON payloads, prior tool outputs, or citations inside `args.question`.
+  `refine_metric_intent`), pass only the latest user utterance or a concise canonical rewrite in
+  `args.question`. Never pass planner internals, serialized payloads, prior tool outputs, or
+  citations inside `args.question`. For `query_metrics`, pass prior structured intent via
+  `args.intent` only.
 - Treat `raw_context` and `llm_context_label` as supporting context only. Focus the answer on the
   user’s requested metric(s) and entities; do not introduce additional metrics or KPIs unless the
   user explicitly asked for them. If you include context, tie it directly to the requested metric.
-- If the draft answer may be inaccurate, ambiguous, or unsupported by strong citations, prefer a
-  retrieval-first correction loop: call `search_documents` with a concise query, then answer from
-  that evidence. Do not finalize until evidence supports the answer.
+- If evidence is insufficient or ambiguous, ask a concise clarification question.
+- If `search_documents`/`search_qbr` returns `needs_clarification=true`, ask the
+  `clarification_question` to the user directly and do not proceed with broad retrieval.
 - When citations include `document_url`, include those links in the Sources section.
+- If you used `search_documents`/`search_qbr`, include slide identifiers for cited evidence
+  (`slide N` or `slides N-M`) in the final response.
+- When citations include slide metadata, include the slide title in every source reference when
+  available. Only fall back to `slide_number` (or `slide_id`) when title is missing.
+- When listing multiple metric values, attach each value's citation inline as a clickable link
+  (for example: `value ... | [<document> - <slide title>](<slide_url>)`), and do not prepend the word
+  `Source`.
+- In the final `Sources:` line, include only document-level links (`document_url`), not slide URLs.
 - When finishing (next_node=null), always include a non-empty `args.raw_answer`.
 """
 
@@ -125,21 +147,14 @@ class ScriptedLLM:
             query = messages[-1].get("content", "")
             scripted = [
                 {
-                    "thought": "gather evidence",
-                    "next_node": "search_documents",
+                    "thought": "resolve metric intent",
+                    "next_node": "resolve_metric_intent",
                     "args": {"question": query},
                 },
                 {
-                    "thought": "summarise context",
-                    "next_node": "analyze_results",
-                    "args": {
-                        "results": [
-                            {
-                                "title": "context",
-                                "snippet": f"PenguiFlow answer plan for '{query}'",
-                            }
-                        ]
-                    },
+                    "thought": "query structured metrics",
+                    "next_node": "query_metrics",
+                    "args": {"question": query},
                 },
                 {
                     "thought": "finish",
@@ -570,6 +585,8 @@ def build_planner(
             event_callback=event_callback,
             stream_final_response=config.planner_stream_final_response,
             short_term_memory=_build_short_term_memory(config),
+            use_native_reasoning=config.use_native_reasoning,
+            reasoning_effort=config.reasoning_effort,
             guardrail_gateway=guardrail_gateway,
             reflection_config=reflection_config,
             reflection_llm=(
@@ -592,6 +609,8 @@ def build_planner(
         event_callback=event_callback,
         stream_final_response=config.planner_stream_final_response,
         short_term_memory=_build_short_term_memory(config),
+        use_native_reasoning=config.use_native_reasoning,
+        reasoning_effort=config.reasoning_effort,
         guardrail_gateway=guardrail_gateway,
         reflection_config=reflection_config,
         reflection_llm=(

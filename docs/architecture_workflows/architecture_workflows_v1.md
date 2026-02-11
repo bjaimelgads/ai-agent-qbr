@@ -123,7 +123,7 @@ sequenceDiagram
 - The client interface returns the response back to the user.
 
 ## Where This Lives in the Repo
-- Extraction pipeline: `qbr_extraction/qbr_intelligence/pipeline/processor.py`
+- Extraction pipeline: `src/qbr_intelligence/pipeline/processor.py`
 - Runtime agent orchestration: `src/ai_agent_qbr/orchestrator.py`
 - Retrieval use cases: `src/qbr_agent/application/use_cases.py`
 - Storage & vector index: `src/qbr_agent/infrastructure/`

@@ -23,6 +23,11 @@ _STEP_MAP = {
         message="Searching QBR materials for relevant details.",
         index=2,
     ),
+    "metadata_catalog": StepDisplay(
+        label="Inspecting Metadata",
+        message="Inspecting metadata catalog and access scope.",
+        index=2,
+    ),
     "analyze_results": StepDisplay(
         label="Summarizing",
         message="Summarizing the most relevant QBR insights.",

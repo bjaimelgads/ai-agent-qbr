@@ -20,6 +20,8 @@ async def analyze_results(args: SearchResults, ctx: ToolContext) -> FinalAnswer:
         len(args.results),
         [item.title for item in args.results[:5]],
     )
+    if args.needs_clarification and args.clarification_question:
+        return FinalAnswer(text=args.clarification_question)
     user = ctx.tool_context.get("user_id", "user")
     context = ctx.tool_context.get("qbr_answer_context")
 

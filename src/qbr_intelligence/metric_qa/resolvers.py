@@ -44,31 +44,49 @@ class MetricResolver:
         self._patterns = self._build_patterns(self._catalog)
 
     @staticmethod
-    def _build_patterns(catalog: list[MetricCatalogEntry]) -> list[tuple[MetricCatalogEntry, re.Pattern[str], float]]:
-        patterns: list[tuple[MetricCatalogEntry, re.Pattern[str], float]] = []
+    def _build_patterns(
+        catalog: list[MetricCatalogEntry],
+    ) -> list[tuple[MetricCatalogEntry, re.Pattern[str], float, str | None]]:
+        patterns: list[tuple[MetricCatalogEntry, re.Pattern[str], float, str | None]] = []
         for entry in catalog:
             for alias in entry.aliases:
                 if alias.pattern:
                     try:
                         pattern = re.compile(alias.pattern, re.IGNORECASE)
-                        patterns.append((entry, pattern, float(alias.priority or 0)))
+                        patterns.append((entry, pattern, float(alias.priority or 0), None))
                     except re.error:
                         continue
                 if alias.alias:
                     escaped = re.escape(alias.alias)
                     pattern = re.compile(rf"\b{escaped}\b", re.IGNORECASE)
-                    patterns.append((entry, pattern, float(alias.priority or 0)))
+                    patterns.append((entry, pattern, float(alias.priority or 0), alias.alias))
         return patterns
 
     def resolve(self, query: str) -> tuple[list[str], dict[str, float]]:
         if not query:
             return [], {}
         text = normalize_text(query)
+        query_terms = _metric_terms(text)
         scores: dict[str, float] = {}
-        for entry, pattern, alias_priority in self._patterns:
+        for entry, pattern, alias_priority, alias_text in self._patterns:
             if not pattern.search(text):
                 continue
             score = entry.priority + alias_priority
+            if alias_text:
+                alias_terms = _metric_terms(alias_text)
+                # Prefer phrase-level matches that stay close to user wording.
+                if alias_terms:
+                    overlap = len(alias_terms.intersection(query_terms))
+                    score += min(1.0, 0.2 * overlap)
+                    if len(alias_terms) >= 2:
+                        score += 0.25
+                # Penalize over-generic one-word aliases when user asked with richer wording.
+                if (
+                    len(alias_terms) == 1
+                    and next(iter(alias_terms)) in _GENERIC_METRIC_TERMS
+                    and len(query_terms) >= 3
+                ):
+                    score -= 0.35
             if entry.disambiguation:
                 if any(token in text for token in entry.disambiguation):
                     score += 0.6
@@ -77,6 +95,21 @@ class MetricResolver:
             scores[entry.metric_id] = max(scores.get(entry.metric_id, -1.0), score)
         ordered = [k for k, _ in sorted(scores.items(), key=lambda item: item[1], reverse=True)]
         return ordered, scores
+
+
+_GENERIC_METRIC_TERMS = {
+    "spend",
+    "spending",
+    "investment",
+    "cost",
+    "revenue",
+    "value",
+    "total",
+}
+
+
+def _metric_terms(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", normalize_text(text)))
 
 
 class ClientResolver:

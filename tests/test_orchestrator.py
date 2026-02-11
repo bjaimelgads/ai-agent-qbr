@@ -8,7 +8,10 @@ import pytest
 
 from ai_agent_qbr.config import Config
 from ai_agent_qbr.infrastructure.memory_store import InMemoryMemoryStore
-from ai_agent_qbr.orchestrator import AiAgentQbrOrchestrator
+from ai_agent_qbr.orchestrator import (
+    AiAgentQbrOrchestrator,
+    _append_search_slide_refs_to_answer,
+)
 from qbr_agent.application.ports import (
     EmbeddingResult,
     EmbeddingsProvider,
@@ -117,3 +120,34 @@ async def test_stop_marks_orchestrator_inactive() -> None:
     assert orchestrator._started is True  # type: ignore[attr-defined]
     await orchestrator.stop()
     assert orchestrator._started is False  # type: ignore[attr-defined]
+
+
+def test_append_search_slide_refs_to_answer_when_search_tool_used() -> None:
+    answer = "Summary answer."
+    tool_calls = [{"tool_name": "search_documents"}]
+    qbr_citations = [
+        {"document_id": 3, "start_slide": 26, "end_slide": 26},
+        {"document_id": 3, "start_slide": 28, "end_slide": 28},
+    ]
+
+    updated = _append_search_slide_refs_to_answer(
+        answer,
+        tool_calls=tool_calls,
+        qbr_citations=qbr_citations,
+    )
+
+    assert "Slides: doc 3 slide 26, doc 3 slide 28" in updated
+
+
+def test_append_search_slide_refs_to_answer_unchanged_without_search_tool() -> None:
+    answer = "Summary answer."
+    tool_calls = [{"tool_name": "resolve_metric_intent"}]
+    qbr_citations = [{"document_id": 3, "start_slide": 26, "end_slide": 26}]
+
+    updated = _append_search_slide_refs_to_answer(
+        answer,
+        tool_calls=tool_calls,
+        qbr_citations=qbr_citations,
+    )
+
+    assert updated == answer

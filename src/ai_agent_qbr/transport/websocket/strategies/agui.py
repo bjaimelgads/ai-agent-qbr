@@ -7,7 +7,6 @@ import logging
 import secrets
 from datetime import datetime, timezone
 from typing import Any
-from uuid import uuid4
 
 from ag_ui.core import RunAgentInput
 from pydantic import ValidationError
@@ -30,15 +29,15 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
         send_message: SendMessageUseCase,
         session_registry: SessionRegistry,
         logger: logging.Logger | None = None,
+        reasoning_source: str = "status",
     ) -> None:
         self._send = sender
         self._send_message = send_message
         self._session_registry = session_registry
         self._logger = logger or logging.getLogger(__name__)
-        self._reasoning_ids: dict[str, str | None] = {}
+        self._reasoning_source = reasoning_source
 
     async def on_connect(self, session_id: str) -> None:
-        self._reasoning_ids[session_id] = None
         self._logger.info("AG-UI websocket connected: %s", session_id)
 
     async def on_message(self, session_id: str, message: Any) -> None:
@@ -57,7 +56,7 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             await self._send_error(session_id, "Missing session telemetry")
             return
 
-        adapter = AGUIWebsocketAdapter()
+        adapter = AGUIWebsocketAdapter(reasoning_source=self._reasoning_source)
         adapter.start_run(run_input)
 
         queue: asyncio.Queue[Any] = asyncio.Queue()
@@ -135,6 +134,8 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
                     "AG-UI artifact missing session_id=%s",
                     session_id,
                 )
+            for event in adapter.flush_reasoning():
+                yield event
 
         with telemetry.subscribe(status_callback=status_callback, event_callback=event_callback):
             try:
@@ -146,7 +147,6 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
                 adapter.end_run()
 
     async def on_disconnect(self, session_id: str) -> None:
-        self._reasoning_ids.pop(session_id, None)
         self._logger.info("AG-UI websocket disconnected: %s", session_id)
 
     def _parse_input(self, session_id: str, message: Any) -> RunAgentInput | None:
@@ -181,10 +181,9 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             payload = event.model_dump(by_alias=True, exclude_none=True)
         else:
             payload = event
-        for outbound in self._normalize_payloads(session_id, payload):
-            if isinstance(outbound, dict) and "timestamp" not in outbound:
-                outbound["timestamp"] = _now_iso_timestamp()
-            await self._send(session_id, outbound)
+        if isinstance(payload, dict) and "timestamp" not in payload:
+            payload["timestamp"] = _now_iso_timestamp()
+        await self._send(session_id, payload)
 
     async def _send_error(self, session_id: str, message: str) -> None:
         payload = {"type": "RUN_ERROR", "message": message, "timestamp": _now_iso_timestamp()}
@@ -203,64 +202,6 @@ class AguiWebsocketOutputStrategy(WebsocketOutputStrategy):
             if isinstance(meta, dict) and isinstance(meta.get("user_id"), str):
                 return meta["user_id"]
         return "user"
-
-    def _normalize_payloads(self, session_id: str, payload: Any) -> list[Any]:
-        if not isinstance(payload, dict):
-            return [payload]
-
-        event_type = payload.get("type")
-        if event_type == "RUN_STARTED":
-            self._reasoning_ids[session_id] = None
-            return [payload]
-
-        if event_type == "RUN_FINISHED":
-            return self._flush_reasoning(session_id) + [payload]
-
-        if event_type == "CUSTOM" and payload.get("name") == "thinking":
-            value = payload.get("value") or {}
-            if not isinstance(value, dict):
-                value = {}
-            text = value.get("text") if isinstance(value.get("text"), str) else ""
-            done = bool(value.get("done"))
-            return self._reasoning_payloads(session_id, text=text, done=done)
-
-        return [payload]
-
-    def _reasoning_payloads(self, session_id: str, *, text: str, done: bool) -> list[dict[str, Any]]:
-        message_id = self._reasoning_ids.get(session_id)
-        if message_id is None and not text and not done:
-            return []
-        if message_id is None:
-            message_id = str(uuid4())
-            self._reasoning_ids[session_id] = message_id
-            payloads: list[dict[str, Any]] = [
-                {"type": "CUSTOM", "name": "REASONING_START", "messageId": message_id}
-            ]
-        else:
-            payloads = []
-
-        if text:
-            payloads.append(
-                {
-                    "type": "CUSTOM",
-                    "name": "REASONING_MESSAGE_CONTENT",
-                    "messageId": message_id,
-                    "delta": text,
-                }
-            )
-
-        if done:
-            payloads.append({"type": "CUSTOM", "name": "REASONING_END", "messageId": message_id})
-            self._reasoning_ids[session_id] = None
-
-        return payloads
-
-    def _flush_reasoning(self, session_id: str) -> list[dict[str, Any]]:
-        message_id = self._reasoning_ids.get(session_id)
-        if not message_id:
-            return []
-        self._reasoning_ids[session_id] = None
-        return [{"type": "CUSTOM", "name": "REASONING_END", "messageId": message_id}]
 
 
 def _now_iso_timestamp() -> str:
