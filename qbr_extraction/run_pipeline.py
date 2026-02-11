@@ -48,6 +48,9 @@ if str(src_root) not in sys.path:
 from qbr_intelligence import QBRProcessor, QBRQueryInterface, init_db
 from qbr_intelligence.db.models import Document
 from qbr_intelligence.pipeline.embeddings import EmbeddingSettings
+from qbr_intelligence.pipeline.slide_title_backfill import (
+    backfill_slide_titles_for_document,
+)
 from qbr_intelligence.query.tools import (
     get_document_summary,
     get_key_insights,
@@ -440,6 +443,16 @@ def main():
         type=int,
         help="Process only the first N slides",
     )
+    parser.add_argument(
+        "--backfill-slide-titles",
+        action="store_true",
+        help="Backfill slides.title from PPTX titles after processing",
+    )
+    parser.add_argument(
+        "--backfill-slide-titles-overwrite",
+        action="store_true",
+        help="When backfilling slide titles, overwrite non-empty existing titles",
+    )
 
     args = parser.parse_args()
 
@@ -497,6 +510,19 @@ def main():
                     slide_range=slide_range,
                     max_slides=max_slides,
                 )
+                if args.backfill_slide_titles and doc_id:
+                    stats = backfill_slide_titles_for_document(
+                        database_url=args.db,
+                        document_id=doc_id,
+                        pptx_path=str(pptx_path),
+                        overwrite=args.backfill_slide_titles_overwrite,
+                    )
+                    print(
+                        "      Slide title backfill: "
+                        f"updated={stats.updated}, skipped_existing={stats.skipped_existing}, "
+                        f"skipped_empty={stats.skipped_empty}, skipped_same={stats.skipped_same}, "
+                        f"source={'pptx' if stats.source_pptx_used else 'raw_text'}"
+                    )
         elif args.file and not args.query_only:
             doc_id = await process_document(
                 file_path=args.file,
@@ -511,6 +537,19 @@ def main():
                 slide_range=slide_range,
                 max_slides=max_slides,
             )
+            if args.backfill_slide_titles and doc_id:
+                stats = backfill_slide_titles_for_document(
+                    database_url=args.db,
+                    document_id=doc_id,
+                    pptx_path=args.file,
+                    overwrite=args.backfill_slide_titles_overwrite,
+                )
+                print(
+                    "      Slide title backfill: "
+                    f"updated={stats.updated}, skipped_existing={stats.skipped_existing}, "
+                    f"skipped_empty={stats.skipped_empty}, skipped_same={stats.skipped_same}, "
+                    f"source={'pptx' if stats.source_pptx_used else 'raw_text'}"
+                )
 
         # Run query demo
         await query_demo(args.db, doc_id)
