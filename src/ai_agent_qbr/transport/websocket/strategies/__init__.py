@@ -27,6 +27,7 @@ def build_websocket_strategy(
             send_message=send_message_use_case,
             session_registry=session_registry,
             logger=logger,
+            reasoning_source=config.agui_reasoning_source,
         )
     return LegacyWebsocketOutputStrategy(
         sender=sender,
