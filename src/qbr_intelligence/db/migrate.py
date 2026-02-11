@@ -80,31 +80,43 @@ def _truncate_all_tables(engine: Engine) -> None:
 
 
 def _widen_postgres_columns(engine: Engine) -> None:
-    with engine.begin() as conn:
-        conn.execute(
-            text(
-                "ALTER TABLE IF EXISTS periods "
-                "ALTER COLUMN period_label TYPE VARCHAR(200)"
-            )
-        )
-        conn.execute(
-            text(
-                "ALTER TABLE IF EXISTS periods "
-                "ALTER COLUMN period_type TYPE VARCHAR(50)"
-            )
-        )
-        conn.execute(
-            text(
-                "ALTER TABLE IF EXISTS metrics "
-                "ALTER COLUMN period_label TYPE VARCHAR(200)"
-            )
-        )
-        conn.execute(
-            text(
-                "ALTER TABLE IF EXISTS metrics "
-                "ADD COLUMN IF NOT EXISTS llm_context_label TEXT"
-            )
-        )
+    statements = [
+        (
+            "ALTER TABLE IF EXISTS periods "
+            "ALTER COLUMN period_label TYPE VARCHAR(200)"
+        ),
+        (
+            "ALTER TABLE IF EXISTS periods "
+            "ALTER COLUMN period_type TYPE VARCHAR(50)"
+        ),
+        (
+            "ALTER TABLE IF EXISTS metrics "
+            "ALTER COLUMN period_label TYPE VARCHAR(200)"
+        ),
+        (
+            "ALTER TABLE IF EXISTS metrics "
+            "ADD COLUMN IF NOT EXISTS llm_context_label TEXT"
+        ),
+    ]
+    for sql_text in statements:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(sql_text))
+        except Exception as exc:
+            message = str(exc).lower()
+            if "cannot alter type of a column used by a view or rule" in message:
+                print(
+                    "[migration] Skipping blocked DDL due to dependent view/rule: "
+                    f"{sql_text}"
+                )
+                continue
+            if "does not exist" in message and "column" in message:
+                print(
+                    "[migration] Skipping DDL because referenced column is missing: "
+                    f"{sql_text}"
+                )
+                continue
+            raise
 
 
 def _copy_table(table, src_engine: Engine, dst_engine: Engine, *, batch_size: int) -> int:

@@ -26,6 +26,13 @@
 - Verify client supports AG-UI event types (`RUN_STARTED`, `TEXT_MESSAGE_CONTENT`, etc.).
 - For legacy consumers, set `OUTPUT_PROTOCOL=legacy`.
 
+### Slide titles missing in `slides.title`
+- For new ingests, run pipeline with `--backfill-slide-titles`.
+- For existing rows, run:
+  - `.venv/bin/python scripts/backfill_slide_titles.py --search-dir qbr_extraction/decks`
+- Use `--dry-run` first to preview update counts.
+- Matching is deterministic by `document_id + slide_number`; values are written to `slides.title`.
+
 ## Debugging Tips
 - Enable logs: `LOG_LEVEL=debug`.
 - Use the CLI test harness: `python -m ai_agent_qbr`.
