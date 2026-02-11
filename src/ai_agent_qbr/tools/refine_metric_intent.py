@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import logging
+import re
+from difflib import SequenceMatcher
+from typing import Iterable
 
 from penguiflow.catalog import tool
 from penguiflow.planner import ToolContext
@@ -15,8 +18,61 @@ from ai_agent_qbr.models import (
 )
 from ai_agent_qbr.tools.question_normalization import normalize_question_arg
 from ai_agent_qbr.tools.status import ToolStatusEmitter
+from qbr_intelligence.metrics.models import MetricCatalogEntry
 from qbr_intelligence.metric_qa import MetricQueryEngine
 from qbr_intelligence.metric_qa.resolvers import ClientResolver, MetricResolver, PeriodResolver, RegionResolver
+
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+_REGION_CANONICAL = {"us": "US", "usa": "US", "u s": "US", "emea": "EMEA", "global": "GLOBAL"}
+
+
+def _normalize_text(value: str) -> str:
+    return " ".join(_TOKEN_RE.findall((value or "").lower()))
+
+
+def _best_fuzzy_match(
+    *,
+    probes: Iterable[str],
+    choices: dict[str, str],
+    min_ratio: float = 0.86,
+    min_gap: float = 0.04,
+) -> str | None:
+    ranked: list[tuple[float, str]] = []
+    for probe in probes:
+        probe_norm = _normalize_text(probe)
+        if not probe_norm:
+            continue
+        for key, value in choices.items():
+            ratio = SequenceMatcher(None, probe_norm, key).ratio()
+            ranked.append((ratio, value))
+    if not ranked:
+        return None
+    ranked.sort(key=lambda item: item[0], reverse=True)
+    top_ratio, top_value = ranked[0]
+    second_ratio = ranked[1][0] if len(ranked) > 1 else 0.0
+    if top_ratio >= min_ratio and (top_ratio - second_ratio) >= min_gap:
+        return top_value
+    return None
+
+
+def _fuzzy_metric_from_candidates(candidates: list[str], catalog: list[MetricCatalogEntry]) -> str | None:
+    alias_to_metric: dict[str, str] = {}
+    for entry in catalog:
+        alias_to_metric[_normalize_text(entry.name)] = entry.metric_id
+        alias_to_metric[_normalize_text(entry.metric_id.replace("_", " "))] = entry.metric_id
+        for alias in entry.aliases:
+            if alias.alias:
+                alias_to_metric[_normalize_text(alias.alias)] = entry.metric_id
+    return _best_fuzzy_match(probes=candidates, choices=alias_to_metric, min_ratio=0.82)
+
+
+def _fuzzy_client_from_candidates(candidates: list[str], clients: list[str]) -> str | None:
+    choices = {_normalize_text(client): client for client in clients if client}
+    return _best_fuzzy_match(probes=candidates, choices=choices, min_ratio=0.74)
+
+
+def _fuzzy_region_from_candidates(candidates: list[str]) -> str | None:
+    return _best_fuzzy_match(probes=candidates, choices=_REGION_CANONICAL, min_ratio=0.78)
 
 
 def _like_match(values: list[str], candidates: list[str]) -> list[str]:
@@ -95,6 +151,10 @@ async def refine_metric_intent(
             if resolved:
                 metric_hits.append(resolved[0])
         metric_hits = list(dict.fromkeys(metric_hits))
+        if not metric_hits:
+            fuzzy_metric = _fuzzy_metric_from_candidates(args.candidates.metric_ids, list(engine._catalog or []))
+            if fuzzy_metric:
+                metric_hits = [fuzzy_metric]
         if len(metric_hits) == 1:
             updated.metric_ids = [metric_hits[0]]
             assumptions.append("Metric inferred from candidate list")
@@ -109,6 +169,10 @@ async def refine_metric_intent(
                 client_hits.append(resolution.value)
         if not client_hits:
             client_hits = _like_match(engine._clients or [], args.candidates.clients)
+        if not client_hits:
+            fuzzy_client = _fuzzy_client_from_candidates(args.candidates.clients, list(engine._clients or []))
+            if fuzzy_client:
+                client_hits = [fuzzy_client]
         client_hits = list(dict.fromkeys(client_hits))
         if client_hits:
             updated.client = client_hits
@@ -128,6 +192,10 @@ async def refine_metric_intent(
                 resolution = region_resolver.resolve(candidate)
                 if resolution.value:
                     region_hits.append(resolution.value)
+            if not region_hits:
+                fuzzy_region = _fuzzy_region_from_candidates(args.candidates.regions)
+                if fuzzy_region:
+                    region_hits.append(fuzzy_region)
             region_hits = list(dict.fromkeys(region_hits))
             if len(region_hits) == 1:
                 updated.region = region_hits
