@@ -80,6 +80,8 @@ def _ensure_metric_columns(conn) -> None:
         "metric_catalog_id": "INTEGER",
         "baseline_text": "TEXT",
         "baseline_type": "TEXT",
+        "country": "TEXT",
+        "llm_context_label": "TEXT",
     }
     missing = {name: ddl for name, ddl in needed.items() if name not in existing}
     if not missing:

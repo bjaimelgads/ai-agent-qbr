@@ -49,17 +49,17 @@ Adapter behavior:
 ## QBR Project (ai-agent-qbr)
 
 ### Knowledge store and extraction pipeline
-- Data is stored in SQLite (`qbr_intelligence.db`) using SQLAlchemy models in `qbr_extraction/qbr_intelligence/db/models.py`.
+- Data is stored in SQLite (`qbr_intelligence.db`) using SQLAlchemy models in `src/qbr_intelligence/db/models.py`.
 - Embeddings are stored as JSON arrays in `chunks.embedding` with `chunks.embedding_model` metadata.
 - Extraction pipeline uses Kreuzberg embeddings and optional SentenceTransformers fallback:
-  - `qbr_extraction/qbr_intelligence/pipeline/processor.py`
-  - `qbr_extraction/qbr_intelligence/pipeline/embeddings.py`
-  - `qbr_extraction/qbr_intelligence/pipeline/post_embeddings.py`
+  - `src/qbr_intelligence/pipeline/processor.py`
+  - `src/qbr_intelligence/pipeline/embeddings.py`
+  - `src/qbr_intelligence/pipeline/post_embeddings.py`
 
 ### Query path today
-- `qbr_extraction/qbr_intelligence/query/interface.py` exposes `QBRQueryInterface`.
+- `src/qbr_intelligence/query/interface.py` exposes `QBRQueryInterface`.
 - `search_content()` performs a simple text search (`Chunk.content ILIKE`), not vector search.
-- Tool helpers live in `qbr_extraction/qbr_intelligence/query/tools.py` (document summaries, metrics, entities, etc.).
+- Tool helpers live in `src/qbr_intelligence/query/tools.py` (document summaries, metrics, entities, etc.).
 
 ### Vector database status
 - No dedicated vector database is currently wired. Embeddings are stored in SQLite and not queried for similarity. The current search path is text-only.

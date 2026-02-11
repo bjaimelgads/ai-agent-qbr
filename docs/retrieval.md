@@ -20,7 +20,7 @@ Minimum tables required for retrieval:
 
 Example (repo-shipped SQLite DB):
 ```
-DATABASE_URL=sqlite+aiosqlite:///qbr_extraction/qbr_intelligence.db
+DATABASE_URL=sqlite+aiosqlite:///qbr_intelligence.db
 ```
 Example (Lakebase/Postgres):
 ```

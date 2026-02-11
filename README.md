@@ -116,7 +116,7 @@ Minimum expected tables:
 
 To use the prebuilt DB shipped in this repo:
 ```
-DATABASE_URL=sqlite+aiosqlite:///qbr_extraction/qbr_intelligence.db
+DATABASE_URL=sqlite+aiosqlite:///qbr_intelligence.db
 ```
 
 Notes:

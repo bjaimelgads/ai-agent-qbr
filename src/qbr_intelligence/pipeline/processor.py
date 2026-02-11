@@ -255,6 +255,7 @@ class QBRProcessor:
             "baseline_text": "TEXT",
             "baseline_type": "TEXT",
             "country": "TEXT",
+            "llm_context_label": "TEXT",
         }
         missing = {name: ddl for name, ddl in needed.items() if name not in existing}
         if not missing:
@@ -2401,6 +2402,7 @@ Categories:
                         baseline_text=m.baseline_text,
                         baseline_type=m.baseline_type,
                         country=country,
+                        llm_context_label=m.llm_context_label,
                     )
                 )
             if skipped_without_slide:
