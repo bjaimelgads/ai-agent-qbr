@@ -23,7 +23,7 @@
 The view is created on-demand by the MetricFactStore (safe for sqlite/postgres).
 
 ## Intent Schema
-See `qbr_extraction/qbr_intelligence/schemas/metric_qa.py`:
+See `src/qbr_intelligence/schemas/metric_qa.py`:
 - metric_ids
 - client
 - region
