@@ -8,7 +8,7 @@ constraints for extending PPTX extraction without breaking existing behavior.
   - `qbr_extraction/run_pipeline.py` runs the end-to-end extraction and optional LLM enhancement.
   - `qbr_extraction/extract_qbr.py` is a standalone extraction script that writes files to `extraction_output/`.
 - Extraction
-  - `qbr_extraction/qbr_intelligence/pipeline/processor.py` calls Kreuzberg
+  - `src/qbr_intelligence/pipeline/processor.py` calls Kreuzberg
     `extract_file_sync()` with `ExtractionConfig` (OCR, images, page markers,
     keyword extraction, language detection, chunking + embeddings).
   - Slide parsing is currently done by splitting Kreuzberg content on
@@ -19,11 +19,11 @@ constraints for extending PPTX extraction without breaking existing behavior.
     SentenceTransformers (`post_embeddings.py`).
 - Storage
   - SQLite DB `qbr_intelligence.db` via SQLAlchemy models in
-    `qbr_extraction/qbr_intelligence/db/models.py`.
+    `src/qbr_intelligence/db/models.py`.
   - Core tables: `documents`, `slides`, `chunks`, `metrics`, `charts`, `images`,
     `entities`, `keywords`, `facets`.
 - Retrieval
-  - `qbr_extraction/qbr_intelligence/query/interface.py` exposes agent-friendly queries.
+  - `src/qbr_intelligence/query/interface.py` exposes agent-friendly queries.
   - `search_content()` uses text search (`ILIKE`) over `chunks.content`.
   - Embeddings are stored in `chunks.embedding` but not used in the query layer.
 
@@ -71,15 +71,15 @@ Emitted by `QBRProcessor._export_extraction_outputs()` and `extract_qbr.py`:
 
 ## Schema Assumptions / Potential Breakpoints
 Areas that implicitly assume current shapes:
-- `qbr_extraction/qbr_intelligence/pipeline/processor.py`:
+- `src/qbr_intelligence/pipeline/processor.py`:
   - `parse_slides()` expects `<!-- PAGE n -->` markers and `### Notes:` blocks.
   - `extract_metrics()` and `detect_charts()` read plain text only.
   - Output JSON files are written with fixed keys and file names.
-- `qbr_extraction/qbr_intelligence/db/models.py` and
-  `qbr_extraction/qbr_intelligence/schemas/documents.py`:
+- `src/qbr_intelligence/db/models.py` and
+  `src/qbr_intelligence/schemas/documents.py`:
   - Pydantic schemas define strict fields; new fields must be additive or
     introduced via namespaced JSON in `extraction_metadata` or `metadata`.
-- `qbr_extraction/qbr_intelligence/query/interface.py`:
+- `src/qbr_intelligence/query/interface.py`:
   - Retrieval assumes chunks exist and are text-only; no slide/element structure.
 
 ## Candidate Extension Points

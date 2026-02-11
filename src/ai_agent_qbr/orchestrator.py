@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import re
 import secrets
 import time
+from contextlib import suppress
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -75,6 +77,452 @@ def _looks_like_followup(query: str) -> bool:
     return any(marker in lowered for marker in _FOLLOWUP_MARKERS)
 
 
+def _planner_event_payload(event: Any) -> tuple[str | None, dict[str, Any]]:
+    event_type: str | None = None
+    payload: dict[str, Any] = {}
+    if isinstance(event, dict):
+        event_type = event.get("event_type") or event.get("type")
+        raw_payload = event.get("payload") or event.get("extra")
+        if isinstance(raw_payload, dict):
+            payload = dict(raw_payload)
+        return event_type, payload
+
+    if hasattr(event, "event_type"):
+        event_type = getattr(event, "event_type")
+    if hasattr(event, "extra"):
+        raw_extra = getattr(event, "extra", None)
+        if isinstance(raw_extra, dict):
+            payload.update(raw_extra)
+    if hasattr(event, "to_payload"):
+        try:
+            raw_payload = event.to_payload()
+        except Exception:  # noqa: BLE001
+            raw_payload = None
+        if isinstance(raw_payload, dict):
+            merged = dict(raw_payload)
+            merged.update(payload)
+            payload = merged
+    return event_type, payload
+
+
+def _decode_json_like(value: Any) -> Any:
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except Exception:  # noqa: BLE001
+            return value
+    return value
+
+
+def _decode_json_like_recursive(value: Any) -> Any:
+    decoded = _decode_json_like(value)
+    if isinstance(decoded, str):
+        second = _decode_json_like(decoded)
+        return second
+    return decoded
+
+
+def _extract_rag_scope_payload(payload: Any) -> dict[str, Any] | None:
+    candidate = _decode_json_like_recursive(payload)
+    if not isinstance(candidate, dict):
+        return None
+    debug_payload = candidate.get("debug")
+    if isinstance(debug_payload, dict):
+        rag_scope = debug_payload.get("rag_scope")
+        if isinstance(rag_scope, dict):
+            return rag_scope
+    direct_scope = candidate.get("rag_scope")
+    if isinstance(direct_scope, dict):
+        return direct_scope
+    for key in ("result", "output", "value", "data"):
+        nested = candidate.get(key)
+        rag_scope = _extract_rag_scope_payload(nested)
+        if rag_scope is not None:
+            return rag_scope
+    return None
+
+
+class _ToolIoCollector:
+    def __init__(self) -> None:
+        self._by_id: dict[str, dict[str, Any]] = {}
+        self._ordered: list[dict[str, Any]] = []
+        self._sequence = 0
+
+    @property
+    def records(self) -> list[dict[str, Any]]:
+        return [dict(record) for record in self._ordered]
+
+    def on_event(self, event: Any) -> None:
+        event_type, payload = _planner_event_payload(event)
+        if event_type not in {"tool_call_start", "tool_call_result", "tool_call_end"}:
+            return
+        raw_id = payload.get("tool_call_id")
+        if raw_id is None:
+            return
+        tool_call_id = str(raw_id)
+
+        record = self._by_id.get(tool_call_id)
+        if record is None:
+            record = {
+                "index": self._sequence,
+                "tool_call_id": tool_call_id,
+                "tool_name": str(payload.get("tool_name") or "unknown"),
+                "input": None,
+                "output": None,
+                "status": "started",
+            }
+            self._sequence += 1
+            self._by_id[tool_call_id] = record
+            self._ordered.append(record)
+
+        if event_type == "tool_call_start":
+            if payload.get("tool_name"):
+                record["tool_name"] = str(payload.get("tool_name"))
+            if "args_json" in payload:
+                record["input"] = _decode_json_like(payload.get("args_json"))
+            return
+
+        if event_type == "tool_call_result":
+            if "result_json" in payload:
+                record["output"] = _decode_json_like(payload.get("result_json"))
+            record["status"] = "result"
+            return
+
+        if event_type == "tool_call_end":
+            if record.get("status") == "started":
+                record["status"] = "completed_no_result"
+            else:
+                record["status"] = "completed"
+
+
+class _PlannerMlflowEventCollector:
+    def __init__(self, trace: MlflowTrace, *, interaction_metadata: dict[str, Any] | None = None) -> None:
+        self._trace = trace
+        self._tool_io = _ToolIoCollector()
+        self._interaction_metadata = interaction_metadata if isinstance(interaction_metadata, dict) else None
+        self._tool_spans: dict[str, dict[str, Any]] = {}
+        self._llm_span_cm: Any = None
+        self._llm_span: object | None = None
+        self._llm_call_index = 0
+        self._llm_outputs: dict[str, str] = {}
+        self._llm_calls: list[dict[str, Any]] = []
+        self._llm_chunk_count = 0
+        self._llm_last_chunk: dict[str, Any] | None = None
+        self._query_metrics_rag_emit_count = 0
+        self._streamed_answer_text = ""
+
+    @property
+    def tool_calls(self) -> list[dict[str, Any]]:
+        return self._tool_io.records
+
+    @property
+    def llm_calls(self) -> list[dict[str, Any]]:
+        return list(self._llm_calls)
+
+    @property
+    def query_metrics_rag_emitted(self) -> bool:
+        return self._query_metrics_rag_emit_count > 0
+
+    @property
+    def streamed_answer_text(self) -> str | None:
+        text = self._streamed_answer_text.strip()
+        return text or None
+
+    def on_event(self, event: Any) -> None:
+        event_type, payload = _planner_event_payload(event)
+        if not event_type:
+            return
+        self._tool_io.on_event(event)
+        event_type = str(event_type)
+
+        if event_type == "llm_stream_chunk":
+            self._on_llm_stream(payload)
+            return
+
+        if event_type == "tool_call_start":
+            self._close_llm_span()
+            self._on_tool_start(payload)
+            return
+
+        if event_type == "tool_call_result":
+            self._on_tool_result(payload)
+            return
+
+        if event_type == "tool_call_end":
+            self._on_tool_end(payload)
+            return
+
+        if event_type in {"step_complete", "node_end", "iteration_end"}:
+            self._close_llm_span()
+
+    def close(self) -> None:
+        self._close_llm_span()
+        for tool_call_id in list(self._tool_spans):
+            self._close_tool_span(tool_call_id)
+
+    def _on_llm_stream(self, payload: dict[str, Any]) -> None:
+        if self._llm_span is None:
+            self._llm_call_index += 1
+            channel = str(payload.get("channel") or "unknown")
+            phase = str(payload.get("phase") or "unknown")
+            cm = self._trace.span(
+                name=f"llm_call_{self._llm_call_index}",
+                span_type="LLM",
+                attributes={"channel": channel, "phase": phase},
+            )
+            span = cm.__enter__()
+            self._llm_span_cm = cm
+            self._llm_span = span
+            self._llm_outputs = {}
+            self._llm_chunk_count = 0
+            self._llm_last_chunk = None
+            self._llm_calls.append({"index": self._llm_call_index, "channel": channel, "phase": phase})
+
+        channel = str(payload.get("channel") or "unknown")
+        text = payload.get("text") or payload.get("content") or payload.get("delta") or payload.get("message")
+        self._llm_chunk_count += 1
+        self._llm_last_chunk = {
+            "channel": channel,
+            "phase": payload.get("phase"),
+            "done": bool(payload.get("done")),
+            "keys": sorted(payload.keys()),
+        }
+        if text:
+            existing = self._llm_outputs.get(channel, "")
+            self._llm_outputs[channel] = f"{existing}{text}"
+            if channel == "answer":
+                self._streamed_answer_text = f"{self._streamed_answer_text}{text}"
+
+        if bool(payload.get("done")):
+            self._close_llm_span()
+
+    def _close_llm_span(self) -> None:
+        if self._llm_span_cm is None:
+            return
+        outputs: dict[str, Any] = dict(self._llm_outputs)
+        if not outputs:
+            outputs = {"content": "", "note": "No text-like payload found in llm_stream_chunk"}
+        outputs["chunk_count"] = self._llm_chunk_count
+        if self._llm_last_chunk is not None:
+            outputs["last_chunk"] = self._llm_last_chunk
+        self._trace.set_outputs(self._llm_span, outputs)
+        cm = self._llm_span_cm
+        self._llm_span_cm = None
+        self._llm_span = None
+        self._llm_outputs = {}
+        self._llm_chunk_count = 0
+        self._llm_last_chunk = None
+        with suppress(Exception):
+            cm.__exit__(None, None, None)
+
+    def _on_tool_start(self, payload: dict[str, Any]) -> None:
+        raw_id = payload.get("tool_call_id")
+        if raw_id is None:
+            return
+        tool_call_id = str(raw_id)
+        tool_name = str(payload.get("tool_name") or "unknown")
+        tool_input = _decode_json_like(payload.get("args_json"))
+        if tool_name == "query_metrics":
+            tool_input = self._enrich_query_metrics_input(tool_input)
+        cm = self._trace.span(
+            name=f"tool:{tool_name}",
+            span_type="TOOL",
+            attributes={"tool_call_id": tool_call_id, "tool_name": tool_name},
+            inputs={"args": tool_input} if tool_input is not None else None,
+        )
+        span = cm.__enter__()
+        self._tool_spans[tool_call_id] = {
+            "cm": cm,
+            "span": span,
+            "result": None,
+            "ended": False,
+            "rag_emitted": False,
+            "tool_name": tool_name,
+            "input": tool_input,
+        }
+
+    def _on_tool_result(self, payload: dict[str, Any]) -> None:
+        raw_id = payload.get("tool_call_id")
+        if raw_id is None:
+            return
+        tool_call_id = str(raw_id)
+        span_state = self._tool_spans.get(tool_call_id)
+        if not span_state:
+            return
+        span = span_state.get("span")
+        if span is None:
+            return
+        result_payload: Any = None
+        for key in ("result_json", "result", "output", "value"):
+            if key in payload:
+                result_payload = _decode_json_like_recursive(payload.get(key))
+                break
+        span_state["result"] = result_payload
+        self._trace.set_outputs(
+            span,
+            {"result": result_payload, "status": "result"},
+        )
+        if span_state.get("tool_name") == "query_metrics":
+            self._emit_query_metrics_rag_span(span_state, result_payload)
+        if span_state.get("ended"):
+            self._close_tool_span(tool_call_id)
+
+    def _on_tool_end(self, payload: dict[str, Any]) -> None:
+        raw_id = payload.get("tool_call_id")
+        if raw_id is None:
+            return
+        tool_call_id = str(raw_id)
+        span_state = self._tool_spans.get(tool_call_id)
+        if not span_state:
+            return
+        span_state["ended"] = True
+        if span_state.get("tool_name") == "query_metrics" and not span_state.get("rag_emitted"):
+            self._emit_query_metrics_rag_span(span_state, span_state.get("result"))
+        if span_state.get("result") is not None:
+            self._close_tool_span(tool_call_id)
+
+    def _close_tool_span(self, tool_call_id: str) -> None:
+        span_state = self._tool_spans.pop(tool_call_id, None)
+        if not span_state:
+            return
+        span = span_state.get("span")
+        if span is not None and span_state.get("result") is None:
+            self._trace.set_outputs(span, {"status": "ended_without_result"})
+        cm = span_state.get("cm")
+        if cm is None:
+            return
+        with suppress(Exception):
+            cm.__exit__(None, None, None)
+
+    def _emit_query_metrics_rag_span(self, span_state: dict[str, Any], result_payload: Any) -> None:
+        parent_span = span_state.get("span")
+        if parent_span is None:
+            return
+        rag_scope = _extract_rag_scope_payload(result_payload)
+        if rag_scope is None and isinstance(self._interaction_metadata, dict):
+            fallback_scope = self._interaction_metadata.get("metric_rag_scope")
+            if isinstance(fallback_scope, dict):
+                rag_scope = fallback_scope
+        if rag_scope is None:
+            return
+        tool_input = span_state.get("input")
+        query_value = None
+        if isinstance(tool_input, dict):
+            query_value = tool_input.get("question")
+        with self._trace.span(
+            name="query_metrics.rag",
+            span_type="RETRIEVER",
+            attributes={
+                "source_tool": "query_metrics",
+                "enabled": bool(rag_scope.get("enabled", False)),
+            },
+            inputs={
+                "query": query_value,
+                "prefiltered_doc_ids": rag_scope.get("prefiltered_doc_ids"),
+            },
+        ) as rag_span:
+            self._trace.set_outputs(
+                rag_span,
+                {
+                    "prefiltered_docs": rag_scope.get("prefiltered_docs"),
+                    "document_ids": rag_scope.get("document_ids"),
+                    "selected_docs": rag_scope.get("selected_docs"),
+                    "per_doc_hit_count": rag_scope.get("per_doc_hit_count"),
+                    "per_doc_max_score": rag_scope.get("per_doc_max_score"),
+                    "retrieved_hit_chunks": rag_scope.get("retrieved_hit_chunks"),
+                    "post_rerank_chunks_full": rag_scope.get("post_rerank_chunks_full"),
+                    "slide_ids_count": rag_scope.get("slide_ids_count"),
+                    "slide_range_count": rag_scope.get("slide_range_count"),
+                    "retrieved_hits": rag_scope.get("retrieved_hits"),
+                    "post_rerank_hit_count": rag_scope.get("post_rerank_hit_count"),
+                    "pre_rerank_hit_count": rag_scope.get("pre_rerank_hit_count"),
+                },
+            )
+        span_state["rag_emitted"] = True
+        self._query_metrics_rag_emit_count += 1
+
+
+def _emit_query_metrics_rag_fallback_span(
+    trace: MlflowTrace,
+    *,
+    query: str | None,
+    rag_scope: dict[str, Any],
+) -> None:
+    with trace.span(
+        name="query_metrics.rag",
+        span_type="RETRIEVER",
+        attributes={
+            "source_tool": "query_metrics",
+            "enabled": bool(rag_scope.get("enabled", False)),
+            "fallback_emission": True,
+        },
+        inputs={
+            "query": query,
+            "prefiltered_doc_ids": rag_scope.get("prefiltered_doc_ids"),
+        },
+    ) as rag_span:
+        trace.set_outputs(
+            rag_span,
+            {
+                "prefiltered_docs": rag_scope.get("prefiltered_docs"),
+                "document_ids": rag_scope.get("document_ids"),
+                "selected_docs": rag_scope.get("selected_docs"),
+                "per_doc_hit_count": rag_scope.get("per_doc_hit_count"),
+                "per_doc_max_score": rag_scope.get("per_doc_max_score"),
+                "retrieved_hit_chunks": rag_scope.get("retrieved_hit_chunks"),
+                "post_rerank_chunks_full": rag_scope.get("post_rerank_chunks_full"),
+                "slide_ids_count": rag_scope.get("slide_ids_count"),
+                "slide_range_count": rag_scope.get("slide_range_count"),
+                "retrieved_hits": rag_scope.get("retrieved_hits"),
+                "post_rerank_hit_count": rag_scope.get("post_rerank_hit_count"),
+                "pre_rerank_hit_count": rag_scope.get("pre_rerank_hit_count"),
+            },
+        )
+
+
+def _extract_rag_scope_from_interaction_metadata(
+    interaction_metadata: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if not isinstance(interaction_metadata, dict):
+        return None
+    direct_scope = interaction_metadata.get("metric_rag_scope")
+    if isinstance(direct_scope, dict):
+        return direct_scope
+    metric_answer = interaction_metadata.get("metric_answer")
+    rag_scope = _extract_rag_scope_payload(metric_answer)
+    if isinstance(rag_scope, dict):
+        return rag_scope
+    return None
+
+    def _enrich_query_metrics_input(self, tool_input: Any) -> Any:
+        if not isinstance(tool_input, dict):
+            return tool_input
+        if tool_input.get("intent"):
+            return tool_input
+
+        latest_intent = self._latest_intent_from_tool_outputs()
+        if latest_intent is None:
+            return tool_input
+
+        enriched = dict(tool_input)
+        enriched["intent"] = latest_intent
+        enriched["_intent_source"] = "mlflow_enriched_from_prior_tool_output"
+        return enriched
+
+    def _latest_intent_from_tool_outputs(self) -> dict[str, Any] | None:
+        for record in reversed(self._tool_io.records):
+            if not isinstance(record, dict):
+                continue
+            if record.get("tool_name") not in {"refine_metric_intent", "resolve_metric_intent"}:
+                continue
+            output = record.get("output")
+            if not isinstance(output, dict):
+                continue
+            intent = output.get("intent")
+            if isinstance(intent, dict):
+                return intent
+        return None
+
 
 
 class AiAgentQbrFlowError(RuntimeError):
@@ -123,6 +571,8 @@ def _build_metric_grid_artifact(answer: MetricAnswer | None) -> dict[str, Any] |
     if answer is None:
         return None
     rows = answer.table_data or []
+    if not rows and answer.data:
+        rows = [row.model_dump() if hasattr(row, "model_dump") else dict(row) for row in answer.data]
     if len(rows) <= 1:
         return None
     grid_rows: list[dict[str, Any]] = []
@@ -247,6 +697,26 @@ def _extract_answer_from_mapping(payload: Mapping[str, Any]) -> str | None:
 
 
 def _format_metric_answer(answer: MetricAnswer) -> str:
+    def _format_source_from_row(row: Mapping[str, Any]) -> str | None:
+        doc_name = row.get("document_name")
+        doc_id = row.get("document_id")
+        slide_title = row.get("slide_title")
+        slide_number = row.get("slide_number")
+        slide_id = row.get("slide_id")
+        source_label = doc_name or (f"doc {doc_id}" if doc_id is not None else None)
+        if source_label is None:
+            return None
+        if slide_title:
+            source_label = f"{source_label} - {slide_title}"
+        elif slide_number is not None:
+            source_label = f"{source_label} slide {slide_number}"
+        elif slide_id is not None:
+            source_label = f"{source_label} slide {slide_id}"
+        source_url = row.get("slide_url") or row.get("document_url")
+        if source_url:
+            return f"[{source_label}]({source_url})"
+        return source_label
+
     text = answer.summary_text.strip()
     details_rows = answer.table_data
     if not details_rows and answer.data:
@@ -292,12 +762,12 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 for (key, rows) in sorted(slide_items, key=_slide_sort_key):
                     _, _, slide_number, slide_id, slide_title = key
                     slide_label = "Slide"
-                    if slide_number:
+                    if slide_title:
+                        slide_label = f"{slide_label}: {slide_title}"
+                    elif slide_number:
                         slide_label = f"{slide_label} {slide_number}"
                     elif slide_id:
                         slide_label = f"{slide_label} {slide_id}"
-                    if slide_title:
-                        slide_label = f"{slide_label}: {slide_title}"
                     lines.append(f"- {slide_label}")
 
                     for row in rows[:4]:
@@ -306,7 +776,9 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                         value_text = f"{value} {unit}".strip()
                         context = row.get("snippet") or row.get("llm_context_label")
                         context_text = f" — {context}" if context else ""
-                        lines.append(f"  - {value_text}{context_text}")
+                        source_text = _format_source_from_row(row)
+                        source_suffix = f" | {source_text}" if source_text else ""
+                        lines.append(f"  - {value_text}{context_text}{source_suffix}")
             text = f"{text}\n" + "\n".join(lines)
         else:
             lines = ["", "Details:"]
@@ -319,21 +791,147 @@ def _format_metric_answer(answer: MetricAnswer) -> str:
                 context_text = f" — {context_label}" if context_label else ""
                 lines.append(f"- {metric}: {value} {unit} ({period}){context_text}")
             text = f"{text}\n" + "\n".join(lines)
-    if answer.citations and not details_rows:
-        def _format_source(citation: AnswerCitation) -> str:
+    if answer.citations:
+        doc_sources: list[str] = []
+        seen_docs: set[tuple[str, str | None]] = set()
+        for citation in answer.citations:
             doc_label = citation.document_name or f"doc {citation.document_id}"
-            if citation.slide_number is not None:
-                doc_label = f"{doc_label} slide {citation.slide_number}"
-            elif citation.slide_id is not None:
-                doc_label = f"{doc_label} slide {citation.slide_id}"
-            doc_url = citation.slide_url or citation.document_url
+            doc_url = citation.document_url
+            key = (doc_label, doc_url)
+            if key in seen_docs:
+                continue
+            seen_docs.add(key)
             if doc_url:
-                return f"{doc_label} (`{doc_url}`)"
-            return doc_label
-
-        sources = ", ".join(_format_source(c) for c in answer.citations)
+                doc_sources.append(f"[{doc_label}]({doc_url})")
+            else:
+                doc_sources.append(doc_label)
+        sources = ", ".join(doc_sources)
         text = f"{text}\n\nSources: {sources}"
     return text
+
+
+def _tool_calls_include_search(tool_calls: list[dict[str, Any]]) -> bool:
+    for call in tool_calls:
+        tool_name = str(call.get("tool_name") or "").strip()
+        if tool_name in {"search_documents", "search_qbr"}:
+            return True
+    return False
+
+
+def _format_rag_slide_refs(qbr_citations: list[dict[str, Any]]) -> list[str]:
+    refs: list[str] = []
+    seen: set[tuple[int | None, int | None, int | None]] = set()
+    for citation in qbr_citations:
+        if not isinstance(citation, dict):
+            continue
+        doc_id_raw = citation.get("document_id")
+        try:
+            doc_id = int(doc_id_raw) if doc_id_raw is not None else None
+        except (TypeError, ValueError):
+            doc_id = None
+        start_raw = citation.get("start_slide")
+        end_raw = citation.get("end_slide")
+        try:
+            start = int(start_raw) if start_raw is not None else None
+        except (TypeError, ValueError):
+            start = None
+        try:
+            end = int(end_raw) if end_raw is not None else None
+        except (TypeError, ValueError):
+            end = None
+        key = (doc_id, start, end)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        doc_label = f"doc {doc_id}" if doc_id is not None else "doc ?"
+        if start is None and end is None:
+            slide_label = "slide ?"
+        elif start is None:
+            slide_label = f"slides ?-{end}"
+        elif end is None or end == start:
+            slide_label = f"slide {start}"
+        else:
+            slide_label = f"slides {start}-{end}"
+        refs.append(f"{doc_label} {slide_label}")
+    return refs
+
+
+def _append_search_slide_refs_to_answer(
+    answer_text: str,
+    *,
+    tool_calls: list[dict[str, Any]],
+    qbr_citations: list[dict[str, Any]],
+) -> str:
+    if not answer_text.strip():
+        return answer_text
+    if not _tool_calls_include_search(tool_calls):
+        return answer_text
+    slide_refs = _format_rag_slide_refs(qbr_citations)
+    if not slide_refs:
+        return answer_text
+    if "slides:" in answer_text.lower():
+        return answer_text
+    return f"{answer_text}\n\nSlides: {', '.join(slide_refs)}"
+
+
+def _replace_slide_number_refs_with_titles(
+    text: str,
+    *,
+    metric_answer: MetricAnswer | None,
+) -> str:
+    if not text or metric_answer is None:
+        return text
+    rows = metric_answer.table_data or []
+    if not rows:
+        return text
+
+    updated = text
+    replacements: list[tuple[str, str]] = []
+    for row in rows:
+        doc_name = row.get("document_name")
+        slide_number = row.get("slide_number")
+        slide_title = row.get("slide_title")
+        if not doc_name or slide_number is None or not slide_title:
+            continue
+        source_pattern = rf"{re.escape(str(doc_name))}\s+slide\s+{re.escape(str(slide_number))}\b"
+        source_label = f"{doc_name} - {slide_title}"
+        replacements.append((source_pattern, source_label))
+
+    if not replacements:
+        return text
+
+    # Replace longer patterns first to avoid partial collisions for similarly named decks.
+    replacements.sort(key=lambda item: len(item[0]), reverse=True)
+    for pattern, replacement in replacements:
+        updated = re.sub(pattern, replacement, updated)
+    return updated
+
+
+def _finalize_answer_text(
+    *,
+    output_protocol: str,
+    extracted_answer_text: str | None,
+    metric_answer: MetricAnswer | None,
+    streamed_answer_text: str | None,
+    tool_calls: list[dict[str, Any]],
+    qbr_citations: list[dict[str, Any]],
+) -> str | None:
+    if output_protocol == "agui" and streamed_answer_text:
+        return _replace_slide_number_refs_with_titles(
+            streamed_answer_text,
+            metric_answer=metric_answer,
+        )
+    if metric_answer is not None:
+        return _format_metric_answer(metric_answer)
+    base_text = extracted_answer_text or ""
+    if not base_text.strip():
+        return None
+    return _append_search_slide_refs_to_answer(
+        base_text,
+        tool_calls=tool_calls,
+        qbr_citations=qbr_citations,
+    )
 
 
 def _make_tool_context(payload: dict[str, Any]) -> Any:
@@ -725,6 +1323,7 @@ class AiAgentQbrOrchestrator:
                 "session_id": session_id,
                 "original_query": query,
                 "trace_id": trace_id,
+                "mlflow_trace": self._mlflow_trace,
                 "status_publisher": self._telemetry.publish_status,
                 "output_protocol": self._config.output_protocol,
                 "qbr_search_use_case": search_use_case,
@@ -742,6 +1341,10 @@ class AiAgentQbrOrchestrator:
             tool_context["metric_query_engine"] = await self._get_metric_query_engine()
             if self._config.comparison_stage1_top_k is not None:
                 tool_context["comparison_stage1_top_k"] = self._config.comparison_stage1_top_k
+            planner_event_collector = _PlannerMlflowEventCollector(
+                self._mlflow_trace,
+                interaction_metadata=interaction_metadata,
+            )
 
             with self._mlflow_trace.span(
                 name="planner",
@@ -751,20 +1354,25 @@ class AiAgentQbrOrchestrator:
                     "qbr_context": filtered_context,
                     "qbr_citations": llm_context["qbr_citations"],
                 },
-            ) as planner_span:
+            ) as planner_span, self._telemetry.subscribe(
+                event_callback=planner_event_collector.on_event
+            ):
                 planner_started = time.perf_counter()
                 _LOGGER.info("Planner start trace_id=%s session_id=%s", trace_id, session_id)
-                result = await self._planner.run(
-                    query=query,
-                    llm_context=llm_context,
-                    tool_context=tool_context,
-                )
-                _LOGGER.info(
-                    "Planner finished trace_id=%s session_id=%s elapsed_s=%.2f",
-                    trace_id,
-                    session_id,
-                    time.perf_counter() - planner_started,
-                )
+                try:
+                    result = await self._planner.run(
+                        query=query,
+                        llm_context=llm_context,
+                        tool_context=tool_context,
+                    )
+                    _LOGGER.info(
+                        "Planner finished trace_id=%s session_id=%s elapsed_s=%.2f",
+                        trace_id,
+                        session_id,
+                        time.perf_counter() - planner_started,
+                    )
+                finally:
+                    planner_event_collector.close()
 
             if isinstance(result, PlannerPause):
                 raise AiAgentQbrFlowError("Planner paused unexpectedly")
@@ -774,6 +1382,42 @@ class AiAgentQbrOrchestrator:
 
             payload: Any = result.payload
             answer_text = _extract_answer(payload)
+            tool_calls = planner_event_collector.tool_calls
+            llm_calls = planner_event_collector.llm_calls
+            metric_answer = None
+            if isinstance(interaction_metadata, dict):
+                metric_payload = interaction_metadata.get("metric_answer")
+                metric_answer = _coerce_metric_answer(metric_payload)
+            if metric_answer is None:
+                metric_answer = _coerce_metric_answer(payload)
+            answer_text = _finalize_answer_text(
+                output_protocol=self._config.output_protocol,
+                extracted_answer_text=answer_text,
+                metric_answer=metric_answer,
+                streamed_answer_text=planner_event_collector.streamed_answer_text,
+                tool_calls=tool_calls,
+                qbr_citations=llm_context.get("qbr_citations", []),
+            )
+            rag_scope_payload = _extract_rag_scope_from_interaction_metadata(interaction_metadata)
+            if (
+                isinstance(rag_scope_payload, dict)
+                and not planner_event_collector.query_metrics_rag_emitted
+            ):
+                _LOGGER.info(
+                    "MLFLOW_RAG_FALLBACK_EMIT trace_id=%s source=interaction_metadata",
+                    trace_id,
+                )
+                _emit_query_metrics_rag_fallback_span(
+                    self._mlflow_trace,
+                    query=query,
+                    rag_scope=rag_scope_payload,
+                )
+            elif not planner_event_collector.query_metrics_rag_emitted:
+                _LOGGER.warning(
+                    "MLFLOW_RAG_FALLBACK_MISSING trace_id=%s keys=%s",
+                    trace_id,
+                    sorted(interaction_metadata.keys()) if isinstance(interaction_metadata, dict) else [],
+                )
 
             if answer_text:
                 await self._memory.ingest_interaction(
@@ -796,6 +1440,8 @@ class AiAgentQbrOrchestrator:
                     {
                         "answer": answer_text,
                         "payload": payload,
+                        "tool_calls": tool_calls,
+                        "llm_calls": llm_calls,
                     },
                 )
                 self._mlflow_trace.set_outputs(
@@ -805,27 +1451,42 @@ class AiAgentQbrOrchestrator:
                         "trace_id": trace_id,
                     },
                 )
-                with self._mlflow_tracer.nested_run(
-                    run_name="planner",
-                    tags={"trace_id": trace_id},
-                ) as planner_run:
+            else:
+                self._mlflow_trace.set_outputs(
+                    planner_span,
+                    {
+                        "answer": "",
+                        "payload": payload,
+                        "tool_calls": tool_calls,
+                        "llm_calls": llm_calls,
+                    },
+                )
+            with self._mlflow_tracer.nested_run(
+                run_name="planner",
+                tags={"trace_id": trace_id},
+            ) as planner_run:
+                if answer_text:
                     self._mlflow_tracer.log_text(
                         planner_run,
                         "final_answer",
                         answer_text,
                     )
-                    self._mlflow_tracer.log_json(
-                        planner_run,
-                        "planner_payload",
-                        payload,
-                    )
+                self._mlflow_tracer.log_json(
+                    planner_run,
+                    "planner_payload",
+                    payload,
+                )
+                self._mlflow_tracer.log_json(
+                    planner_run,
+                    "tool_calls",
+                    tool_calls,
+                )
+                self._mlflow_tracer.log_json(
+                    planner_run,
+                    "llm_calls",
+                    llm_calls,
+                )
 
-            metric_answer = None
-            if isinstance(interaction_metadata, dict):
-                metric_payload = interaction_metadata.get("metric_answer")
-                metric_answer = _coerce_metric_answer(metric_payload)
-            if metric_answer is None:
-                metric_answer = _coerce_metric_answer(payload)
             if metric_answer is None:
                 _LOGGER.info("metric_grid trace_id=%s status=missing_metric_answer", trace_id)
             else:

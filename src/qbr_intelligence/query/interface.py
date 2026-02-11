@@ -149,7 +149,9 @@ class QBRQueryInterface:
 
         # Get aggregate stats
         metric_count = await self.session.scalar(
-            select(func.count(Metric.id)).where(Metric.document_id == document_id)
+            select(func.count(Metric.id))
+            .join(Slide, Slide.id == Metric.slide_id)
+            .where(Slide.document_id == document_id)
         )
         entity_count = await self.session.scalar(
             select(func.count(Entity.id)).where(Entity.document_id == document_id)
@@ -267,7 +269,7 @@ class QBRQueryInterface:
 
         conditions = []
         if document_id:
-            conditions.append(Metric.document_id == document_id)
+            conditions.append(Slide.document_id == document_id)
         if category:
             conditions.append(Metric.category == category)
         if name_contains:
@@ -314,8 +316,8 @@ class QBRQueryInterface:
         """
         query = (
             select(Metric, Slide.slide_number)
-            .outerjoin(Slide, Slide.id == Metric.slide_id)
-            .where(Metric.document_id == document_id)
+            .join(Slide, Slide.id == Metric.slide_id)
+            .where(Slide.document_id == document_id)
             .order_by(Metric.category, Metric.normalized_value.desc().nullslast())
         )
 
@@ -354,8 +356,8 @@ class QBRQueryInterface:
         """
         query = (
             select(Metric, Slide.slide_number)
-            .outerjoin(Slide, Slide.id == Metric.slide_id)
-            .where(Metric.document_id == document_id)
+            .join(Slide, Slide.id == Metric.slide_id)
+            .where(Slide.document_id == document_id)
             .order_by(Metric.normalized_value.desc().nullslast())
             .limit(limit)
         )
@@ -393,13 +395,14 @@ class QBRQueryInterface:
         """
         query = (
             select(Metric, Client.name, Document.period)
-            .join(Document)
+            .join(Slide, Slide.id == Metric.slide_id)
+            .join(Document, Document.id == Slide.document_id)
             .outerjoin(Client)
             .where(Metric.name.ilike(f"%{metric_name}%"))
         )
 
         if document_ids:
-            query = query.where(Metric.document_id.in_(document_ids))
+            query = query.where(Slide.document_id.in_(document_ids))
 
         query = query.order_by(Document.created_at.desc())
 

@@ -171,9 +171,9 @@ flowchart TD
 - The agent currently includes `document_url` only if already stored in the DB.
 
 ## Where This Lives in the Repo
-- Extraction pipeline: `qbr_extraction/qbr_intelligence/pipeline/processor.py`
-- Metric context strategies: `qbr_extraction/qbr_intelligence/pipeline/metric_context.py`
-- Metric QA engine: `qbr_extraction/qbr_intelligence/metric_qa/`
+- Extraction pipeline: `src/qbr_intelligence/pipeline/processor.py`
+- Metric context strategies: `src/qbr_intelligence/pipeline/metric_context.py`
+- Metric QA engine: `src/qbr_intelligence/metric_qa/`
 - Runtime orchestrator: `src/ai_agent_qbr/orchestrator.py`
 - Metric router + tool: `src/ai_agent_qbr/infrastructure/metric_router.py`, `src/ai_agent_qbr/tools/query_metrics.py`
 - Hybrid retrieval use cases: `src/qbr_agent/application/use_cases.py`

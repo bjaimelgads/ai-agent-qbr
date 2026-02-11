@@ -61,3 +61,33 @@ async def test_refine_metric_intent_client_like(metric_db, dummy_ctx):
 
     assert result.intent.client == ["Brand X"]
     assert "client" not in result.unresolved_fields
+
+
+async def test_refine_metric_intent_fuzzy_candidate_typos(metric_db, dummy_ctx):
+    engine = MetricQueryEngine(database_url=metric_db)
+    dummy_ctx.tool_context["metric_query_engine"] = engine
+
+    base = await resolve_metric_intent(
+        ResolveMetricIntentArgs(question="show metric values"),
+        dummy_ctx,
+    )
+
+    result = await refine_metric_intent(
+        RefineMetricIntentArgs(
+            question="show metric values",
+            intent=base.intent,
+            candidates=CandidateSet(
+                metric_ids=["CPAA"],
+                clients=["Nkie"],
+                regions=["EMEAA"],
+                periods=["Q22025"],
+            ),
+        ),
+        dummy_ctx,
+    )
+
+    assert result.intent.metric_ids == ["cost_per_acquisition"]
+    assert result.intent.client == ["Nike"]
+    assert result.intent.region == ["EMEA"]
+    assert result.intent.period
+    assert result.intent.period[0].value == "Q2 2025"

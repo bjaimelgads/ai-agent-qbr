@@ -70,7 +70,11 @@ class FakeEmbeddingsProvider(EmbeddingsProvider):
 
 class DummyToolContext:
     def __init__(self, search_use_case: HybridSearchKnowledge):
-        self.tool_context = {"tenant_id": "test-tenant", "qbr_search_use_case": search_use_case}
+        self.tool_context = {
+            "tenant_id": "test-tenant",
+            "qbr_search_use_case": search_use_case,
+            "output_protocol": "websocket",
+        }
 
 
 @pytest.mark.asyncio
