@@ -111,6 +111,12 @@ uv run python run_pipeline.py document.pptx --db sqlite:///custom.db
 
 # Overwrite existing document rows with the same filename
 uv run python run_pipeline.py document.pptx --override
+
+# Process and also backfill slides.title deterministically from PPTX titles
+uv run python run_pipeline.py document.pptx --backfill-slide-titles
+
+# Process a folder and backfill titles for each ingested document
+uv run python run_pipeline.py --folder decks --backfill-slide-titles
 ```
 
 ### Metrics Extraction CLI
@@ -146,7 +152,34 @@ Notes:
 | `--extraction-output-dir DIR` | Override extraction output directory |
 | `--folder DIR` | Process all PPTX files in a folder (top-level only) |
 | `--override` | Delete existing documents with the same filename before processing |
+| `--backfill-slide-titles` | Backfill `slides.title` from PPTX titles after processing |
+| `--backfill-slide-titles-overwrite` | Overwrite non-empty existing slide titles during backfill |
 | `--db URL` | Custom database URL |
+
+### Slide Title Backfill
+
+The deterministic title backfill writes values to `slides.title` and is useful even when LLM enhancement is disabled.
+
+How rows are matched:
+- `document_id` identifies the document in DB.
+- `slide_number` maps each PPTX slide to the corresponding DB row.
+- Update target is `slides.title`.
+
+Title source priority:
+1. PPTX slide title (preferred).
+2. First meaningful line from `slides.raw_text` (fallback).
+
+Backfill existing documents (without reprocessing):
+
+```bash
+uv run python scripts/backfill_slide_titles.py --search-dir qbr_extraction/decks
+```
+
+Preview only:
+
+```bash
+uv run python scripts/backfill_slide_titles.py --dry-run --search-dir qbr_extraction/decks
+```
 
 ## Architecture
 
