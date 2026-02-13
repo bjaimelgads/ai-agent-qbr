@@ -441,6 +441,35 @@ class _PlannerMlflowEventCollector:
         span_state["rag_emitted"] = True
         self._query_metrics_rag_emit_count += 1
 
+    def _enrich_query_metrics_input(self, tool_input: Any) -> Any:
+        if not isinstance(tool_input, dict):
+            return tool_input
+        if tool_input.get("intent"):
+            return tool_input
+
+        latest_intent = self._latest_intent_from_tool_outputs()
+        if latest_intent is None:
+            return tool_input
+
+        enriched = dict(tool_input)
+        enriched["intent"] = latest_intent
+        enriched["_intent_source"] = "mlflow_enriched_from_prior_tool_output"
+        return enriched
+
+    def _latest_intent_from_tool_outputs(self) -> dict[str, Any] | None:
+        for record in reversed(self._tool_io.records):
+            if not isinstance(record, dict):
+                continue
+            if record.get("tool_name") not in {"refine_metric_intent", "resolve_metric_intent"}:
+                continue
+            output = record.get("output")
+            if not isinstance(output, dict):
+                continue
+            intent = output.get("intent")
+            if isinstance(intent, dict):
+                return intent
+        return None
+
 
 def _emit_query_metrics_rag_fallback_span(
     trace: MlflowTrace,
@@ -493,35 +522,6 @@ def _extract_rag_scope_from_interaction_metadata(
     if isinstance(rag_scope, dict):
         return rag_scope
     return None
-
-    def _enrich_query_metrics_input(self, tool_input: Any) -> Any:
-        if not isinstance(tool_input, dict):
-            return tool_input
-        if tool_input.get("intent"):
-            return tool_input
-
-        latest_intent = self._latest_intent_from_tool_outputs()
-        if latest_intent is None:
-            return tool_input
-
-        enriched = dict(tool_input)
-        enriched["intent"] = latest_intent
-        enriched["_intent_source"] = "mlflow_enriched_from_prior_tool_output"
-        return enriched
-
-    def _latest_intent_from_tool_outputs(self) -> dict[str, Any] | None:
-        for record in reversed(self._tool_io.records):
-            if not isinstance(record, dict):
-                continue
-            if record.get("tool_name") not in {"refine_metric_intent", "resolve_metric_intent"}:
-                continue
-            output = record.get("output")
-            if not isinstance(output, dict):
-                continue
-            intent = output.get("intent")
-            if isinstance(intent, dict):
-                return intent
-        return None
 
 
 
@@ -875,6 +875,71 @@ def _append_search_slide_refs_to_answer(
     return f"{answer_text}\n\nSlides: {', '.join(slide_refs)}"
 
 
+def _strip_trailing_sources_block(text: str) -> str:
+    if not text:
+        return text
+    lowered = text.lower()
+    markers = ("\n**sources:**", "\nsources:")
+    cut_at = -1
+    for marker in markers:
+        idx = lowered.rfind(marker)
+        if idx > cut_at:
+            cut_at = idx
+    if cut_at >= 0:
+        return text[:cut_at].rstrip()
+    return text
+
+
+def _query_metrics_doc_sources(tool_calls: list[dict[str, Any]]) -> list[str]:
+    seen: set[tuple[str, str | None]] = set()
+    ordered: list[tuple[str, str | None]] = []
+    for call in tool_calls:
+        if str(call.get("tool_name") or "").strip() != "query_metrics":
+            continue
+        output = call.get("output")
+        if not isinstance(output, Mapping):
+            continue
+        citations = output.get("citations")
+        if isinstance(citations, list):
+            for citation in citations:
+                if not isinstance(citation, Mapping):
+                    continue
+                doc_name = citation.get("document_name")
+                doc_id = citation.get("document_id")
+                doc_url = citation.get("document_url")
+                label = str(doc_name).strip() if doc_name else (f"doc {doc_id}" if doc_id is not None else "")
+                if not label:
+                    continue
+                key = (label, str(doc_url).strip() if isinstance(doc_url, str) and doc_url.strip() else None)
+                if key in seen:
+                    continue
+                seen.add(key)
+                ordered.append(key)
+        table_data = output.get("table_data")
+        if isinstance(table_data, list):
+            for row in table_data:
+                if not isinstance(row, Mapping):
+                    continue
+                doc_name = row.get("document_name")
+                doc_id = row.get("document_id")
+                doc_url = row.get("document_url")
+                label = str(doc_name).strip() if doc_name else (f"doc {doc_id}" if doc_id is not None else "")
+                if not label:
+                    continue
+                key = (label, str(doc_url).strip() if isinstance(doc_url, str) and doc_url.strip() else None)
+                if key in seen:
+                    continue
+                seen.add(key)
+                ordered.append(key)
+    rendered: list[str] = []
+    for label, url in ordered:
+        if url:
+            rendered.append(f"[{label}]({url})")
+        else:
+            rendered.append(label)
+    return rendered
+
+
 def _replace_slide_number_refs_with_titles(
     text: str,
     *,
@@ -917,11 +982,22 @@ def _finalize_answer_text(
     tool_calls: list[dict[str, Any]],
     qbr_citations: list[dict[str, Any]],
 ) -> str | None:
+    query_metrics_call_count = sum(
+        1 for call in tool_calls if str(call.get("tool_name") or "").strip() == "query_metrics"
+    )
     if output_protocol == "agui" and streamed_answer_text:
-        return _replace_slide_number_refs_with_titles(
+        if metric_answer is not None and query_metrics_call_count <= 1:
+            return _format_metric_answer(metric_answer)
+        text = _replace_slide_number_refs_with_titles(
             streamed_answer_text,
             metric_answer=metric_answer,
         )
+        if query_metrics_call_count > 1:
+            sources = _query_metrics_doc_sources(tool_calls)
+            if sources:
+                base = _strip_trailing_sources_block(text)
+                return f"{base}\n\nSources: {', '.join(sources)}"
+        return text
     if metric_answer is not None:
         return _format_metric_answer(metric_answer)
     base_text = extracted_answer_text or ""

@@ -208,6 +208,61 @@ async def test_query_metrics_tool_applies_rag_slide_scope(metric_db, dummy_ctx, 
 
 
 @pytest.mark.asyncio
+async def test_query_metrics_tool_returns_compact_rag_debug_for_planner(metric_db, dummy_ctx, monkeypatch):
+    monkeypatch.setenv("FISCAL_YEAR_START_MONTH", "1")
+    engine = MetricQueryEngine(database_url=metric_db)
+    interaction_metadata: dict = {
+        "refined_metric_intent": {
+            "metric_ids": ["cost_per_acquisition"],
+            "client": ["Nike"],
+            "region": ["US"],
+            "period": [
+                {
+                    "type": "quarter",
+                    "value": "Q2 2025",
+                    "start": "2025-04-01",
+                    "end": "2025-06-30",
+                }
+            ],
+            "aggregation": None,
+            "grouping": None,
+            "limit": None,
+        }
+    }
+    dummy_ctx.tool_context["metric_query_engine"] = engine
+    dummy_ctx.tool_context["interaction_metadata"] = interaction_metadata
+    dummy_ctx.tool_context["qbr_search_use_case"] = _RecordingSearchUseCase(repository=_FakeRepository())
+    dummy_ctx.tool_context["retrieval_top_k"] = 5
+    result = await query_metrics(
+        MetricQueryArgs(question="CPA for Nike in Q2 2025 in US", debug=True),
+        dummy_ctx,
+    )
+
+    assert result.debug is not None
+    rag_scope = result.debug.get("rag_scope")
+    assert isinstance(rag_scope, dict)
+    assert "retrieved_hit_chunks" not in rag_scope
+    assert "post_rerank_chunks_full" not in rag_scope
+    assert "prefilter_sql" not in rag_scope
+    assert "context_chunks" not in rag_scope
+    assert result.data is None
+    assert all((len(str(getattr(item, "snippet", "") or "")) <= 180) for item in result.citations)
+    if isinstance(result.table_data, list):
+        assert all("document_id" not in item for item in result.table_data if isinstance(item, dict))
+        assert all("slide_id" not in item for item in result.table_data if isinstance(item, dict))
+        assert all((len(str(item.get("snippet") or "")) <= 180) for item in result.table_data if isinstance(item, dict))
+
+    full_metric_answer = interaction_metadata.get("metric_answer")
+    assert isinstance(full_metric_answer, dict)
+    full_debug = full_metric_answer.get("debug")
+    assert isinstance(full_debug, dict)
+    full_rag_scope = full_debug.get("rag_scope")
+    assert isinstance(full_rag_scope, dict)
+    assert "retrieved_hit_chunks" in full_rag_scope
+    assert "post_rerank_chunks_full" in full_rag_scope
+
+
+@pytest.mark.asyncio
 async def test_query_metrics_tool_falls_back_when_rag_scope_prunes_all_rows(metric_db, dummy_ctx, monkeypatch):
     monkeypatch.setenv("FISCAL_YEAR_START_MONTH", "1")
     engine = MetricQueryEngine(database_url=metric_db)

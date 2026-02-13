@@ -17,7 +17,7 @@ from ai_agent_qbr.tools.question_normalization import normalize_question_arg
 from ai_agent_qbr.tools.status import ToolStatusEmitter
 from qbr_intelligence.metric_qa import MetricQueryEngine, RagSlideRange
 from qbr_intelligence.metric_qa.planner import build_plan
-from qbr_intelligence.schemas.metric_qa import MetricAnswer, PeriodSpec, QueryIntent
+from qbr_intelligence.schemas.metric_qa import AnswerCitation, MetricAnswer, PeriodSpec, QueryIntent
 
 import logging
 import time
@@ -66,6 +66,7 @@ async def _load_overall_metric_rows(engine: MetricQueryEngine, plan) -> list[Any
         metric_ids=plan.metric_ids,
         client_name=plan.client,
         region=plan.region,
+        context_keys=plan.context_keys,
         period_ranges=plan.period_ranges,
         limit=max(int(plan.limit), 400),
         order_by="period_end DESC",
@@ -123,6 +124,7 @@ async def _build_rag_scope_for_metric_query(
         metric_ids=plan.metric_ids,
         client_name=plan.client,
         region=plan.region,
+        context_keys=plan.context_keys,
         period_ranges=plan.period_ranges,
         period_specs=[
             period.model_dump(mode="json") if hasattr(period, "model_dump") else dict(period)
@@ -493,6 +495,229 @@ def _intent_from_args(payload: Any) -> QueryIntent | None:
     )
 
 
+def _to_int(value: Any) -> int | None:
+    try:
+        if value is None:
+            return None
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _truncate_text(value: Any, *, max_chars: int) -> str | None:
+    if not isinstance(value, str):
+        return None
+    compact = " ".join(value.split())
+    if not compact:
+        return None
+    if len(compact) <= max_chars:
+        return compact
+    return compact[: max(0, max_chars - 1)] + "…"
+
+
+def _slide_url_index(answer: MetricAnswer) -> dict[tuple[int, int | None], str]:
+    index: dict[tuple[int, int | None], str] = {}
+    for citation in answer.citations:
+        doc_id = _to_int(getattr(citation, "document_id", None))
+        slide_number = _to_int(getattr(citation, "slide_number", None))
+        if doc_id is None:
+            continue
+        slide_url = getattr(citation, "slide_url", None) or getattr(citation, "document_url", None)
+        if isinstance(slide_url, str) and slide_url:
+            index[(doc_id, slide_number)] = slide_url
+    if isinstance(answer.table_data, list):
+        for row in answer.table_data:
+            if not isinstance(row, dict):
+                continue
+            doc_id = _to_int(row.get("document_id"))
+            slide_number = _to_int(row.get("slide_number"))
+            if doc_id is None:
+                continue
+            slide_url = row.get("slide_url") or row.get("document_url")
+            if isinstance(slide_url, str) and slide_url and (doc_id, slide_number) not in index:
+                index[(doc_id, slide_number)] = slide_url
+    return index
+
+
+def _cited_slide_pairs(answer: MetricAnswer) -> set[tuple[int, int | None]]:
+    pairs: set[tuple[int, int | None]] = set()
+    for citation in answer.citations:
+        doc_id = _to_int(getattr(citation, "document_id", None))
+        if doc_id is None:
+            continue
+        slide_number = _to_int(getattr(citation, "slide_number", None))
+        pairs.add((doc_id, slide_number))
+    if isinstance(answer.table_data, list):
+        for row in answer.table_data:
+            if not isinstance(row, dict):
+                continue
+            doc_id = _to_int(row.get("document_id"))
+            if doc_id is None:
+                continue
+            slide_number = _to_int(row.get("slide_number"))
+            pairs.add((doc_id, slide_number))
+    return pairs
+
+
+def _build_cited_slide_context_chunks(
+    answer: MetricAnswer,
+    rag_scope: dict[str, Any],
+    *,
+    max_total: int,
+    max_per_slide: int,
+    max_chars: int,
+) -> list[dict[str, Any]]:
+    source = rag_scope.get("post_rerank_chunks_full")
+    if not isinstance(source, list):
+        source = rag_scope.get("retrieved_hit_chunks")
+    if not isinstance(source, list):
+        return []
+    cited_pairs = _cited_slide_pairs(answer)
+    if not cited_pairs:
+        return []
+    url_index = _slide_url_index(answer)
+    per_slide_count: dict[tuple[int, int | None], int] = {}
+    out: list[dict[str, Any]] = []
+    for item in source:
+        if not isinstance(item, dict):
+            continue
+        doc_id = _to_int(item.get("document_id"))
+        if doc_id is None:
+            continue
+        metadata = item.get("metadata")
+        slide_number = None
+        if isinstance(metadata, dict):
+            slide_number = _to_int(metadata.get("slide_number"))
+        if slide_number is None:
+            slide_number = _to_int(item.get("start_slide"))
+        key = (doc_id, slide_number)
+        if key not in cited_pairs:
+            continue
+        if per_slide_count.get(key, 0) >= max_per_slide:
+            continue
+        content = _truncate_text(item.get("content"), max_chars=max_chars)
+        if content is None:
+            content = _truncate_text(item.get("summary"), max_chars=max_chars)
+        out.append(
+            {
+                "chunk_id": _to_int(item.get("chunk_id")),
+                "document_id": doc_id,
+                "slide_number": slide_number,
+                "slide_title": metadata.get("slide_title") if isinstance(metadata, dict) else None,
+                "slide_url": url_index.get(key) or url_index.get((doc_id, None)),
+                "score": item.get("score"),
+                "content": content,
+            }
+        )
+        per_slide_count[key] = per_slide_count.get(key, 0) + 1
+        if len(out) >= max_total:
+            break
+    return out
+
+
+def _compact_rag_scope_for_planner(
+    rag_scope: dict[str, Any],
+) -> dict[str, Any]:
+    compact_selected_docs = []
+    selected_docs = rag_scope.get("selected_docs")
+    if isinstance(selected_docs, list):
+        for item in selected_docs:
+            if not isinstance(item, dict):
+                continue
+            compact_selected_docs.append(
+                {
+                    "document_id": item.get("document_id"),
+                    "document_name": item.get("document_name"),
+                    "hit_count": item.get("hit_count"),
+                    "max_score": item.get("max_score"),
+                }
+            )
+    return {
+        "enabled": bool(rag_scope.get("enabled", False)),
+        "prefiltered_doc_ids": rag_scope.get("prefiltered_doc_ids"),
+        "document_ids": rag_scope.get("document_ids"),
+        "selected_docs": compact_selected_docs,
+        "retrieved_hits": rag_scope.get("retrieved_hits"),
+        "post_rerank_hit_count": rag_scope.get("post_rerank_hit_count"),
+        "slide_ids_count": rag_scope.get("slide_ids_count"),
+        "slide_range_count": rag_scope.get("slide_range_count"),
+    }
+
+
+def _compact_planner_table_data(rows: list[dict[str, Any]] | None, *, max_rows: int) -> list[dict[str, Any]] | None:
+    if not isinstance(rows, list):
+        return None
+    compact: list[dict[str, Any]] = []
+    for row in rows[:max_rows]:
+        if not isinstance(row, dict):
+            continue
+        compact.append(
+            {
+                "metric": row.get("metric"),
+                "value": row.get("value"),
+                "unit": row.get("unit"),
+                "period": row.get("period"),
+                "client": row.get("client"),
+                "region": row.get("region"),
+                "llm_context_label": row.get("llm_context_label"),
+                "document_name": row.get("document_name"),
+                "document_url": row.get("document_url"),
+                "slide_number": row.get("slide_number"),
+                "slide_title": row.get("slide_title"),
+                "slide_url": row.get("slide_url") or row.get("document_url"),
+                "snippet": _truncate_text(row.get("snippet"), max_chars=180),
+            }
+        )
+    return compact
+
+
+def _compact_planner_citations(citations: list[Any], *, max_items: int) -> list[AnswerCitation]:
+    compact: list[AnswerCitation] = []
+    for citation in citations[:max_items]:
+        compact.append(
+            AnswerCitation(
+                document_id=getattr(citation, "document_id", None),
+                document_name=getattr(citation, "document_name", None),
+                document_url=getattr(citation, "document_url", None),
+                slide_id=getattr(citation, "slide_id", None),
+                slide_number=getattr(citation, "slide_number", None),
+                slide_title=getattr(citation, "slide_title", None),
+                slide_google_id=getattr(citation, "slide_google_id", None),
+                slide_url=getattr(citation, "slide_url", None) or getattr(citation, "document_url", None),
+                snippet=_truncate_text(getattr(citation, "snippet", None), max_chars=180),
+            )
+        )
+    return compact
+
+
+def _planner_safe_answer(answer: MetricAnswer, ctx: ToolContext) -> MetricAnswer:
+    debug_payload = answer.debug if isinstance(answer.debug, dict) else None
+    if debug_payload is None:
+        return answer
+    planner_answer = answer.model_copy(deep=True)
+    planner_debug = dict(planner_answer.debug) if isinstance(planner_answer.debug, dict) else {}
+    rag_scope = planner_debug.get("rag_scope")
+    if isinstance(rag_scope, dict):
+        planner_debug["rag_scope"] = _compact_rag_scope_for_planner(rag_scope)
+    table_rows_max = _ctx_or_env_int(
+        ctx,
+        "metric_planner_table_rows_max",
+        "METRIC_PLANNER_TABLE_ROWS_MAX",
+        12,
+    )
+    citation_max = _ctx_or_env_int(
+        ctx,
+        "metric_planner_citations_max",
+        "METRIC_PLANNER_CITATIONS_MAX",
+        12,
+    )
+    planner_answer.table_data = _compact_planner_table_data(planner_answer.table_data, max_rows=table_rows_max)
+    planner_answer.citations = _compact_planner_citations(planner_answer.citations, max_items=citation_max)
+    planner_answer.data = None
+    planner_answer.debug = planner_debug
+    return planner_answer
+
+
 @tool(
     desc=(
         "Query structured metric facts with deterministic filters. "
@@ -633,6 +858,7 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
             "after_count": len(answer.citations),
         }
     answer.debug = debug_payload
+    planner_answer = _planner_safe_answer(answer, ctx)
     if mlflow_trace is not None and hasattr(mlflow_trace, "span") and hasattr(mlflow_trace, "set_outputs"):
         with mlflow_trace.span(
             name="query_metrics.result",
@@ -640,6 +866,7 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
             attributes={
                 "source_tool": "query_metrics",
                 "intent_source": intent_source,
+                "result_kind": "full",
             },
             inputs={
                 "query": canonical_query,
@@ -656,12 +883,33 @@ async def query_metrics(args: MetricQueryArgs, ctx: ToolContext) -> MetricAnswer
                     "metric_rag_scope": rag_scope.debug,
                 },
             )
+        with mlflow_trace.span(
+            name="query_metrics.planner_payload",
+            span_type="TOOL",
+            attributes={
+                "source_tool": "query_metrics",
+                "intent_source": intent_source,
+                "result_kind": "planner_safe",
+            },
+            inputs={
+                "query": canonical_query,
+                "intent": intent.model_dump(mode="json"),
+            },
+        ) as planner_payload_span:
+            mlflow_trace.set_outputs(
+                planner_payload_span,
+                {
+                    "metric_answer_planner_safe": planner_answer.model_dump(mode="json"),
+                    "metric_answer_row_count": len(planner_answer.data or []),
+                },
+            )
     _LOGGER.info("METRIC_QA_RAW_ANSWER %s", answer.model_dump(mode="json"))
     _LOGGER.info("Metric query done: %.2fs rows=%s", time.perf_counter() - start, len(answer.data or []))
     if isinstance(interaction_metadata, dict):
         # Keep metadata JSON-serializable for planner memory/llm_context round-trips.
         interaction_metadata["metric_intent"] = result.intent.model_dump(mode="json")
         interaction_metadata["metric_answer"] = answer.model_dump(mode="json")
+        interaction_metadata["metric_answer_planner_safe"] = planner_answer.model_dump(mode="json")
         interaction_metadata["metric_answer_row_count"] = len(answer.data or [])
         interaction_metadata["metric_rag_scope"] = rag_scope.debug
-    return answer
+    return planner_answer
