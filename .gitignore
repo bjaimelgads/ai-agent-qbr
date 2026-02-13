@@ -76,7 +76,7 @@ qbr_legacy_e2e.db
 data/debug/
 
 # Local run notes
-docs/LOCAL_RUN_LLM.md
+
 
 # Local/generated retrieval artifacts
 data/faiss/index.faiss
