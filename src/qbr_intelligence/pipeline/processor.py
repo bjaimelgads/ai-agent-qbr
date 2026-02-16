@@ -95,6 +95,7 @@ from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
 )
+from qbr_intelligence.pipeline.table_ids import compute_table_uuid, normalize_table_rows
 from qbr_intelligence.infrastructure.google_slides import GoogleSlidesClient
 
 
@@ -504,6 +505,92 @@ class QBRProcessor:
         return "\n".join(blocks).strip()
 
     @staticmethod
+    def _sort_text_blocks_for_export(text_blocks) -> list:
+        """Sort text blocks by layout position for stable box-level export."""
+        return sorted(
+            text_blocks,
+            key=lambda block: (
+                block.bbox.top if getattr(block, "bbox", None) is not None else 10**9,
+                block.bbox.left if getattr(block, "bbox", None) is not None else 10**9,
+                block.block_id,
+            ),
+        )
+
+    def _build_box_separated_raw_content(
+        self,
+        *,
+        file_path: Path,
+        slides_export: list[dict],
+    ) -> str | None:
+        """Build box-delimited text export for PPTX slides.
+
+        Output format per box:
+            - - - -
+            box content
+            - - - -
+        """
+        if file_path.suffix.lower() != ".pptx":
+            return None
+        try:
+            deck = parse_pptx_deck(file_path)
+        except Exception:
+            return None
+
+        # exported slide number -> source slide number (for remapped runs)
+        exported_pages: list[int] = []
+        for slide in slides_export:
+            try:
+                export_num = int(slide.get("slide_number"))
+            except Exception:
+                continue
+            exported_pages.append(export_num)
+
+        blocks: list[str] = []
+        for export_num in sorted(set(exported_pages)):
+            # Use exported slide numbering directly to match 02_raw_content ordering.
+            # source_slide_number can refer to extraction page ids and is not guaranteed
+            # to align with physical PPTX slide indexes.
+            slide = deck.slide_by_index(export_num)
+            if slide is None:
+                continue
+            page_lines = [f"<!-- PAGE {export_num} -->"]
+            for block in self._sort_text_blocks_for_export(slide.text_blocks):
+                text = (block.text or "").strip()
+                if not text:
+                    continue
+                page_lines.append("- - - -")
+                page_lines.append(text)
+                page_lines.append("- - - -")
+                page_lines.append("")
+            for table in slide.tables:
+                rendered = self._render_table_block(table).strip()
+                if not rendered:
+                    continue
+                page_lines.append("- - - -")
+                page_lines.append(rendered)
+                page_lines.append("- - - -")
+                page_lines.append("")
+            blocks.append("\n".join(page_lines).rstrip())
+        if not blocks:
+            return None
+        return "\n\n".join(blocks).rstrip() + "\n"
+
+    @staticmethod
+    def _render_table_block(table) -> str:
+        """Render a table into line-oriented text for 02b export."""
+        lines: list[str] = ["[TABLE]"]
+        for row in range(table.nrows):
+            row_cells: list[str] = []
+            for col in range(table.ncols):
+                cell = table.cell_at(row, col)
+                value = (cell.text if cell else "") or ""
+                value = " ".join(value.split())
+                row_cells.append(value)
+            if any(cell for cell in row_cells):
+                lines.append(" | ".join(row_cells))
+        return "\n".join(lines)
+
+    @staticmethod
     def _select_pages(
         pages: list[dict],
         *,
@@ -692,6 +779,99 @@ class QBRProcessor:
             business_terms.update(m.upper() if len(m) <= 4 else m.title() for m in matches)
         return business_terms
 
+    def _build_tables_payload(
+        self,
+        *,
+        file_path: Path,
+        result: ExtractionResult,
+        allowed_slide_numbers: set[int] | None = None,
+    ) -> list[dict]:
+        """Build tables payload with PPTX fallback when Kreuzberg tables are empty."""
+        tables_payload: list[dict] = []
+        for idx, table in enumerate(result.tables or []):
+            slide_number = getattr(table, "slide_number", None)
+            if slide_number is None:
+                slide_number = getattr(table, "page_number", None)
+            try:
+                slide_number = int(slide_number) if slide_number is not None else None
+            except Exception:
+                slide_number = None
+            headers = getattr(table, "headers", None)
+            rows = getattr(table, "rows", None)
+            rows_for_id: list[list[str]] = []
+            if isinstance(headers, list):
+                rows_for_id.append([str(cell) if cell is not None else "" for cell in headers])
+            if isinstance(rows, list):
+                for row in rows:
+                    if isinstance(row, list):
+                        rows_for_id.append([str(cell) if cell is not None else "" for cell in row])
+            rows_for_id = normalize_table_rows(rows_for_id)
+            table_id = compute_table_uuid(slide_number=slide_number, rows=rows_for_id)
+            if (
+                allowed_slide_numbers
+                and slide_number is not None
+                and slide_number not in allowed_slide_numbers
+            ):
+                continue
+            tables_payload.append(
+                {
+                    "index": idx,
+                    "table_id": table_id,
+                    "slide_number": slide_number,
+                    "headers": headers,
+                    "rows": rows,
+                    "raw": str(table),
+                    "source": "kreuzberg",
+                }
+            )
+
+        if tables_payload or file_path.suffix.lower() != ".pptx":
+            return tables_payload
+
+        try:
+            deck = parse_pptx_deck(file_path)
+        except Exception:
+            return tables_payload
+
+        fallback_count = 0
+        for slide in deck.slides:
+            if allowed_slide_numbers and slide.slide_index not in allowed_slide_numbers:
+                continue
+            for table in slide.tables:
+                rows: list[list[str]] = []
+                for row_idx in range(table.nrows):
+                    row_cells: list[str] = []
+                    for col_idx in range(table.ncols):
+                        cell = table.cell_at(row_idx, col_idx)
+                        row_cells.append((cell.text if cell else "") or "")
+                    rows.append(row_cells)
+                rows = normalize_table_rows(rows)
+                table_id = compute_table_uuid(
+                    slide_number=slide.slide_index,
+                    rows=rows,
+                )
+                headers = rows[0] if rows else []
+                data_rows = rows[1:] if len(rows) > 1 else []
+                tables_payload.append(
+                    {
+                        "index": len(tables_payload),
+                        "table_id": table_id,
+                        "slide_number": slide.slide_index,
+                        "headers": headers,
+                        "rows": data_rows,
+                        "raw": self._render_table_block(table),
+                        "source": "pptx_fallback",
+                    }
+                )
+                fallback_count += 1
+
+        if fallback_count:
+            print(
+                "  [Tables] Kreuzberg returned 0 tables; "
+                f"using PPTX fallback ({fallback_count} table(s))."
+            )
+        return tables_payload
+
     def _export_extraction_outputs(
         self,
         *,
@@ -763,6 +943,17 @@ class QBRProcessor:
                 updated["slide_number"] = page_to_new.get(source_num, source_num)
                 charts_export.append(updated)
 
+        allowed_slide_numbers = {
+            int(slide.get("slide_number"))
+            for slide in slides_export
+            if slide.get("slide_number") is not None
+        }
+        tables_payload = self._build_tables_payload(
+            file_path=file_path,
+            result=result,
+            allowed_slide_numbers=allowed_slide_numbers or None,
+        )
+
         output_metadata = {
             "source_file": str(file_path),
             "extraction_timestamp": datetime.now().isoformat(),
@@ -770,7 +961,8 @@ class QBRProcessor:
             "mime_type": result.mime_type,
             "page_count": len(pages) if pages is not None else result.get_page_count(),
             "detected_languages": result.detected_languages,
-            "table_count": len(result.tables),
+            "table_count": len(tables_payload),
+            "kreuzberg_table_count": len(result.tables or []),
             "image_count": len(result.images) if result.images else 0,
             "chunk_count": len(chunks_source),
             "metadata": result.metadata,
@@ -781,6 +973,15 @@ class QBRProcessor:
         )
 
         (output_dir / "02_raw_content.txt").write_text(raw_content_export, encoding="utf-8")
+        by_box_content = self._build_box_separated_raw_content(
+            file_path=file_path,
+            slides_export=slides_export,
+        )
+        if by_box_content:
+            (output_dir / "02b_raw_content_by_box.txt").write_text(
+                by_box_content,
+                encoding="utf-8",
+            )
         (output_dir / "03_slides_parsed.json").write_text(
             json.dumps(slides_export, indent=2),
             encoding="utf-8",
@@ -851,16 +1052,6 @@ class QBRProcessor:
             encoding="utf-8",
         )
 
-        tables_payload: list[dict] = []
-        for idx, table in enumerate(result.tables or []):
-            tables_payload.append(
-                {
-                    "index": idx,
-                    "headers": getattr(table, "headers", None),
-                    "rows": getattr(table, "rows", None),
-                    "raw": str(table),
-                }
-            )
         (output_dir / "09_tables_extracted.json").write_text(
             json.dumps(tables_payload, indent=2),
             encoding="utf-8",
@@ -2095,16 +2286,16 @@ Categories:
         )
         business_terms = self._extract_business_terms(content_for_processing)
 
-        tables_payload: list[dict] = []
-        for idx, table in enumerate(result.tables or []):
-            tables_payload.append(
-                {
-                    "index": idx,
-                    "headers": getattr(table, "headers", None),
-                    "rows": getattr(table, "rows", None),
-                    "raw": str(table),
-                }
-            )
+        allowed_slide_numbers = {
+            int(slide.get("slide_number"))
+            for slide in slides_ordered
+            if slide.get("slide_number") is not None
+        }
+        tables_payload = self._build_tables_payload(
+            file_path=file_path,
+            result=result,
+            allowed_slide_numbers=allowed_slide_numbers or None,
+        )
 
         metric_debug = None
         scanned_metrics: list[MetricCandidate] = []
