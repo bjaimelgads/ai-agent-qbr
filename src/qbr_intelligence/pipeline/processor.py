@@ -32,7 +32,7 @@ from kreuzberg import (
     PageConfig,
 )
 from sqlalchemy import create_engine, inspect, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, selectinload
 
 from qbr_intelligence.db.models import (
     Base,
@@ -98,6 +98,11 @@ from qbr_intelligence.pipeline.post_embeddings import (
 from qbr_intelligence.pipeline.table_ids import compute_table_uuid, normalize_table_rows
 from qbr_intelligence.infrastructure.google_slides import GoogleSlidesClient
 
+_OVERALL_SLIDE_RE = re.compile(
+    r"\b(?:at\s+a\s+glance|overall\s+performance|overall\s+summary|executive\s+summary|summary)\b",
+    re.IGNORECASE,
+)
+
 
 class QBRProcessor:
     """
@@ -113,7 +118,7 @@ class QBRProcessor:
     def __init__(
         self,
         database_url: str = "sqlite:///qbr_intelligence.db",
-        output_dir: Path | str = "extraction_output",
+        output_dir: Path | str = "qbr_extraction/qbr_pipeline/output",
         llm_model: str = "openai/gpt-4o-mini",
         enable_ocr: bool = False,
         extract_images: bool = False,
@@ -1125,6 +1130,68 @@ class QBRProcessor:
         }
 
     @staticmethod
+    def _extract_slide_title_candidate(slide: dict) -> str | None:
+        title = (slide.get("title") or "").strip()
+        if title:
+            return title
+        raw_text = (slide.get("raw_text") or "").split("### Notes:", 1)[0]
+        for line in raw_text.splitlines():
+            candidate = line.strip()
+            if not candidate:
+                continue
+            if candidate.startswith("<!-- PAGE"):
+                continue
+            if candidate.startswith("!["):
+                continue
+            if candidate.startswith("-"):
+                candidate = candidate[1:].strip()
+            if candidate:
+                return candidate
+        return None
+
+    @staticmethod
+    def _detect_overall_slides(slides: list[dict]) -> dict[int, str]:
+        overall_by_slide: dict[int, str] = {}
+        for slide in slides:
+            slide_number = slide.get("slide_number")
+            if slide_number is None:
+                continue
+            title = QBRProcessor._extract_slide_title_candidate(slide)
+            if not title:
+                continue
+            if _OVERALL_SLIDE_RE.search(title):
+                overall_by_slide[int(slide_number)] = title
+        return overall_by_slide
+
+    @staticmethod
+    def _apply_overall_baseline_type(
+        metrics: list[MetricCandidate],
+        *,
+        overall_by_slide: dict[int, str],
+    ) -> list[MetricCandidate]:
+        if not metrics or not overall_by_slide:
+            return metrics
+        updated: list[MetricCandidate] = []
+        for metric in metrics:
+            slide_number = metric.slide_number
+            if slide_number is None or int(slide_number) not in overall_by_slide:
+                updated.append(metric)
+                continue
+            title = overall_by_slide[int(slide_number)]
+            metadata = dict(metric.metadata or {})
+            metadata["is_overall_metric"] = True
+            metadata["overall_slide_title"] = title
+            metadata["overall_slide_number"] = int(slide_number)
+            updated.append(
+                replace(
+                    metric,
+                    baseline_type="overall",
+                    metadata=metadata,
+                )
+            )
+        return updated
+
+    @staticmethod
     def _extract_context_window(
         text: str,
         anchors: list[str],
@@ -1853,9 +1920,6 @@ Categories:
 
     def _seed_metric_catalog(self) -> None:
         with self.SessionLocal() as session:
-            existing = session.query(MetricCatalog).count()
-            if existing:
-                return
             applicability_notes = {
                 "cost_per_acquisition": (
                     "Use Spend and Acquisitions only from placements targeting users who have not installed the app. "
@@ -1869,22 +1933,64 @@ Categories:
                 "video_completion_rate": "Completes / Impressions for Video placements.",
             }
             definitions = build_metric_dictionary().definitions
+            existing_metrics = (
+                session.query(MetricCatalog)
+                .options(selectinload(MetricCatalog.aliases))
+                .all()
+            )
+            metrics_by_slug = {m.slug: m for m in existing_metrics if m.slug}
+            metrics_by_name = {m.name: m for m in existing_metrics if m.name}
             for definition in definitions:
                 if not definition.name:
                     continue
                 slug = definition.slug or definition.name.lower().replace(" ", "_")
-                metric = MetricCatalog(
-                    name=definition.name,
-                    slug=slug,
-                    category=definition.category,
-                    default_unit=definition.unit_hint,
-                    formula=definition.formula,
-                    description=None,
-                    applicability_notes=applicability_notes.get(slug),
-                )
-                session.add(metric)
-                session.flush()
+                metric = metrics_by_slug.get(slug) or metrics_by_name.get(definition.name)
+                if metric is None:
+                    metric = MetricCatalog(
+                        name=definition.name,
+                        slug=slug,
+                        category=definition.category,
+                        default_unit=definition.unit_hint,
+                        formula=definition.formula,
+                        description=None,
+                        applicability_notes=applicability_notes.get(slug),
+                    )
+                    session.add(metric)
+                    session.flush()
+                    metrics_by_slug[slug] = metric
+                    metrics_by_name[definition.name] = metric
+                else:
+                    metric.name = definition.name
+                    metric.slug = slug
+                    metric.category = definition.category
+                    metric.default_unit = definition.unit_hint
+                    metric.formula = definition.formula
+                    if metric.applicability_notes is None:
+                        metric.applicability_notes = applicability_notes.get(slug)
+
+                existing_alias_keys = {
+                    ((alias.alias or "").strip().lower(), (alias.pattern or "").strip())
+                    for alias in (metric.aliases or [])
+                }
+                desired_alias_keys = {
+                    (definition.name.strip().lower(), (pattern or "").strip())
+                    for pattern in definition.patterns
+                }
+                for alias in list(metric.aliases or []):
+                    alias_name = (alias.alias or "").strip().lower()
+                    alias_pattern = (alias.pattern or "").strip()
+                    alias_key = (alias_name, alias_pattern)
+                    if alias.priority != 0:
+                        continue
+                    if alias_name != definition.name.strip().lower():
+                        continue
+                    if alias_key not in desired_alias_keys:
+                        session.delete(alias)
+                        existing_alias_keys.discard(alias_key)
                 for pattern in definition.patterns:
+                    key = (definition.name.strip().lower(), (pattern or "").strip())
+                    if key in existing_alias_keys:
+                        continue
                     session.add(
                         MetricAlias(
                             metric_id=metric.id,
@@ -1894,6 +2000,7 @@ Categories:
                             unit_override=None,
                         )
                     )
+                    existing_alias_keys.add(key)
             session.commit()
 
     def _load_metric_catalog_map(self) -> dict[str, tuple[int, str]]:
@@ -1989,7 +2096,13 @@ Categories:
     def _ensure_client(self, session, name: str) -> Client | None:
         if not name:
             return None
-        client = session.query(Client).filter(Client.name == name).one_or_none()
+        # DB may contain accidental duplicates; prefer deterministic first row.
+        client = (
+            session.query(Client)
+            .filter(Client.name == name)
+            .order_by(Client.id.asc())
+            .first()
+        )
         if client:
             return client
         client = Client(name=name)
@@ -2005,7 +2118,13 @@ Categories:
         if not label:
             return None
 
-        period = session.query(Period).filter(Period.period_label == label).one_or_none()
+        # DB may contain duplicate period labels; use deterministic first row.
+        period = (
+            session.query(Period)
+            .filter(Period.period_label == label)
+            .order_by(Period.id.asc())
+            .first()
+        )
         if period:
             return period
 
@@ -2405,6 +2524,20 @@ Categories:
                 stage="refined",
                 allow_llm=run_llm_metrics and use_legacy_llm_metrics,
             )
+        overall_by_slide = self._detect_overall_slides(slides_ordered)
+        scanned_metrics = self._apply_overall_baseline_type(
+            scanned_metrics,
+            overall_by_slide=overall_by_slide,
+        )
+        llm_deduped_metrics = self._apply_overall_baseline_type(
+            llm_deduped_metrics,
+            overall_by_slide=overall_by_slide,
+        )
+        if refined_metrics is not None:
+            refined_metrics = self._apply_overall_baseline_type(
+                refined_metrics,
+                overall_by_slide=overall_by_slide,
+            )
         metrics_for_db = refined_metrics or llm_deduped_metrics
 
         if report_period:
@@ -2593,7 +2726,7 @@ Categories:
                         baseline_text=m.baseline_text,
                         baseline_type=m.baseline_type,
                         country=country,
-                        llm_context_label=m.llm_context_label,
+                        llm_context_label=getattr(m, "llm_context_label", None),
                     )
                 )
             if skipped_without_slide:
@@ -2658,8 +2791,7 @@ Categories:
                 text(
                     """
                     DELETE FROM metrics
-                    WHERE document_id = :document_id
-                      AND raw_context IS NOT NULL
+                    WHERE raw_context IS NOT NULL
                       AND TRIM(raw_context) != ''
                       AND slide_id IN (
                         SELECT id

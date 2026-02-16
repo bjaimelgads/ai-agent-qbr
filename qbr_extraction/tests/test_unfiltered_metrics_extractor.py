@@ -123,6 +123,117 @@ CPE[1] | $6.21 | $0.56
     assert "CPE[1]" not in names
 
 
+def test_at_a_glance_slide_marks_overall_metrics(tmp_path: Path) -> None:
+    content = """
+<!-- PAGE 24 -->
+- - - -
+EMEA FY24 H2 at a Glance
+- - - -
+
+- - - -
+Total Installs:
+699K
+- - - -
+""".strip()
+    path = _write_02b(tmp_path, content)
+
+    extractor = UnfilteredMetricsExtractor(review_threshold=0.65)
+    records = extractor.extract(path)
+    assert len(records) == 1
+    rec = records[0]
+    assert rec.name == "Total Installs"
+    assert rec.metadata.get("is_overall_metric") is True
+    assert rec.metadata.get("overall_slide_number") == 24
+    assert rec.metadata.get("overall_slide_title") == "EMEA FY24 H2 at a Glance"
+
+
+def test_fiscal_title_line_does_not_become_metric_and_marks_overall(tmp_path: Path) -> None:
+    content = """
+<!-- PAGE 21 -->
+- - - -
+FY25 - H2
+at a Glance
+- - - -
+
+- - - -
+Investment
+$2.8M
+- - - -
+""".strip()
+    path = _write_02b(tmp_path, content)
+
+    extractor = UnfilteredMetricsExtractor(
+        review_threshold=0.65,
+        catalog_hint_terms={"investment"},
+    )
+    records = extractor.extract(path)
+    names = {r.name for r in records}
+    assert "FY25" not in names
+    assert "Investment" in names
+    inv = next(r for r in records if r.name == "Investment")
+    assert inv.metadata.get("is_overall_metric") is True
+    assert inv.metadata.get("overall_slide_number") == 21
+
+
+def test_value_leading_single_line_cards_are_extracted(tmp_path: Path) -> None:
+    content = """
+<!-- PAGE 22 -->
+- - - -
+Proxy Conversions Funnel
+- - - -
+
+- - - -
+$2.8M Investment
+- - - -
+
+- - - -
+308M Impressions
+- - - -
+
+- - - -
+17M Total Unique Reach
+- - - -
+
+- - - -
+1.6M Proxy Conversions
+- - - -
+
+- - - -
+$1.79 Cost per Proxy Conversion
+- - - -
+""".strip()
+    path = _write_02b(tmp_path, content)
+
+    extractor = UnfilteredMetricsExtractor(review_threshold=0.65, catalog_hint_terms={"investment", "impressions"})
+    records = extractor.extract(path)
+    got = {(r.name, r.raw_value) for r in records}
+    assert ("Investment", "$2.8M") in got
+    assert ("Impressions", "308M") in got
+    assert ("Total Unique Reach", "17M") in got
+    assert ("Proxy Conversions", "1.6M") in got
+    assert ("Cost per Proxy Conversion", "$1.79") in got
+
+
+def test_catalog_hint_terms_prevent_metric_hint_penalty(tmp_path: Path) -> None:
+    content = """
+<!-- PAGE 1 -->
+- - - -
+Investment: $2.25M
+- - - -
+""".strip()
+    path = _write_02b(tmp_path, content)
+
+    extractor = UnfilteredMetricsExtractor(
+        review_threshold=0.65,
+        catalog_hint_terms={"investment"},
+    )
+    records = extractor.extract(path)
+    assert len(records) == 1
+    name_components = records[0].metadata["confidence_components"]["name"]
+    assert "metric_hint_penalty" not in name_components
+    assert name_components.get("metric_hint_bonus") == 0.06
+
+
 def test_slide19_country_growth_block_extracts_values(tmp_path: Path) -> None:
     content = """
 <!-- PAGE 19 -->
@@ -259,6 +370,14 @@ Exposure to paid media led to an average time spent per launch of over one hour 
     cpa_conf = cpa[0].metadata["confidence_components"]["name"]["final"]
     long_conf = long_name[0].metadata["confidence_components"]["name"]["final"]
     assert long_conf < cpa_conf
+    long_blend = long_name[0].metadata["confidence_components"]["blend"]
+    assert "penalty_total" in long_blend
+    assert (
+        "long_name_penalty" in long_blend
+        or "very_long_name_penalty" in long_blend
+        or "long_token_penalty" in long_blend
+        or "very_long_token_penalty" in long_blend
+    )
 
 
 def test_numeric_label_is_not_treated_as_metric_name(tmp_path: Path) -> None:

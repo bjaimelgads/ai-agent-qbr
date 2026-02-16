@@ -41,7 +41,8 @@ SELECT
     COALESCE(m.name, mc.name) AS label_text,
     m.raw_value AS raw_value_text,
     m.raw_context AS snippet,
-    m.llm_context_label AS llm_context_label
+    m.llm_context_label AS llm_context_label,
+    m.baseline_type AS baseline_type
 FROM metrics m
 LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
@@ -79,7 +80,8 @@ SELECT
     COALESCE(m.name, mc.name) AS label_text,
     m.raw_value AS raw_value_text,
     m.raw_context AS snippet,
-    m.llm_context_label AS llm_context_label
+    m.llm_context_label AS llm_context_label,
+    m.baseline_type AS baseline_type
 FROM metrics m
 LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
@@ -117,7 +119,8 @@ SELECT
     COALESCE(m.name, mc.name) AS label_text,
     m.raw_value AS raw_value_text,
     m.raw_context AS snippet,
-    m.llm_context_label AS llm_context_label
+    m.llm_context_label AS llm_context_label,
+    m.baseline_type AS baseline_type
 FROM metrics m
 LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
@@ -155,7 +158,8 @@ SELECT
     COALESCE(m.name, mc.name) AS label_text,
     m.raw_value AS raw_value_text,
     m.raw_context AS snippet,
-    m.llm_context_label AS llm_context_label
+    m.llm_context_label AS llm_context_label,
+    m.baseline_type AS baseline_type
 FROM metrics m
 LEFT JOIN slides s ON s.id = m.slide_id
 LEFT JOIN metric_catalog mc ON mc.id = m.metric_catalog_id
@@ -194,6 +198,7 @@ class MetricFactRow:
     raw_value_text: str | None
     snippet: str | None
     llm_context_label: str | None
+    baseline_type: str | None = None
     semantic_score: float | None = None
 
     @classmethod
@@ -480,8 +485,30 @@ class MetricFactStore:
         if region:
             stmt = stmt.bindparams(bindparam("regions", expanding=True))
         async with self._engine.connect() as conn:
-            result = await conn.execute(stmt, params)
-            rows = [MetricFactRow.from_row(dict(row._mapping)) for row in result]
+            try:
+                result = await conn.execute(stmt, params)
+                rows = [MetricFactRow.from_row(dict(row._mapping)) for row in result]
+            except Exception as exc:
+                message = str(exc).lower()
+                if (
+                    "baseline_type" in message
+                    and ("does not exist" in message or "no such column" in message)
+                    and "baseline_type" in order_by
+                ):
+                    fallback_order_by = order_by.replace("baseline_type", "llm_context_label")
+                    fallback_sql = (
+                        f"SELECT * FROM metric_fact WHERE {where_clause} ORDER BY {fallback_order_by} LIMIT :limit"
+                    )
+                    fallback_stmt = text(fallback_sql)
+                    if metric_ids:
+                        fallback_stmt = fallback_stmt.bindparams(bindparam("metric_ids", expanding=True))
+                    if region:
+                        fallback_stmt = fallback_stmt.bindparams(bindparam("regions", expanding=True))
+                    result = await conn.execute(fallback_stmt, params)
+                    rows = [MetricFactRow.from_row(dict(row._mapping)) for row in result]
+                    sql_text = fallback_sql
+                else:
+                    raise
         return rows, sql_text, params
 
     async def query_document_ids(

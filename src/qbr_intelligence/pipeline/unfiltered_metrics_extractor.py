@@ -14,9 +14,14 @@ from pathlib import Path
 from typing import Iterable, Sequence
 
 from qbr_intelligence.pipeline.table_ids import compute_table_uuid, normalize_table_rows
+from sqlalchemy import create_engine, text
 
 PAGE_SPLIT_RE = re.compile(r"<!-- PAGE (\d+) -->")
 DELIM_LINE = "- - - -"
+OVERALL_SLIDE_RE = re.compile(
+    r"\b(?:at\s+a\s+glance|overall\s+performance|overall\s+summary|executive\s+summary|summary)\b",
+    re.IGNORECASE,
+)
 
 VALUE_LINE_RE = re.compile(
     r"^\s*(?:\$)?[+-]?\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:\s*[KMBkmb])?(?:%|x|"
@@ -24,7 +29,7 @@ VALUE_LINE_RE = re.compile(
     re.IGNORECASE,
 )
 PRIMARY_VALUE_RE = re.compile(
-    r"(?:\$)?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*[KMBkmb])?(?!\d)(?:%|x|"
+    r"(?<![A-Za-z])(?:\$)?[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\s*[KMBkmb])?(?!\d)(?:%|x|"
     r"\s*(?:mins?|minutes?|hrs?|hours?|secs?|seconds?))?\+?",
     re.IGNORECASE,
 )
@@ -44,9 +49,13 @@ METRIC_HINT_RE = re.compile(
     r"\b(?:"
     r"ctr|vtr|vcr|cvr|roas|roi|cpa|cpi|cpe|cpc|cpm|cpv|"
     r"rate|lift|reach|impression|click|view|complete|spend|acquisition|conversion|purchase|"
-    r"engagement|session|duration|frequency|install|launch|mau|dau|sov|grps?|trps?|"
+    r"engagement|session|duration|frequency|install|launch|mau|dau|sov|grps?|trps?|investment|"
     r"time spent|open rate|streaming hours|video starts?|viewability|fill rate|win rate"
     r")\b",
+    re.IGNORECASE,
+)
+FISCAL_LABEL_RE = re.compile(
+    r"^(?:fy\s*\d{2,4}|q\s*[1-4]|h\s*[12])$",
     re.IGNORECASE,
 )
 
@@ -172,6 +181,7 @@ class PairExtractor:
             pairs.extend(self._extract_table_pairs(lines[1:], box))
         else:
             pairs.extend(self._extract_inline_pairs(lines, box))
+            pairs.extend(self._extract_value_leading_inline_pairs(lines, box))
             pairs.extend(self._extract_stacked_pairs(lines, box))
             pairs.extend(self._extract_value_first_pairs(lines, box))
 
@@ -349,6 +359,40 @@ class PairExtractor:
                 pairs.append(PairCandidate(label=label, value=value, pattern="stacked", box=box))
         return pairs
 
+    def _extract_value_leading_inline_pairs(self, lines: Sequence[str], box: Box) -> list[PairCandidate]:
+        pairs: list[PairCandidate] = []
+        for line in lines:
+            text = (line or "").strip()
+            if not text:
+                continue
+            # Pure value lines should be handled by stacked/value-first/cross-box paths.
+            if is_value_line(text):
+                continue
+            m = PRIMARY_VALUE_RE.match(text)
+            if not m:
+                continue
+            value = (m.group(0) or "").strip()
+            rest = text[m.end() :].strip(" -:|")
+            if not rest:
+                continue
+            label = sanitize_metric_name(rest)
+            if not is_metric_label_candidate(label):
+                continue
+            # Avoid long sentence-like tails becoming metric labels.
+            if is_sentence_like_label(label):
+                continue
+            if len(label) > 64:
+                continue
+            pairs.append(
+                PairCandidate(
+                    label=label,
+                    value=value,
+                    pattern="inline_value_leading",
+                    box=box,
+                )
+            )
+        return pairs
+
     def _extract_value_first_pairs(self, lines: Sequence[str], box: Box) -> list[PairCandidate]:
         pairs: list[PairCandidate] = []
         for i in range(len(lines) - 1):
@@ -422,6 +466,7 @@ class DescriptorResolver:
 class MetricScorer:
     _PATTERN_BASE = {
         "inline": 0.95,
+        "inline_value_leading": 0.9,
         "inline_partial": 0.82,
         "stacked": 0.85,
         "table_pipe": 0.84,
@@ -432,11 +477,19 @@ class MetricScorer:
         "cross_box": 0.62,
     }
 
-    def score(self, pair: PairCandidate, name: str, unit: str | None, has_metadata: bool) -> tuple[float, dict]:
+    def score(
+        self,
+        pair: PairCandidate,
+        name: str,
+        unit: str | None,
+        has_metadata: bool,
+        *,
+        metric_like: bool,
+    ) -> tuple[float, dict]:
         score = self._PATTERN_BASE.get(pair.pattern, 0.6)
         components = {"pattern": score}
 
-        if looks_metric_like(name):
+        if metric_like:
             score += 0.08
             components["metric_hint"] = 0.08
 
@@ -461,6 +514,7 @@ class MetricNameScorer:
         self,
         *,
         metric_name: str,
+        metric_like: bool,
         occurrence_count: int,
         similar_support_count: int,
     ) -> tuple[float, dict[str, float]]:
@@ -502,7 +556,7 @@ class MetricNameScorer:
             score -= 0.22
             components["sentence_penalty"] = -0.22
 
-        if looks_metric_like(name):
+        if metric_like:
             score += 0.06
             components["metric_hint_bonus"] = 0.06
         else:
@@ -761,7 +815,13 @@ class RawContextResolver:
 
 
 class UnfilteredMetricsExtractor:
-    def __init__(self, *, review_threshold: float = 0.65) -> None:
+    def __init__(
+        self,
+        *,
+        review_threshold: float = 0.65,
+        database_url: str | None = None,
+        catalog_hint_terms: set[str] | None = None,
+    ) -> None:
         self._review_threshold = review_threshold
         self._parser = BoxParser()
         self._pair_extractor = PairExtractor()
@@ -769,6 +829,12 @@ class UnfilteredMetricsExtractor:
         self._scorer = MetricScorer()
         self._name_scorer = MetricNameScorer()
         self._context_resolver = RawContextResolver()
+        if catalog_hint_terms is not None:
+            self._catalog_hint_terms = {normalize_metric_name(term) for term in catalog_hint_terms if term}
+        elif database_url:
+            self._catalog_hint_terms = load_catalog_hint_terms_from_db(database_url)
+        else:
+            self._catalog_hint_terms = set()
 
     def extract(
         self,
@@ -782,6 +848,8 @@ class UnfilteredMetricsExtractor:
 
         for slide_number, boxes in sorted(pages.items()):
             page_descriptor = self._resolver._find_page_metric_descriptor(boxes)
+            overall_slide_title = find_overall_slide_title(boxes)
+            is_overall_slide = overall_slide_title is not None
             for box in boxes:
                 if (not include_notes) and "### notes:" in box.text.lower():
                     continue
@@ -797,7 +865,8 @@ class UnfilteredMetricsExtractor:
                 for pair in pairs:
                     name, metadata = self._resolver.resolve(pair, boxes)
                     name = sanitize_metric_name(name)
-                    if require_metric_hint and not looks_metric_like(name):
+                    metric_like = self._is_metric_like(name)
+                    if require_metric_hint and not metric_like:
                         continue
                     pending.append(
                         {
@@ -806,6 +875,9 @@ class UnfilteredMetricsExtractor:
                             "pair": pair,
                             "name": name,
                             "metadata": metadata,
+                            "metric_like": metric_like,
+                            "is_overall_slide": is_overall_slide,
+                            "overall_slide_title": overall_slide_title,
                         }
                     )
 
@@ -818,6 +890,9 @@ class UnfilteredMetricsExtractor:
             metadata = item["metadata"]
             boxes: Sequence[Box] = item["boxes"]
             slide_number: int = item["slide_number"]
+            metric_like: bool = bool(item.get("metric_like"))
+            is_overall_slide: bool = bool(item.get("is_overall_slide"))
+            overall_slide_title: str | None = item.get("overall_slide_title")
 
             normalized_value, unit = normalize_value(pair.value)
             pair_score, pair_components = self._scorer.score(
@@ -825,19 +900,29 @@ class UnfilteredMetricsExtractor:
                 name=name,
                 unit=unit,
                 has_metadata=metadata is not None,
+                metric_like=metric_like,
             )
             normalized_name = normalize_metric_name(name)
             occurrence_count = name_counts.get(normalized_name, 1)
             support_count = name_support.get(normalized_name, occurrence_count)
             name_score, name_components = self._name_scorer.score(
                 metric_name=name,
+                metric_like=metric_like,
                 occurrence_count=occurrence_count,
                 similar_support_count=support_count,
             )
-            final_score = max(0.0, min(1.0, (pair_score * 0.75) + (name_score * 0.25)))
+            final_score, blend_components = self._blend_confidence(
+                pair_score=pair_score,
+                name_score=name_score,
+                metric_name=name,
+            )
 
             merged_meta = dict(metadata or {})
             merged_meta["pattern"] = pair.pattern
+            merged_meta["is_overall_metric"] = is_overall_slide
+            if is_overall_slide:
+                merged_meta["overall_slide_title"] = overall_slide_title
+                merged_meta["overall_slide_number"] = slide_number
             if pair.table_id:
                 merged_meta["table_id"] = pair.table_id
             if pair.table_context_label:
@@ -849,7 +934,7 @@ class UnfilteredMetricsExtractor:
             merged_meta["confidence_components"] = {
                 "pair": pair_components,
                 "name": name_components,
-                "blend": {"pair_weight": 0.75, "name_weight": 0.25, "final": final_score},
+                "blend": blend_components,
             }
             merged_meta["review_recommended"] = final_score < self._review_threshold
 
@@ -903,6 +988,69 @@ class UnfilteredMetricsExtractor:
                 )
             )
         return records
+
+    def _blend_confidence(
+        self,
+        *,
+        pair_score: float,
+        name_score: float,
+        metric_name: str,
+    ) -> tuple[float, dict[str, float]]:
+        blend = (pair_score * 0.75) + (name_score * 0.25)
+        components: dict[str, float] = {
+            "pair_weight": 0.75,
+            "name_weight": 0.25,
+        }
+
+        length = len((metric_name or "").strip())
+        token_count = len(re.findall(r"[a-z0-9]+", (metric_name or "").lower()))
+        penalty = 0.0
+        if length > 90:
+            penalty += 0.18
+            components["very_long_name_penalty"] = -0.18
+        elif length > 70:
+            penalty += 0.12
+            components["long_name_penalty"] = -0.12
+        elif length > 55:
+            penalty += 0.07
+            components["long_name_penalty"] = -0.07
+
+        if token_count > 14:
+            penalty += 0.14
+            components["very_long_token_penalty"] = -0.14
+        elif token_count > 10:
+            penalty += 0.08
+            components["long_token_penalty"] = -0.08
+
+        if is_sentence_like_label(metric_name):
+            penalty += 0.08
+            components["sentence_like_penalty"] = -0.08
+
+        if penalty > 0:
+            blend -= penalty
+            components["penalty_total"] = -penalty
+
+        final = max(0.0, min(1.0, blend))
+        components["final"] = final
+        return final, components
+
+    def _is_metric_like(self, name: str) -> bool:
+        if looks_metric_like(name):
+            return True
+        if not self._catalog_hint_terms:
+            return False
+        norm = normalize_metric_name(name)
+        if not norm:
+            return False
+        padded = f" {norm} "
+        if norm in self._catalog_hint_terms:
+            return True
+        for term in self._catalog_hint_terms:
+            if len(term) < 3:
+                continue
+            if f" {term} " in padded:
+                return True
+        return False
 
     def _build_name_support(self, pending: Sequence[dict]) -> tuple[dict[str, int], dict[str, int]]:
         normalized_names = [normalize_metric_name(str(item["name"])) for item in pending if str(item["name"]).strip()]
@@ -1077,12 +1225,29 @@ def is_metric_label_candidate(label: str) -> bool:
     if not re.search(r"[A-Za-z]", value):
         return False
     norm = normalize_metric_name(value)
+    if FISCAL_LABEL_RE.fullmatch(norm):
+        return False
     # Reject year-like stand-alone labels and tiny noise fragments.
     if re.fullmatch(r"(19|20)\d{2}", norm):
         return False
     if len(norm) < 2:
         return False
     return True
+
+
+def find_overall_slide_title(boxes: Sequence[Box]) -> str | None:
+    for box in boxes:
+        text = box.text.strip()
+        if not text or is_source_block(text) or is_table_block(text):
+            continue
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        if not lines:
+            continue
+        # Check first lines so titles split across two lines are still detected.
+        for candidate in lines[:3]:
+            if OVERALL_SLIDE_RE.search(candidate):
+                return lines[0]
+    return None
 
 
 def normalize_metric_name(name: str) -> str:
@@ -1134,6 +1299,33 @@ def sanitize_metric_name(name: str) -> str:
     # Remove trailing separator punctuation.
     text = re.sub(r"[\s:;,.|/-]+$", "", text)
     return text.strip()
+
+
+def load_catalog_hint_terms_from_db(database_url: str) -> set[str]:
+    terms: set[str] = set()
+    sync_url = database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
+    try:
+        engine = create_engine(sync_url)
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(
+                    """
+                    SELECT mc.name AS metric_name, ma.alias AS alias_name
+                    FROM metric_catalog mc
+                    LEFT JOIN metric_aliases ma ON ma.metric_id = mc.id
+                    """
+                )
+            )
+            for metric_name, alias_name in rows:
+                for value in (metric_name, alias_name):
+                    if not value:
+                        continue
+                    norm = normalize_metric_name(str(value))
+                    if norm:
+                        terms.add(norm)
+    except Exception:
+        return set()
+    return terms
 
 
 def is_sentence_like_label(label: str) -> bool:

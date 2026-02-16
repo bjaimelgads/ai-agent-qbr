@@ -1,3 +1,0 @@
-This is a simple test document.
-It has a few sentences to embed.
-We want to verify Kreuzberg embeddings work for plain text.

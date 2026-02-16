@@ -124,6 +124,15 @@ def _copy_table(table, src_engine: Engine, dst_engine: Engine, *, batch_size: in
         column.name for column in table.columns if isinstance(column.type, JSON)
     }
     total = 0
+    skipped_orphans = 0
+    valid_metric_ids: set[int] | None = None
+    if table.name == "metric_fact_embeddings":
+        metrics_table = Base.metadata.tables.get("metrics")
+        if metrics_table is not None:
+            with src_engine.connect() as src_conn:
+                metric_rows = src_conn.execute(select(metrics_table.c.id)).fetchall()
+            valid_metric_ids = {int(r[0]) for r in metric_rows if r and r[0] is not None}
+
     with src_engine.connect() as src_conn:
         result = src_conn.execute(select(table))
         while True:
@@ -133,6 +142,14 @@ def _copy_table(table, src_engine: Engine, dst_engine: Engine, *, batch_size: in
             payloads = []
             for row in rows:
                 data = dict(row._mapping)
+                if (
+                    table.name == "metric_fact_embeddings"
+                    and valid_metric_ids is not None
+                ):
+                    metric_id = data.get("metric_id")
+                    if metric_id is None or int(metric_id) not in valid_metric_ids:
+                        skipped_orphans += 1
+                        continue
                 for column_name in json_columns:
                     data[column_name] = _coerce_json(data.get(column_name))
                 payloads.append(data)
@@ -140,6 +157,11 @@ def _copy_table(table, src_engine: Engine, dst_engine: Engine, *, batch_size: in
                 with dst_engine.begin() as dst_conn:
                     dst_conn.execute(table.insert(), payloads)
                 total += len(payloads)
+    if skipped_orphans:
+        print(
+            "[migration] Skipped orphan metric_fact_embeddings rows: "
+            f"{skipped_orphans}"
+        )
     return total
 
 

@@ -49,16 +49,11 @@ class _RagScope:
     debug: dict[str, object]
 
 
-def _is_overall_context_label(label: str | None) -> bool:
-    lowered = (label or "").strip().lower()
+def _is_overall_baseline_type(value: str | None) -> bool:
+    lowered = (value or "").strip().lower()
     if not lowered:
         return False
-    return (
-        lowered == "overall"
-        or "overall" in lowered
-        or "at a glance" in lowered
-        or "at-a-glance" in lowered
-    )
+    return lowered == "overall"
 
 
 async def _load_overall_metric_rows(engine: MetricQueryEngine, plan) -> list[Any]:
@@ -71,7 +66,7 @@ async def _load_overall_metric_rows(engine: MetricQueryEngine, plan) -> list[Any
         limit=max(int(plan.limit), 400),
         order_by="period_end DESC",
     )
-    return [row for row in rows if _is_overall_context_label(getattr(row, "llm_context_label", None))]
+    return [row for row in rows if _is_overall_baseline_type(getattr(row, "baseline_type", None))]
 
 
 def _rows_to_slide_ranges(rows: list[Any]) -> list[RagSlideRange]:

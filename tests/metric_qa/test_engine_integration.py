@@ -202,7 +202,7 @@ async def test_query_engine_context_prefers_explicit_when_rag_confident_else_ove
                 0.9,
                 "Brand X",
                 None,
-                None,
+                "overall",
                 2,
                 1,
                 None,
