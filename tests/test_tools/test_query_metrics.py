@@ -73,6 +73,49 @@ class _RecordingSearchUseCase(_FakeSearchUseCase):
 
 
 @dataclass
+class _OverallAwareSearchUseCase:
+    repository: _FakeRepository
+
+    async def execute(self, *, query, top_k, min_score, document_id=None):
+        del query, top_k, min_score
+        if document_id is not None and int(document_id) == 10:
+            return [
+                RetrievalResult(
+                    chunk=Chunk(
+                        chunk_id=ChunkId(1),
+                        document_id=DocumentId(10),
+                        content="Nike CPA context",
+                        start_slide=3,
+                        end_slide=4,
+                        summary=None,
+                        topics=None,
+                        importance_score=None,
+                        embedding=None,
+                    ),
+                    score=Score(0.9),
+                )
+            ]
+        if document_id is not None and int(document_id) == 13:
+            return [
+                RetrievalResult(
+                    chunk=Chunk(
+                        chunk_id=ChunkId(13),
+                        document_id=DocumentId(13),
+                        content="Nike overall context",
+                        start_slide=4,
+                        end_slide=4,
+                        summary=None,
+                        topics=None,
+                        importance_score=None,
+                        embedding=None,
+                    ),
+                    score=Score(0.75),
+                )
+            ]
+        return []
+
+
+@dataclass
 class _MismatchedSlideSearchUseCase:
     repository: _FakeRepository
 
@@ -125,8 +168,9 @@ async def test_query_metrics_tool(metric_db, dummy_ctx, monkeypatch):
         MetricQueryArgs(question="CPA for Nike in Q2 2025 in US"),
         dummy_ctx,
     )
-    assert "CPA" in result.summary_text or "Cost per Acquisition" in result.summary_text
-    assert result.citations
+    assert result.status == "ok"
+    assert result.metrics
+    assert any((item.metric_name or "").lower().startswith("cost per acquisition") for item in result.metrics)
 
 
 @pytest.mark.asyncio
@@ -201,8 +245,8 @@ async def test_query_metrics_tool_applies_rag_slide_scope(metric_db, dummy_ctx, 
         dummy_ctx,
     )
 
-    assert result.citations
-    assert {citation.slide_id for citation in result.citations} == {3}
+    assert result.status == "ok"
+    assert {item.source.slide_id for item in result.metrics if item.source.slide_id is not None} == {3}
     assert search_use_case.calls
     assert all(call == 10 for call in search_use_case.calls)
 
@@ -238,19 +282,11 @@ async def test_query_metrics_tool_returns_compact_rag_debug_for_planner(metric_d
         dummy_ctx,
     )
 
-    assert result.debug is not None
-    rag_scope = result.debug.get("rag_scope")
-    assert isinstance(rag_scope, dict)
-    assert "retrieved_hit_chunks" not in rag_scope
-    assert "post_rerank_chunks_full" not in rag_scope
-    assert "prefilter_sql" not in rag_scope
-    assert "context_chunks" not in rag_scope
-    assert result.data is None
-    assert all((len(str(getattr(item, "snippet", "") or "")) <= 180) for item in result.citations)
-    if isinstance(result.table_data, list):
-        assert all("document_id" not in item for item in result.table_data if isinstance(item, dict))
-        assert all("slide_id" not in item for item in result.table_data if isinstance(item, dict))
-        assert all((len(str(item.get("snippet") or "")) <= 180) for item in result.table_data if isinstance(item, dict))
+    assert result.status == "ok"
+    assert result.intent.metric_ids == ["cost_per_acquisition"]
+    assert isinstance(result.retrieval_debug, dict)
+    assert "prefiltered_doc_ids" in result.retrieval_debug
+    assert all((len(str(item.content or "")) <= 400) for item in result.retrieval_chunks)
 
     full_metric_answer = interaction_metadata.get("metric_answer")
     assert isinstance(full_metric_answer, dict)
@@ -293,13 +329,15 @@ async def test_query_metrics_tool_falls_back_when_rag_scope_prunes_all_rows(metr
         dummy_ctx,
     )
 
-    assert result.debug is not None
-    # With strict entity fallback active, the tool may return no rows instead of widening scope.
-    if result.data:
-        assert {citation.slide_id for citation in result.citations} == {3}
-    else:
-        assert result.debug.get("fallback_reason") == "strict_entity_filters"
-    assert result.debug and result.debug.get("rag_pruned_all_rows") is True
+    assert result.status == "ok"
+    assert {item.source.slide_id for item in result.metrics if item.source.slide_id is not None} == {3}
+    full_metric_answer = dummy_ctx.tool_context["interaction_metadata"].get("metric_answer")
+    assert isinstance(full_metric_answer, dict)
+    full_debug = full_metric_answer.get("debug")
+    assert isinstance(full_debug, dict)
+    full_rag_scope = full_debug.get("rag_scope")
+    assert isinstance(full_rag_scope, dict)
+    assert full_rag_scope.get("metric_slide_filtered_hit_count") == 0
 
 
 @pytest.mark.asyncio
@@ -330,7 +368,86 @@ async def test_query_metrics_tool_keeps_refined_filters_strict_when_no_rows(metr
         dummy_ctx,
     )
 
-    assert result.data is None
-    assert "Relaxed client filter" not in result.assumptions
-    assert "Relaxed region filter" not in result.assumptions
-    assert result.debug and result.debug.get("fallback_reason") == "strict_entity_filters"
+    assert result.status == "empty"
+    assert result.metrics == []
+
+
+@pytest.mark.asyncio
+async def test_query_metrics_tool_always_includes_overall_when_metric_exists(metric_db, dummy_ctx, monkeypatch):
+    monkeypatch.setenv("FISCAL_YEAR_START_MONTH", "1")
+    db_path = metric_db.replace("sqlite+aiosqlite:///", "", 1)
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    # Insert an overall baseline row for the metric in a different period (Q1),
+    # so strict period filtering misses it but relaxed overall fallback can include it.
+    cur.execute(
+        """
+        INSERT INTO metrics (
+            id, slide_id, raw_value, raw_context, raw_metric_type,
+            metric_catalog_id, name, normalized_value, unit, category,
+            extraction_confidence,
+            brand, baseline_text, baseline_type, period_id, region_id, country,
+            llm_context_label
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            206,
+            5,
+            "$11.00",
+            "CPA overall in US Q1",
+            "currency",
+            1,
+            "CPA",
+            11.0,
+            "currency",
+            "cost",
+            0.9,
+            "Nike",
+            "overall",
+            "overall",
+            1,
+            1,
+            None,
+            "Overall",
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+    engine = MetricQueryEngine(database_url=metric_db)
+    interaction_metadata: dict = {
+        "refined_metric_intent": {
+            "metric_ids": ["cost_per_acquisition"],
+            "client": ["Nike"],
+            "region": ["US"],
+            "period": [
+                {
+                    "type": "quarter",
+                    "value": "Q2 2025",
+                    "start": "2025-04-01",
+                    "end": "2025-06-30",
+                }
+            ],
+            "aggregation": None,
+            "grouping": None,
+            "limit": None,
+        }
+    }
+    dummy_ctx.tool_context["metric_query_engine"] = engine
+    dummy_ctx.tool_context["interaction_metadata"] = interaction_metadata
+    dummy_ctx.tool_context["qbr_search_use_case"] = _OverallAwareSearchUseCase(repository=_FakeRepository())
+    dummy_ctx.tool_context["retrieval_top_k"] = 5
+
+    result = await query_metrics(
+        MetricQueryArgs(question="CPA for Nike in Q2 2025 in US", debug=True),
+        dummy_ctx,
+    )
+
+    assert result.status == "ok"
+    assert isinstance(result.retrieval_debug, dict)
+    assert result.retrieval_debug.get("overall_scope_mode") == "client_metric"
+    assert (result.retrieval_debug.get("appended_overall_row_count") or 0) >= 1
+    assert any(
+        chunk.document_id == 13 and chunk.matched_metric_slide is False
+        for chunk in result.retrieval_chunks
+    )

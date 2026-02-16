@@ -986,7 +986,7 @@ def _finalize_answer_text(
         1 for call in tool_calls if str(call.get("tool_name") or "").strip() == "query_metrics"
     )
     if output_protocol == "agui" and streamed_answer_text:
-        if metric_answer is not None and query_metrics_call_count <= 1:
+        if metric_answer is not None and query_metrics_call_count == 1:
             return _format_metric_answer(metric_answer)
         text = _replace_slide_number_refs_with_titles(
             streamed_answer_text,

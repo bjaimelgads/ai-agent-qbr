@@ -77,3 +77,77 @@ class MetricAnswer(BaseModel):
     assumptions: list[str] = Field(default_factory=list)
     followups: list[str] = Field(default_factory=list)
     debug: dict | None = None
+
+
+class MetricEvidenceIntent(BaseModel):
+    """Intent payload forwarded to planner for evidence-first workflows."""
+
+    metric_ids: list[str] = Field(default_factory=list)
+    client: list[str] = Field(default_factory=list)
+    region: list[str] = Field(default_factory=list)
+    period: list[str] = Field(default_factory=list)
+
+
+class MetricEvidenceSource(BaseModel):
+    """Document/slide source descriptor."""
+
+    document_id: int | None = None
+    document_name: str | None = None
+    document_url: str | None = None
+    slide_id: int | None = None
+    slide_number: int | None = None
+    slide_title: str | None = None
+    slide_url: str | None = None
+
+
+class MetricEvidenceMetric(BaseModel):
+    """Metric value evidence row."""
+
+    metric_id: str | None = None
+    metric_name: str | None = None
+    value: float | None = None
+    unit: str | None = None
+    period: str | None = None
+    client: str | None = None
+    region: str | None = None
+    context_label: str | None = None
+    confidence: float | None = None
+    source: MetricEvidenceSource = Field(default_factory=MetricEvidenceSource)
+
+
+class MetricEvidenceChunk(BaseModel):
+    """Retrieved chunk evidence row."""
+
+    chunk_id: int | None = None
+    document_id: int | None = None
+    document_name: str | None = None
+    document_url: str | None = None
+    start_slide: int | None = None
+    end_slide: int | None = None
+    slide_title: str | None = None
+    slide_url: str | None = None
+    score: float | None = None
+    content: str | None = None
+    matched_metric_slide: bool = False
+
+
+class MetricEvidenceLink(BaseModel):
+    """Link between a metric evidence row and a retrieved chunk."""
+
+    metric_index: int
+    chunk_index: int
+    overlap_type: Literal["exact", "range_overlap"]
+    link_confidence: float = 1.0
+
+
+class MetricEvidenceAnswer(BaseModel):
+    """Evidence-first planner payload for metric queries."""
+
+    query: str
+    intent: MetricEvidenceIntent
+    metrics: list[MetricEvidenceMetric] = Field(default_factory=list)
+    retrieval_chunks: list[MetricEvidenceChunk] = Field(default_factory=list)
+    metric_chunk_links: list[MetricEvidenceLink] = Field(default_factory=list)
+    retrieval_debug: dict | None = None
+    status: Literal["ok", "empty", "error"] = "ok"
+    error: str | None = None
