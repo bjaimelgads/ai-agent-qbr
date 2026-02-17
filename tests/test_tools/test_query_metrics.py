@@ -451,3 +451,42 @@ async def test_query_metrics_tool_always_includes_overall_when_metric_exists(met
         chunk.document_id == 13 and chunk.matched_metric_slide is False
         for chunk in result.retrieval_chunks
     )
+
+
+@pytest.mark.asyncio
+async def test_query_metrics_tool_preserves_metric_id_and_source_for_aggregations(
+    metric_db,
+    dummy_ctx,
+    monkeypatch,
+):
+    monkeypatch.setenv("FISCAL_YEAR_START_MONTH", "1")
+    engine = MetricQueryEngine(database_url=metric_db)
+    dummy_ctx.tool_context["metric_query_engine"] = engine
+
+    result = await query_metrics(
+        MetricQueryArgs(
+            question="Total CPA for Nike in Q2 2025 in US",
+            intent={
+                "metric_ids": ["cost_per_acquisition"],
+                "client": ["Nike"],
+                "region": ["US"],
+                "period": [
+                    {
+                        "type": "quarter",
+                        "value": "Q2 2025",
+                        "start": "2025-04-01",
+                        "end": "2025-06-30",
+                    }
+                ],
+                "aggregation": "sum",
+                "grouping": None,
+                "limit": None,
+            },
+        ),
+        dummy_ctx,
+    )
+
+    assert result.status in {"ok", "empty"}
+    assert result.metrics
+    assert all(item.metric_id is not None for item in result.metrics)
+    assert any(item.source.document_id is not None for item in result.metrics)

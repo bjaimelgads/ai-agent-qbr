@@ -46,6 +46,10 @@ src_root = repo_root / "src"
 if str(src_root) not in sys.path:
     sys.path.insert(0, str(src_root))
 
+# This runner requires full qbr_intelligence imports (QBRProcessor, query interface).
+# Force disable light-import mode even if the shell/.env exported it.
+os.environ["QBR_INTELLIGENCE_LIGHT_IMPORT"] = "0"
+
 from qbr_intelligence import QBRProcessor, QBRQueryInterface, init_db
 from qbr_intelligence.db.models import Document
 from qbr_intelligence.pipeline.embeddings import EmbeddingSettings

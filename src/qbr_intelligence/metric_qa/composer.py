@@ -107,7 +107,12 @@ def _apply_aggregation(aggregation: str, rows: list[MetricFactRow]) -> Aggregati
         ordered = sorted(rows, key=lambda r: (r.period_end or ""))
         if len(ordered) < 2:
             summary = "I only found one period to compare."
-            return AggregationResult(summary=summary, rows=ordered, table=None, assumptions=["Only one period found."])
+            return AggregationResult(
+                summary=summary,
+                rows=ordered,
+                table=[_row_to_table(r) for r in ordered],
+                assumptions=["Only one period found."],
+            )
         first, second = ordered[-2], ordered[-1]
         delta = None
         pct = None
@@ -122,7 +127,13 @@ def _apply_aggregation(aggregation: str, rows: list[MetricFactRow]) -> Aggregati
         values = [row.value for row in rows if row.value is not None]
         if not values:
             summary = "No numeric values were available to aggregate."
-            return AggregationResult(summary=summary, rows=rows[:1], table=None, assumptions=["Missing numeric values."])
+            selected = rows[:1]
+            return AggregationResult(
+                summary=summary,
+                rows=selected,
+                table=[_row_to_table(r) for r in selected],
+                assumptions=["Missing numeric values."],
+            )
         if aggregation == "average":
             agg_value = mean(values)
             label = "average"
@@ -136,12 +147,23 @@ def _apply_aggregation(aggregation: str, rows: list[MetricFactRow]) -> Aggregati
             agg_value = max(values)
             label = "maximum"
         summary = f"The {label} value is {_format_value(agg_value, rows[0].unit)} across {len(values)} records."
-        return AggregationResult(summary=summary, rows=rows[: min(len(rows), 5)], table=None, assumptions=[])
+        selected = rows[: min(len(rows), 5)]
+        return AggregationResult(
+            summary=summary,
+            rows=selected,
+            table=[_row_to_table(r) for r in selected],
+            assumptions=[],
+        )
 
     # Default to latest
     latest = max(rows, key=lambda r: (r.period_end or ""))
     summary = _latest_summary(latest)
-    return AggregationResult(summary=summary, rows=[latest], table=None, assumptions=[])
+    return AggregationResult(
+        summary=summary,
+        rows=[latest],
+        table=[_row_to_table(latest)],
+        assumptions=[],
+    )
 
 
 def _latest_summary(row: MetricFactRow) -> str:
@@ -177,6 +199,7 @@ def _compare_summary(first: MetricFactRow, second: MetricFactRow, delta: float |
 def _row_to_table(row: MetricFactRow) -> dict:
     slide_url = _build_google_slide_url(row.document_url, row.google_slide_id)
     return {
+        "metric_id": row.metric_id,
         "metric": row.metric_name,
         "value": row.value,
         "unit": row.unit,
@@ -184,6 +207,7 @@ def _row_to_table(row: MetricFactRow) -> dict:
         "client": row.client_name,
         "region": row.region,
         "llm_context_label": row.llm_context_label,
+        "confidence": row.confidence,
         "semantic_score": row.semantic_score,
         "document_id": row.document_id,
         "document_name": row.document_name,

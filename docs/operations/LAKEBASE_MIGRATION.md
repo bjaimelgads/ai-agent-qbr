@@ -116,7 +116,12 @@ uv sync --all-extras
 ```
 
 ### 3) Run migration
+Refresh the Lakebase DB token, then run migration:
 ```bash
+set -a; source .env; set +a
+. .venv/bin/activate
+
+uv run scripts/refresh_migration_token.py --env-file .env
 uv run scripts/migrate_sqlite_to_postgres.py --truncate --create-fts-index
 ```
 

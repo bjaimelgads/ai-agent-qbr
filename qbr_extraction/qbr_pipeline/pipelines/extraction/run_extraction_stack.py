@@ -35,6 +35,11 @@ def main() -> int:
     parser.add_argument("--skip-run-pipeline", action="store_true")
     parser.add_argument("--skip-export-11c", action="store_true")
     parser.add_argument("--skip-stage4", action="store_true")
+    parser.add_argument(
+        "--skip-backfill-slide-titles",
+        action="store_true",
+        help="Skip slide title backfill during extraction run.",
+    )
     args = parser.parse_args()
 
     decks_folder = Path(args.decks_folder)
@@ -51,9 +56,12 @@ def main() -> int:
             str(decks_folder),
             "--no-llm",
             "--export-extraction",
+            "--backfill-slide-titles",
             "--db",
             args.db,
         ]
+        if args.skip_backfill_slide_titles:
+            cmd.remove("--backfill-slide-titles")
         if args.override:
             cmd.append("--override")
         run_cmd(cmd)
