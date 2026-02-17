@@ -24,6 +24,7 @@ from qbr_agent.domain.value_objects import ChunkId, DocumentId, EmbeddingVector
 @dataclass
 class FakeRepository(KnowledgeRepository):
     chunk: Chunk
+    document_path: str = "/tmp/qbr_test.pptx"
 
     async def list_documents(self, *, limit=50, client_name=None, status=None):
         return []
@@ -34,7 +35,7 @@ class FakeRepository(KnowledgeRepository):
                 Document(
                     document_id=self.chunk.document_id,
                     filename="qbr_test.pptx",
-                    file_path="/tmp/qbr_test.pptx",
+                    file_path=self.document_path,
                     client_name=None,
                     period=None,
                     status=None,
@@ -129,3 +130,43 @@ async def test_search_documents_with_different_query() -> None:
 
     assert isinstance(result, SearchResults)
     assert result.results
+
+
+@pytest.mark.asyncio
+async def test_search_documents_returns_slide_url_from_metadata() -> None:
+    chunk = Chunk(
+        chunk_id=ChunkId(1),
+        document_id=DocumentId(1),
+        content="QBR content",
+        start_slide=12,
+        end_slide=12,
+        summary=None,
+        topics=None,
+        importance_score=None,
+        embedding=Embedding(vector=EmbeddingVector((0.1, 0.2, 0.3)), model="test"),
+        metadata={
+            "slide_number": 12,
+            "slide_title": "Performance by Region",
+            "google_slide_id": "g123abc",
+            "document_url": "https://docs.google.com/presentation/d/abc123/edit",
+            "slide_url": "https://docs.google.com/presentation/d/abc123/edit#slide=id.g123abc",
+        },
+    )
+    use_case = HybridSearchKnowledge(
+        repository=FakeRepository(
+            chunk,
+            document_path="https://docs.google.com/presentation/d/abc123/edit",
+        ),
+        vector_index=FakeVectorIndex(),
+        embeddings=FakeEmbeddingsProvider(),
+    )
+    dummy_ctx = DummyToolContext(use_case)
+
+    result = await search_documents(Query(question="What is in the QBR?"), dummy_ctx)
+
+    assert isinstance(result, SearchResults)
+    assert result.results
+    first = result.results[0]
+    assert first.document_title == "qbr_test.pptx"
+    assert first.slide_title == "Performance by Region"
+    assert first.slide_url == "https://docs.google.com/presentation/d/abc123/edit#slide=id.g123abc"

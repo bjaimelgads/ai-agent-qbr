@@ -38,7 +38,7 @@ async def _build_document_filters(
 @tool(desc="Search internal QBR knowledge", side_effects="read", tags=["planner"])
 async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
     status = ToolStatusEmitter(ctx, tool_name="search_documents")
-    await status.step("Searching QBR materials for relevant details.", step_name="Search QBR")
+    await status.step("Searching QBR materials for relevant details.", step_name="Searching QBR's")
     logger = logging.getLogger("uvicorn.error")
     use_case = ctx.tool_context.get("qbr_search_use_case")
     if not isinstance(use_case, HybridSearchKnowledge):
@@ -58,7 +58,7 @@ async def search_documents(args: Query, ctx: ToolContext) -> SearchResults:
 
     comparison_intent = bool(args.comparison_intent)
     if comparison_intent:
-        await status.step("Comparing across multiple decks.", step_name="Compare decks")
+        await status.step("Comparing across multiple decks.", step_name="Comparings decks")
 
     prefiltered_doc_ids: list[int] = []
     prefilter_intent = None
@@ -304,11 +304,21 @@ async def _format_results(
                     include_path,
                     item.chunk.document_id.value,
                 ),
+                document_title=_format_document_title(
+                    documents_by_id.get(item.chunk.document_id.value),
+                    include_path,
+                    item.chunk.document_id.value,
+                ),
+                slide_title=_chunk_metadata(item).get("slide_title"),
                 snippet=item.chunk.content,
                 chunk_id=item.chunk.chunk_id.value,
                 document_id=item.chunk.document_id.value,
                 score=item.score.value,
                 slide_range=_format_slide_range(item.chunk.start_slide, item.chunk.end_slide),
+                document_url=_document_url(documents_by_id.get(item.chunk.document_id.value), item),
+                slide_url=_slide_url(documents_by_id.get(item.chunk.document_id.value), item),
+                source_url=_slide_url(documents_by_id.get(item.chunk.document_id.value), item)
+                or _document_url(documents_by_id.get(item.chunk.document_id.value), item),
             )
             for item in results
         ]
@@ -344,3 +354,28 @@ def _format_document_title(document, include_path: bool, fallback_id: int) -> st
     if include_path and document.file_path:
         return f"{document.filename} ({document.file_path})"
     return document.filename
+
+
+def _chunk_metadata(item) -> dict:
+    meta = item.chunk.metadata
+    if isinstance(meta, dict):
+        return meta
+    return {}
+
+
+def _document_url(document, item) -> str | None:
+    meta = _chunk_metadata(item)
+    meta_doc_url = meta.get("document_url")
+    if isinstance(meta_doc_url, str) and meta_doc_url:
+        return meta_doc_url
+    if document is not None and isinstance(document.file_path, str) and document.file_path:
+        return document.file_path
+    return None
+
+
+def _slide_url(document, item) -> str | None:
+    meta = _chunk_metadata(item)
+    meta_slide_url = meta.get("slide_url")
+    if isinstance(meta_slide_url, str) and meta_slide_url:
+        return meta_slide_url
+    return _document_url(document, item)
