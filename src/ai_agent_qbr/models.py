@@ -19,11 +19,16 @@ class SearchResult(BaseModel):
     """Single search hit."""
 
     title: str
+    document_title: str | None = None
+    slide_title: str | None = None
     snippet: str
     chunk_id: int | None = None
     document_id: int | None = None
     score: float | None = None
     slide_range: str | None = None
+    document_url: str | None = None
+    slide_url: str | None = None
+    source_url: str | None = None
 
 
 class SearchResults(BaseModel):

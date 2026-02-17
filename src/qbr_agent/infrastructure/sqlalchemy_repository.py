@@ -6,6 +6,7 @@ from collections.abc import Iterable
 from dataclasses import replace, dataclass, field
 import json
 import logging
+import re
 from typing import Any
 
 from sqlalchemy import MetaData, Table, literal, or_, select, text
@@ -501,22 +502,51 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
             return {}
 
         slides = _SLIDES
+        documents = _DOCUMENTS
+        title_col = slides.c.get("title")
+        key_message_col = slides.c.get("key_message")
+        slide_type_col = slides.c.get("slide_type")
+        insights_col = slides.c.get("insights")
+        action_items_col = slides.c.get("action_items")
+        google_slide_id_col = slides.c.get("google_slide_id")
+        document_url_col = documents.c.get("file_path") if documents is not None else None
+
+        from_clause = slides
+        if documents is not None:
+            from_clause = slides.outerjoin(documents, documents.c.id == slides.c.document_id)
+
         metadata: dict[tuple[int, int], dict[str, Any]] = {}
         for document_id, slide_numbers in slide_keys.items():
             query = select(
                 slides.c.document_id,
                 slides.c.slide_number,
-                slides.c.title,
-                slides.c.key_message,
-                slides.c.slide_type,
-                slides.c.insights,
-                slides.c.action_items,
-            ).where(
+                title_col.label("title") if title_col is not None else literal(None).label("title"),
+                key_message_col.label("key_message")
+                if key_message_col is not None
+                else literal(None).label("key_message"),
+                slide_type_col.label("slide_type")
+                if slide_type_col is not None
+                else literal(None).label("slide_type"),
+                insights_col.label("insights") if insights_col is not None else literal(None).label("insights"),
+                action_items_col.label("action_items")
+                if action_items_col is not None
+                else literal(None).label("action_items"),
+                google_slide_id_col.label("google_slide_id")
+                if google_slide_id_col is not None
+                else literal(None).label("google_slide_id"),
+                document_url_col.label("document_url")
+                if document_url_col is not None
+                else literal(None).label("document_url"),
+            ).select_from(from_clause).where(
                 slides.c.document_id == document_id,
                 slides.c.slide_number.in_(slide_numbers),
             )
             result = await session.execute(query)
             for row in result.fetchall():
+                slide_url = _build_google_slide_url(
+                    getattr(row, "document_url", None),
+                    getattr(row, "google_slide_id", None),
+                )
                 metadata[(int(row.document_id), int(row.slide_number))] = {
                     "slide_number": int(row.slide_number),
                     "slide_title": row.title,
@@ -524,8 +554,27 @@ class SqlAlchemyKnowledgeRepository(KnowledgeRepository):
                     "slide_type": row.slide_type,
                     "slide_insights": row.insights,
                     "slide_action_items": row.action_items,
+                    "google_slide_id": getattr(row, "google_slide_id", None),
+                    "document_url": getattr(row, "document_url", None),
+                    "slide_url": slide_url or getattr(row, "document_url", None),
                 }
         return metadata
+
+
+def _build_google_slide_url(document_url: str | None, slide_google_id: str | None) -> str | None:
+    if not document_url or not slide_google_id:
+        return None
+    match = re.search(
+        r"https?://docs\.google\.com/presentation/d/([a-zA-Z0-9_-]+)",
+        document_url,
+    )
+    if not match:
+        return None
+    presentation_id = match.group(1)
+    return (
+        f"https://docs.google.com/presentation/d/{presentation_id}/edit#slide=id."
+        f"{slide_google_id}"
+    )
 
 
 def _coerce_vector(value: Any) -> list[float]:
