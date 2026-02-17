@@ -1,0 +1,24 @@
+flowchart TB
+  classDef step fill:#eef6ff,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+  classDef next fill:#ecfdf5,stroke:#16a34a,stroke-width:1.5px,color:#052e16
+  classDef pain fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#431407
+
+  A["Step 1<br/>Broad search across all docs and slides"]:::step --> B["Result<br/>Good proof of concept"]:::step
+  B --> C["Issue<br/>Too much noise for precise deck-to-deck comparisons"]:::pain
+
+  C --> D["Step 2<br/>Intent-based narrowing"]:::step
+  D --> D1["Filters<br/>Region • Brand/Client • Time Period"]:::step
+  D --> D2["Add metric_catalog<br/>Business metric grounding"]:::step
+
+  D1 --> E["Outcome<br/>More focused and reliable retrieval"]:::step
+  D2 --> E
+
+  E --> F["Step 3<br/>Multi-deck search"]:::step
+  F --> F1["Use cases<br/>Compare periods, regions, clients, brands"]:::step
+  F --> F2["Transparency<br/>Clickable deck + slide sources"]:::step
+
+  F1 --> G["Current value<br/>Better comparison quality + trust"]:::step
+  F2 --> G
+
+  G --> H["Next 1<br/>Improve metric catalog quality"]:::next
+  G --> I["Next 2<br/>Return table-style metric answers<br/>(e.g., CPA across recent quarters)"]:::next
