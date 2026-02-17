@@ -118,10 +118,12 @@ uv sync --all-extras
 ### 3) Run migration
 Refresh the Lakebase DB token, then run migration:
 ```bash
+unset DATABRICKS_TOKEN QBR_LAKEBASE_TOKEN MIGRATION_TOKEN MIGRATION_TARGET_TOKEN
 set -a; source .env; set +a
 . .venv/bin/activate
 
-uv run scripts/refresh_migration_token.py --env-file .env
+uv run scripts/refresh_migration_token.py --env-file .env --instance-name dev-qbr
+set -a; source .env; set +a
 uv run scripts/migrate_sqlite_to_postgres.py --truncate --create-fts-index
 ```
 

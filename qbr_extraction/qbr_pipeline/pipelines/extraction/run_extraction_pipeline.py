@@ -478,9 +478,9 @@ def main():
         help="Process only the first N slides",
     )
     parser.add_argument(
-        "--backfill-slide-titles",
+        "--skip-backfill-slide-titles",
         action="store_true",
-        help="Backfill slides.title from PPTX titles after processing",
+        help="Skip slide title backfill (enabled by default)",
     )
     parser.add_argument(
         "--backfill-slide-titles-overwrite",
@@ -551,7 +551,7 @@ def main():
                     max_slides=max_slides,
                 )
                 processed_any = True
-                if args.backfill_slide_titles and doc_id:
+                if not args.skip_backfill_slide_titles and doc_id:
                     stats = backfill_slide_titles_for_document(
                         database_url=args.db,
                         document_id=doc_id,
@@ -579,7 +579,7 @@ def main():
                 max_slides=max_slides,
             )
             processed_any = True
-            if args.backfill_slide_titles and doc_id:
+            if not args.skip_backfill_slide_titles and doc_id:
                 stats = backfill_slide_titles_for_document(
                     database_url=args.db,
                     document_id=doc_id,

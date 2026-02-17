@@ -359,21 +359,117 @@ class QBRProcessor:
         return match.group(1) if match else None
 
     def _resolve_document_url(self, file_path: Path) -> str:
+        url, _ = self._resolve_document_mapping(file_path)
+        return url
+
+    def _parse_document_slide_range(self, raw_value) -> tuple[int, int] | None:
+        if isinstance(raw_value, str):
+            value = raw_value.strip()
+            if not value:
+                return None
+            if "-" in value:
+                parts = value.split("-", 1)
+            elif ":" in value:
+                parts = value.split(":", 1)
+            else:
+                parts = [value, value]
+            try:
+                start = int(parts[0].strip())
+                end = int(parts[1].strip())
+            except ValueError:
+                return None
+            if start <= 0 or end <= 0 or start > end:
+                return None
+            return (start, end)
+
+        if isinstance(raw_value, (list, tuple)) and len(raw_value) == 2:
+            try:
+                start = int(raw_value[0])
+                end = int(raw_value[1])
+            except (TypeError, ValueError):
+                return None
+            if start <= 0 or end <= 0 or start > end:
+                return None
+            return (start, end)
+
+        if isinstance(raw_value, dict):
+            try:
+                start = int(raw_value.get("start"))
+                end = int(raw_value.get("end"))
+            except (TypeError, ValueError):
+                return None
+            if start <= 0 or end <= 0 or start > end:
+                return None
+            return (start, end)
+
+        return None
+
+    def _parse_document_slide_ranges(self, raw_value) -> list[tuple[int, int]]:
+        if raw_value is None:
+            return []
+        single = self._parse_document_slide_range(raw_value)
+        if single is not None:
+            return [single]
+        if isinstance(raw_value, list):
+            if len(raw_value) == 2 and all(not isinstance(item, (list, tuple, dict)) for item in raw_value):
+                maybe_single = self._parse_document_slide_range(raw_value)
+                return [maybe_single] if maybe_single is not None else []
+            ranges: list[tuple[int, int]] = []
+            for item in raw_value:
+                maybe = self._parse_document_slide_range(item)
+                if maybe is not None:
+                    ranges.append(maybe)
+            return ranges
+        if isinstance(raw_value, str) and "," in raw_value:
+            ranges: list[tuple[int, int]] = []
+            for part in raw_value.split(","):
+                maybe = self._parse_document_slide_range(part.strip())
+                if maybe is not None:
+                    ranges.append(maybe)
+            return ranges
+        return []
+
+    def _resolve_document_mapping(self, file_path: Path) -> tuple[str, list[tuple[int, int]] | None]:
         mapping_path = file_path.parent / self.DOCUMENT_URLS_FILENAME
         if not mapping_path.exists():
-            return str(file_path.absolute())
+            return str(file_path.absolute()), None
         try:
             payload = json.loads(mapping_path.read_text(encoding="utf-8"))
         except Exception as exc:
             print(f"  [Document URL] Failed to read {mapping_path}: {exc}")
-            return str(file_path.absolute())
+            return str(file_path.absolute()), None
         if not isinstance(payload, dict):
             print(f"  [Document URL] Invalid mapping in {mapping_path}; expected JSON object.")
-            return str(file_path.absolute())
-        url = payload.get(file_path.name)
-        if isinstance(url, str) and url.strip():
-            return url.strip()
-        return str(file_path.absolute())
+            return str(file_path.absolute()), None
+
+        entry = payload.get(file_path.name)
+        if isinstance(entry, str):
+            value = entry.strip()
+            if value:
+                return value, None
+            return str(file_path.absolute()), None
+
+        if isinstance(entry, dict):
+            url_value = entry.get("url")
+            url = url_value.strip() if isinstance(url_value, str) and url_value.strip() else ""
+            slide_ranges = self._parse_document_slide_ranges(entry.get("slide_ranges"))
+            single_range = self._parse_document_slide_range(entry.get("slide_range"))
+            if single_range is not None:
+                slide_ranges.insert(0, single_range)
+            if slide_ranges:
+                seen: set[tuple[int, int]] = set()
+                deduped: list[tuple[int, int]] = []
+                for rng in slide_ranges:
+                    if rng in seen:
+                        continue
+                    seen.add(rng)
+                    deduped.append(rng)
+                slide_ranges = deduped
+            if not url:
+                return str(file_path.absolute()), slide_ranges or None
+            return url, slide_ranges or None
+
+        return str(file_path.absolute()), None
 
     def _resolve_google_presentation_id(
         self,
@@ -600,11 +696,30 @@ class QBRProcessor:
         pages: list[dict],
         *,
         slide_range: tuple[int, int] | None = None,
+        slide_ranges: list[tuple[int, int]] | None = None,
         max_slides: int | None = None,
     ) -> list[dict]:
         """Filter pages by range or max count, preserving order."""
         if not pages:
             return pages
+        if slide_ranges:
+            normalized = sorted(slide_ranges, key=lambda item: (item[0], item[1]))
+            merged: list[tuple[int, int]] = []
+            for start, end in normalized:
+                if not merged:
+                    merged.append((start, end))
+                    continue
+                prev_start, prev_end = merged[-1]
+                if start <= prev_end + 1:
+                    merged[-1] = (prev_start, max(prev_end, end))
+                else:
+                    merged.append((start, end))
+            selected: list[dict] = []
+            for page in pages:
+                page_number = int(page.get("page_number", 0))
+                if any(start <= page_number <= end for start, end in merged):
+                    selected.append(page)
+            return selected
         if slide_range is not None:
             start, end = slide_range
             return [page for page in pages if start <= int(page.get("page_number", 0)) <= end]
@@ -2311,7 +2426,10 @@ Categories:
             Document ID in the database
         """
         file_path = Path(file_path)
-        document_url = self._resolve_document_url(file_path)
+        document_url, mapped_slide_ranges = self._resolve_document_mapping(file_path)
+        if slide_range is None and max_slides is None and mapped_slide_ranges:
+            ranges_text = ", ".join(f"{start}-{end}" for start, end in mapped_slide_ranges)
+            print(f"  [Document Mapping] Applied default slide ranges: {ranges_text}")
 
         # Step 1: Extract
         print("\n" + "=" * 60)
@@ -2345,10 +2463,11 @@ Categories:
         pages_for_selection = remapped_pages or pages
         content_for_processing = result.content
         pages_override: list[dict] | None = None
-        if slide_range is not None or max_slides is not None:
+        if slide_range is not None or max_slides is not None or mapped_slide_ranges:
             selected_pages = self._select_pages(
                 pages_for_selection,
                 slide_range=slide_range,
+                slide_ranges=mapped_slide_ranges if slide_range is None and max_slides is None else None,
                 max_slides=max_slides,
             )
             if selected_pages:
@@ -2432,6 +2551,18 @@ Categories:
                 deck = deck.__class__(
                     deck_id=deck.deck_id,
                     slides=tuple(deck.slides[:max_slides]),
+                )
+            elif mapped_slide_ranges:
+                deck = deck.__class__(
+                    deck_id=deck.deck_id,
+                    slides=tuple(
+                        slide
+                        for slide in deck.slides
+                        if any(
+                            start <= slide.slide_index <= end
+                            for start, end in mapped_slide_ranges
+                        )
+                    ),
                 )
             cache_dir = self.output_dir / ".metric_adjudicator_cache"
             adjudicator = None
