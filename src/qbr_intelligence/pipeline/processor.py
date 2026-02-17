@@ -32,7 +32,7 @@ from kreuzberg import (
     PageConfig,
 )
 from sqlalchemy import create_engine, inspect, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, selectinload
 
 from qbr_intelligence.db.models import (
     Base,
@@ -95,7 +95,13 @@ from qbr_intelligence.pipeline.post_embeddings import (
     PostEmbeddingSettings,
     apply_post_embeddings,
 )
+from qbr_intelligence.pipeline.table_ids import compute_table_uuid, normalize_table_rows
 from qbr_intelligence.infrastructure.google_slides import GoogleSlidesClient
+
+_OVERALL_SLIDE_RE = re.compile(
+    r"\b(?:at\s+a\s+glance|overall\s+performance|overall\s+summary|executive\s+summary|summary)\b",
+    re.IGNORECASE,
+)
 
 
 class QBRProcessor:
@@ -112,7 +118,7 @@ class QBRProcessor:
     def __init__(
         self,
         database_url: str = "sqlite:///qbr_intelligence.db",
-        output_dir: Path | str = "extraction_output",
+        output_dir: Path | str = "qbr_extraction/qbr_pipeline/output",
         llm_model: str = "openai/gpt-4o-mini",
         enable_ocr: bool = False,
         extract_images: bool = False,
@@ -353,21 +359,117 @@ class QBRProcessor:
         return match.group(1) if match else None
 
     def _resolve_document_url(self, file_path: Path) -> str:
+        url, _ = self._resolve_document_mapping(file_path)
+        return url
+
+    def _parse_document_slide_range(self, raw_value) -> tuple[int, int] | None:
+        if isinstance(raw_value, str):
+            value = raw_value.strip()
+            if not value:
+                return None
+            if "-" in value:
+                parts = value.split("-", 1)
+            elif ":" in value:
+                parts = value.split(":", 1)
+            else:
+                parts = [value, value]
+            try:
+                start = int(parts[0].strip())
+                end = int(parts[1].strip())
+            except ValueError:
+                return None
+            if start <= 0 or end <= 0 or start > end:
+                return None
+            return (start, end)
+
+        if isinstance(raw_value, (list, tuple)) and len(raw_value) == 2:
+            try:
+                start = int(raw_value[0])
+                end = int(raw_value[1])
+            except (TypeError, ValueError):
+                return None
+            if start <= 0 or end <= 0 or start > end:
+                return None
+            return (start, end)
+
+        if isinstance(raw_value, dict):
+            try:
+                start = int(raw_value.get("start"))
+                end = int(raw_value.get("end"))
+            except (TypeError, ValueError):
+                return None
+            if start <= 0 or end <= 0 or start > end:
+                return None
+            return (start, end)
+
+        return None
+
+    def _parse_document_slide_ranges(self, raw_value) -> list[tuple[int, int]]:
+        if raw_value is None:
+            return []
+        single = self._parse_document_slide_range(raw_value)
+        if single is not None:
+            return [single]
+        if isinstance(raw_value, list):
+            if len(raw_value) == 2 and all(not isinstance(item, (list, tuple, dict)) for item in raw_value):
+                maybe_single = self._parse_document_slide_range(raw_value)
+                return [maybe_single] if maybe_single is not None else []
+            ranges: list[tuple[int, int]] = []
+            for item in raw_value:
+                maybe = self._parse_document_slide_range(item)
+                if maybe is not None:
+                    ranges.append(maybe)
+            return ranges
+        if isinstance(raw_value, str) and "," in raw_value:
+            ranges: list[tuple[int, int]] = []
+            for part in raw_value.split(","):
+                maybe = self._parse_document_slide_range(part.strip())
+                if maybe is not None:
+                    ranges.append(maybe)
+            return ranges
+        return []
+
+    def _resolve_document_mapping(self, file_path: Path) -> tuple[str, list[tuple[int, int]] | None]:
         mapping_path = file_path.parent / self.DOCUMENT_URLS_FILENAME
         if not mapping_path.exists():
-            return str(file_path.absolute())
+            return str(file_path.absolute()), None
         try:
             payload = json.loads(mapping_path.read_text(encoding="utf-8"))
         except Exception as exc:
             print(f"  [Document URL] Failed to read {mapping_path}: {exc}")
-            return str(file_path.absolute())
+            return str(file_path.absolute()), None
         if not isinstance(payload, dict):
             print(f"  [Document URL] Invalid mapping in {mapping_path}; expected JSON object.")
-            return str(file_path.absolute())
-        url = payload.get(file_path.name)
-        if isinstance(url, str) and url.strip():
-            return url.strip()
-        return str(file_path.absolute())
+            return str(file_path.absolute()), None
+
+        entry = payload.get(file_path.name)
+        if isinstance(entry, str):
+            value = entry.strip()
+            if value:
+                return value, None
+            return str(file_path.absolute()), None
+
+        if isinstance(entry, dict):
+            url_value = entry.get("url")
+            url = url_value.strip() if isinstance(url_value, str) and url_value.strip() else ""
+            slide_ranges = self._parse_document_slide_ranges(entry.get("slide_ranges"))
+            single_range = self._parse_document_slide_range(entry.get("slide_range"))
+            if single_range is not None:
+                slide_ranges.insert(0, single_range)
+            if slide_ranges:
+                seen: set[tuple[int, int]] = set()
+                deduped: list[tuple[int, int]] = []
+                for rng in slide_ranges:
+                    if rng in seen:
+                        continue
+                    seen.add(rng)
+                    deduped.append(rng)
+                slide_ranges = deduped
+            if not url:
+                return str(file_path.absolute()), slide_ranges or None
+            return url, slide_ranges or None
+
+        return str(file_path.absolute()), None
 
     def _resolve_google_presentation_id(
         self,
@@ -504,15 +606,120 @@ class QBRProcessor:
         return "\n".join(blocks).strip()
 
     @staticmethod
+    def _sort_text_blocks_for_export(text_blocks) -> list:
+        """Sort text blocks by layout position for stable box-level export."""
+        return sorted(
+            text_blocks,
+            key=lambda block: (
+                block.bbox.top if getattr(block, "bbox", None) is not None else 10**9,
+                block.bbox.left if getattr(block, "bbox", None) is not None else 10**9,
+                block.block_id,
+            ),
+        )
+
+    def _build_box_separated_raw_content(
+        self,
+        *,
+        file_path: Path,
+        slides_export: list[dict],
+    ) -> str | None:
+        """Build box-delimited text export for PPTX slides.
+
+        Output format per box:
+            - - - -
+            box content
+            - - - -
+        """
+        if file_path.suffix.lower() != ".pptx":
+            return None
+        try:
+            deck = parse_pptx_deck(file_path)
+        except Exception:
+            return None
+
+        # exported slide number -> source slide number (for remapped runs)
+        exported_pages: list[int] = []
+        for slide in slides_export:
+            try:
+                export_num = int(slide.get("slide_number"))
+            except Exception:
+                continue
+            exported_pages.append(export_num)
+
+        blocks: list[str] = []
+        for export_num in sorted(set(exported_pages)):
+            # Use exported slide numbering directly to match 02_raw_content ordering.
+            # source_slide_number can refer to extraction page ids and is not guaranteed
+            # to align with physical PPTX slide indexes.
+            slide = deck.slide_by_index(export_num)
+            if slide is None:
+                continue
+            page_lines = [f"<!-- PAGE {export_num} -->"]
+            for block in self._sort_text_blocks_for_export(slide.text_blocks):
+                text = (block.text or "").strip()
+                if not text:
+                    continue
+                page_lines.append("- - - -")
+                page_lines.append(text)
+                page_lines.append("- - - -")
+                page_lines.append("")
+            for table in slide.tables:
+                rendered = self._render_table_block(table).strip()
+                if not rendered:
+                    continue
+                page_lines.append("- - - -")
+                page_lines.append(rendered)
+                page_lines.append("- - - -")
+                page_lines.append("")
+            blocks.append("\n".join(page_lines).rstrip())
+        if not blocks:
+            return None
+        return "\n\n".join(blocks).rstrip() + "\n"
+
+    @staticmethod
+    def _render_table_block(table) -> str:
+        """Render a table into line-oriented text for 02b export."""
+        lines: list[str] = ["[TABLE]"]
+        for row in range(table.nrows):
+            row_cells: list[str] = []
+            for col in range(table.ncols):
+                cell = table.cell_at(row, col)
+                value = (cell.text if cell else "") or ""
+                value = " ".join(value.split())
+                row_cells.append(value)
+            if any(cell for cell in row_cells):
+                lines.append(" | ".join(row_cells))
+        return "\n".join(lines)
+
+    @staticmethod
     def _select_pages(
         pages: list[dict],
         *,
         slide_range: tuple[int, int] | None = None,
+        slide_ranges: list[tuple[int, int]] | None = None,
         max_slides: int | None = None,
     ) -> list[dict]:
         """Filter pages by range or max count, preserving order."""
         if not pages:
             return pages
+        if slide_ranges:
+            normalized = sorted(slide_ranges, key=lambda item: (item[0], item[1]))
+            merged: list[tuple[int, int]] = []
+            for start, end in normalized:
+                if not merged:
+                    merged.append((start, end))
+                    continue
+                prev_start, prev_end = merged[-1]
+                if start <= prev_end + 1:
+                    merged[-1] = (prev_start, max(prev_end, end))
+                else:
+                    merged.append((start, end))
+            selected: list[dict] = []
+            for page in pages:
+                page_number = int(page.get("page_number", 0))
+                if any(start <= page_number <= end for start, end in merged):
+                    selected.append(page)
+            return selected
         if slide_range is not None:
             start, end = slide_range
             return [page for page in pages if start <= int(page.get("page_number", 0)) <= end]
@@ -692,6 +899,99 @@ class QBRProcessor:
             business_terms.update(m.upper() if len(m) <= 4 else m.title() for m in matches)
         return business_terms
 
+    def _build_tables_payload(
+        self,
+        *,
+        file_path: Path,
+        result: ExtractionResult,
+        allowed_slide_numbers: set[int] | None = None,
+    ) -> list[dict]:
+        """Build tables payload with PPTX fallback when Kreuzberg tables are empty."""
+        tables_payload: list[dict] = []
+        for idx, table in enumerate(result.tables or []):
+            slide_number = getattr(table, "slide_number", None)
+            if slide_number is None:
+                slide_number = getattr(table, "page_number", None)
+            try:
+                slide_number = int(slide_number) if slide_number is not None else None
+            except Exception:
+                slide_number = None
+            headers = getattr(table, "headers", None)
+            rows = getattr(table, "rows", None)
+            rows_for_id: list[list[str]] = []
+            if isinstance(headers, list):
+                rows_for_id.append([str(cell) if cell is not None else "" for cell in headers])
+            if isinstance(rows, list):
+                for row in rows:
+                    if isinstance(row, list):
+                        rows_for_id.append([str(cell) if cell is not None else "" for cell in row])
+            rows_for_id = normalize_table_rows(rows_for_id)
+            table_id = compute_table_uuid(slide_number=slide_number, rows=rows_for_id)
+            if (
+                allowed_slide_numbers
+                and slide_number is not None
+                and slide_number not in allowed_slide_numbers
+            ):
+                continue
+            tables_payload.append(
+                {
+                    "index": idx,
+                    "table_id": table_id,
+                    "slide_number": slide_number,
+                    "headers": headers,
+                    "rows": rows,
+                    "raw": str(table),
+                    "source": "kreuzberg",
+                }
+            )
+
+        if tables_payload or file_path.suffix.lower() != ".pptx":
+            return tables_payload
+
+        try:
+            deck = parse_pptx_deck(file_path)
+        except Exception:
+            return tables_payload
+
+        fallback_count = 0
+        for slide in deck.slides:
+            if allowed_slide_numbers and slide.slide_index not in allowed_slide_numbers:
+                continue
+            for table in slide.tables:
+                rows: list[list[str]] = []
+                for row_idx in range(table.nrows):
+                    row_cells: list[str] = []
+                    for col_idx in range(table.ncols):
+                        cell = table.cell_at(row_idx, col_idx)
+                        row_cells.append((cell.text if cell else "") or "")
+                    rows.append(row_cells)
+                rows = normalize_table_rows(rows)
+                table_id = compute_table_uuid(
+                    slide_number=slide.slide_index,
+                    rows=rows,
+                )
+                headers = rows[0] if rows else []
+                data_rows = rows[1:] if len(rows) > 1 else []
+                tables_payload.append(
+                    {
+                        "index": len(tables_payload),
+                        "table_id": table_id,
+                        "slide_number": slide.slide_index,
+                        "headers": headers,
+                        "rows": data_rows,
+                        "raw": self._render_table_block(table),
+                        "source": "pptx_fallback",
+                    }
+                )
+                fallback_count += 1
+
+        if fallback_count:
+            print(
+                "  [Tables] Kreuzberg returned 0 tables; "
+                f"using PPTX fallback ({fallback_count} table(s))."
+            )
+        return tables_payload
+
     def _export_extraction_outputs(
         self,
         *,
@@ -763,6 +1063,17 @@ class QBRProcessor:
                 updated["slide_number"] = page_to_new.get(source_num, source_num)
                 charts_export.append(updated)
 
+        allowed_slide_numbers = {
+            int(slide.get("slide_number"))
+            for slide in slides_export
+            if slide.get("slide_number") is not None
+        }
+        tables_payload = self._build_tables_payload(
+            file_path=file_path,
+            result=result,
+            allowed_slide_numbers=allowed_slide_numbers or None,
+        )
+
         output_metadata = {
             "source_file": str(file_path),
             "extraction_timestamp": datetime.now().isoformat(),
@@ -770,7 +1081,8 @@ class QBRProcessor:
             "mime_type": result.mime_type,
             "page_count": len(pages) if pages is not None else result.get_page_count(),
             "detected_languages": result.detected_languages,
-            "table_count": len(result.tables),
+            "table_count": len(tables_payload),
+            "kreuzberg_table_count": len(result.tables or []),
             "image_count": len(result.images) if result.images else 0,
             "chunk_count": len(chunks_source),
             "metadata": result.metadata,
@@ -781,6 +1093,15 @@ class QBRProcessor:
         )
 
         (output_dir / "02_raw_content.txt").write_text(raw_content_export, encoding="utf-8")
+        by_box_content = self._build_box_separated_raw_content(
+            file_path=file_path,
+            slides_export=slides_export,
+        )
+        if by_box_content:
+            (output_dir / "02b_raw_content_by_box.txt").write_text(
+                by_box_content,
+                encoding="utf-8",
+            )
         (output_dir / "03_slides_parsed.json").write_text(
             json.dumps(slides_export, indent=2),
             encoding="utf-8",
@@ -851,16 +1172,6 @@ class QBRProcessor:
             encoding="utf-8",
         )
 
-        tables_payload: list[dict] = []
-        for idx, table in enumerate(result.tables or []):
-            tables_payload.append(
-                {
-                    "index": idx,
-                    "headers": getattr(table, "headers", None),
-                    "rows": getattr(table, "rows", None),
-                    "raw": str(table),
-                }
-            )
         (output_dir / "09_tables_extracted.json").write_text(
             json.dumps(tables_payload, indent=2),
             encoding="utf-8",
@@ -932,6 +1243,68 @@ class QBRProcessor:
             "baseline_text": metric.baseline_text,
             "baseline_type": metric.baseline_type,
         }
+
+    @staticmethod
+    def _extract_slide_title_candidate(slide: dict) -> str | None:
+        title = (slide.get("title") or "").strip()
+        if title:
+            return title
+        raw_text = (slide.get("raw_text") or "").split("### Notes:", 1)[0]
+        for line in raw_text.splitlines():
+            candidate = line.strip()
+            if not candidate:
+                continue
+            if candidate.startswith("<!-- PAGE"):
+                continue
+            if candidate.startswith("!["):
+                continue
+            if candidate.startswith("-"):
+                candidate = candidate[1:].strip()
+            if candidate:
+                return candidate
+        return None
+
+    @staticmethod
+    def _detect_overall_slides(slides: list[dict]) -> dict[int, str]:
+        overall_by_slide: dict[int, str] = {}
+        for slide in slides:
+            slide_number = slide.get("slide_number")
+            if slide_number is None:
+                continue
+            title = QBRProcessor._extract_slide_title_candidate(slide)
+            if not title:
+                continue
+            if _OVERALL_SLIDE_RE.search(title):
+                overall_by_slide[int(slide_number)] = title
+        return overall_by_slide
+
+    @staticmethod
+    def _apply_overall_baseline_type(
+        metrics: list[MetricCandidate],
+        *,
+        overall_by_slide: dict[int, str],
+    ) -> list[MetricCandidate]:
+        if not metrics or not overall_by_slide:
+            return metrics
+        updated: list[MetricCandidate] = []
+        for metric in metrics:
+            slide_number = metric.slide_number
+            if slide_number is None or int(slide_number) not in overall_by_slide:
+                updated.append(metric)
+                continue
+            title = overall_by_slide[int(slide_number)]
+            metadata = dict(metric.metadata or {})
+            metadata["is_overall_metric"] = True
+            metadata["overall_slide_title"] = title
+            metadata["overall_slide_number"] = int(slide_number)
+            updated.append(
+                replace(
+                    metric,
+                    baseline_type="overall",
+                    metadata=metadata,
+                )
+            )
+        return updated
 
     @staticmethod
     def _extract_context_window(
@@ -1662,9 +2035,6 @@ Categories:
 
     def _seed_metric_catalog(self) -> None:
         with self.SessionLocal() as session:
-            existing = session.query(MetricCatalog).count()
-            if existing:
-                return
             applicability_notes = {
                 "cost_per_acquisition": (
                     "Use Spend and Acquisitions only from placements targeting users who have not installed the app. "
@@ -1678,22 +2048,64 @@ Categories:
                 "video_completion_rate": "Completes / Impressions for Video placements.",
             }
             definitions = build_metric_dictionary().definitions
+            existing_metrics = (
+                session.query(MetricCatalog)
+                .options(selectinload(MetricCatalog.aliases))
+                .all()
+            )
+            metrics_by_slug = {m.slug: m for m in existing_metrics if m.slug}
+            metrics_by_name = {m.name: m for m in existing_metrics if m.name}
             for definition in definitions:
                 if not definition.name:
                     continue
                 slug = definition.slug or definition.name.lower().replace(" ", "_")
-                metric = MetricCatalog(
-                    name=definition.name,
-                    slug=slug,
-                    category=definition.category,
-                    default_unit=definition.unit_hint,
-                    formula=definition.formula,
-                    description=None,
-                    applicability_notes=applicability_notes.get(slug),
-                )
-                session.add(metric)
-                session.flush()
+                metric = metrics_by_slug.get(slug) or metrics_by_name.get(definition.name)
+                if metric is None:
+                    metric = MetricCatalog(
+                        name=definition.name,
+                        slug=slug,
+                        category=definition.category,
+                        default_unit=definition.unit_hint,
+                        formula=definition.formula,
+                        description=None,
+                        applicability_notes=applicability_notes.get(slug),
+                    )
+                    session.add(metric)
+                    session.flush()
+                    metrics_by_slug[slug] = metric
+                    metrics_by_name[definition.name] = metric
+                else:
+                    metric.name = definition.name
+                    metric.slug = slug
+                    metric.category = definition.category
+                    metric.default_unit = definition.unit_hint
+                    metric.formula = definition.formula
+                    if metric.applicability_notes is None:
+                        metric.applicability_notes = applicability_notes.get(slug)
+
+                existing_alias_keys = {
+                    ((alias.alias or "").strip().lower(), (alias.pattern or "").strip())
+                    for alias in (metric.aliases or [])
+                }
+                desired_alias_keys = {
+                    (definition.name.strip().lower(), (pattern or "").strip())
+                    for pattern in definition.patterns
+                }
+                for alias in list(metric.aliases or []):
+                    alias_name = (alias.alias or "").strip().lower()
+                    alias_pattern = (alias.pattern or "").strip()
+                    alias_key = (alias_name, alias_pattern)
+                    if alias.priority != 0:
+                        continue
+                    if alias_name != definition.name.strip().lower():
+                        continue
+                    if alias_key not in desired_alias_keys:
+                        session.delete(alias)
+                        existing_alias_keys.discard(alias_key)
                 for pattern in definition.patterns:
+                    key = (definition.name.strip().lower(), (pattern or "").strip())
+                    if key in existing_alias_keys:
+                        continue
                     session.add(
                         MetricAlias(
                             metric_id=metric.id,
@@ -1703,6 +2115,7 @@ Categories:
                             unit_override=None,
                         )
                     )
+                    existing_alias_keys.add(key)
             session.commit()
 
     def _load_metric_catalog_map(self) -> dict[str, tuple[int, str]]:
@@ -1798,7 +2211,13 @@ Categories:
     def _ensure_client(self, session, name: str) -> Client | None:
         if not name:
             return None
-        client = session.query(Client).filter(Client.name == name).one_or_none()
+        # DB may contain accidental duplicates; prefer deterministic first row.
+        client = (
+            session.query(Client)
+            .filter(Client.name == name)
+            .order_by(Client.id.asc())
+            .first()
+        )
         if client:
             return client
         client = Client(name=name)
@@ -1814,7 +2233,13 @@ Categories:
         if not label:
             return None
 
-        period = session.query(Period).filter(Period.period_label == label).one_or_none()
+        # DB may contain duplicate period labels; use deterministic first row.
+        period = (
+            session.query(Period)
+            .filter(Period.period_label == label)
+            .order_by(Period.id.asc())
+            .first()
+        )
         if period:
             return period
 
@@ -2001,7 +2426,10 @@ Categories:
             Document ID in the database
         """
         file_path = Path(file_path)
-        document_url = self._resolve_document_url(file_path)
+        document_url, mapped_slide_ranges = self._resolve_document_mapping(file_path)
+        if slide_range is None and max_slides is None and mapped_slide_ranges:
+            ranges_text = ", ".join(f"{start}-{end}" for start, end in mapped_slide_ranges)
+            print(f"  [Document Mapping] Applied default slide ranges: {ranges_text}")
 
         # Step 1: Extract
         print("\n" + "=" * 60)
@@ -2035,10 +2463,11 @@ Categories:
         pages_for_selection = remapped_pages or pages
         content_for_processing = result.content
         pages_override: list[dict] | None = None
-        if slide_range is not None or max_slides is not None:
+        if slide_range is not None or max_slides is not None or mapped_slide_ranges:
             selected_pages = self._select_pages(
                 pages_for_selection,
                 slide_range=slide_range,
+                slide_ranges=mapped_slide_ranges if slide_range is None and max_slides is None else None,
                 max_slides=max_slides,
             )
             if selected_pages:
@@ -2095,16 +2524,16 @@ Categories:
         )
         business_terms = self._extract_business_terms(content_for_processing)
 
-        tables_payload: list[dict] = []
-        for idx, table in enumerate(result.tables or []):
-            tables_payload.append(
-                {
-                    "index": idx,
-                    "headers": getattr(table, "headers", None),
-                    "rows": getattr(table, "rows", None),
-                    "raw": str(table),
-                }
-            )
+        allowed_slide_numbers = {
+            int(slide.get("slide_number"))
+            for slide in slides_ordered
+            if slide.get("slide_number") is not None
+        }
+        tables_payload = self._build_tables_payload(
+            file_path=file_path,
+            result=result,
+            allowed_slide_numbers=allowed_slide_numbers or None,
+        )
 
         metric_debug = None
         scanned_metrics: list[MetricCandidate] = []
@@ -2122,6 +2551,18 @@ Categories:
                 deck = deck.__class__(
                     deck_id=deck.deck_id,
                     slides=tuple(deck.slides[:max_slides]),
+                )
+            elif mapped_slide_ranges:
+                deck = deck.__class__(
+                    deck_id=deck.deck_id,
+                    slides=tuple(
+                        slide
+                        for slide in deck.slides
+                        if any(
+                            start <= slide.slide_index <= end
+                            for start, end in mapped_slide_ranges
+                        )
+                    ),
                 )
             cache_dir = self.output_dir / ".metric_adjudicator_cache"
             adjudicator = None
@@ -2213,6 +2654,20 @@ Categories:
                 report_period=report_period,
                 stage="refined",
                 allow_llm=run_llm_metrics and use_legacy_llm_metrics,
+            )
+        overall_by_slide = self._detect_overall_slides(slides_ordered)
+        scanned_metrics = self._apply_overall_baseline_type(
+            scanned_metrics,
+            overall_by_slide=overall_by_slide,
+        )
+        llm_deduped_metrics = self._apply_overall_baseline_type(
+            llm_deduped_metrics,
+            overall_by_slide=overall_by_slide,
+        )
+        if refined_metrics is not None:
+            refined_metrics = self._apply_overall_baseline_type(
+                refined_metrics,
+                overall_by_slide=overall_by_slide,
             )
         metrics_for_db = refined_metrics or llm_deduped_metrics
 
@@ -2402,7 +2857,7 @@ Categories:
                         baseline_text=m.baseline_text,
                         baseline_type=m.baseline_type,
                         country=country,
-                        llm_context_label=m.llm_context_label,
+                        llm_context_label=getattr(m, "llm_context_label", None),
                     )
                 )
             if skipped_without_slide:
@@ -2467,8 +2922,7 @@ Categories:
                 text(
                     """
                     DELETE FROM metrics
-                    WHERE document_id = :document_id
-                      AND raw_context IS NOT NULL
+                    WHERE raw_context IS NOT NULL
                       AND TRIM(raw_context) != ''
                       AND slide_id IN (
                         SELECT id

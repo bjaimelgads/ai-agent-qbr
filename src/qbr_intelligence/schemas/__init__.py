@@ -42,6 +42,12 @@ from qbr_intelligence.schemas.queries import (
 from qbr_intelligence.schemas.metric_qa import (
     AnswerCitation,
     MetricAnswer,
+    MetricEvidenceAnswer,
+    MetricEvidenceChunk,
+    MetricEvidenceIntent,
+    MetricEvidenceLink,
+    MetricEvidenceMetric,
+    MetricEvidenceSource,
     PeriodSpec,
     QueryIntent,
 )
@@ -86,6 +92,12 @@ __all__ = [
     # Metric QA
     "AnswerCitation",
     "MetricAnswer",
+    "MetricEvidenceAnswer",
+    "MetricEvidenceChunk",
+    "MetricEvidenceIntent",
+    "MetricEvidenceLink",
+    "MetricEvidenceMetric",
+    "MetricEvidenceSource",
     "PeriodSpec",
     "QueryIntent",
 ]

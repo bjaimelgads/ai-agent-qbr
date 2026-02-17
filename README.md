@@ -81,8 +81,8 @@ python scripts/ws_cli.py --protocol legacy --base-url ws://localhost:8000 --mess
 ## Architecture
 
 See:
-- `docs/discovery.md` for current system findings
-- `docs/architecture.md` for the target clean architecture
+- `docs/extraction/discovery.md` for current system findings
+- `docs/architecture/architecture.md` for the target clean architecture
 
 ## How Retrieval Works
 1. Query is embedded via `EmbeddingsProvider`.
@@ -96,8 +96,8 @@ See:
 - Per-document caps to avoid over-indexing a single QBR.
 
 Docs:
-- `docs/retrieval.md`
-- `docs/retrieval_phase1.md`
+- `docs/retrieval/retrieval.md`
+- `docs/retrieval/retrieval_phase1.md`
 
 Key settings:
 - `RERANK_BACKEND=cross_encoder|none`
@@ -134,7 +134,7 @@ pytest
 ```
 
 ## WebSocket Contract Validation (Legacy Protocol)
-Contract details: `docs/websocket-protocol.md`
+Contract details: `docs/architecture/websocket-protocol.md`
 
 Legacy WebSocket e2e test:
 ```bash
@@ -156,7 +156,7 @@ Env:
 - `MLFLOW_TRACING_ENABLED=true`
 
 Docs:
-- `docs/mlflow_tracing.md`
+- `docs/observability/mlflow_tracing.md`
 
 ## Playground (Dev)
 
@@ -196,6 +196,6 @@ FAISS_REBUILD_ON_STARTUP=false
 Legacy extraction code and assets live in `qbr_extraction/`.
 
 ## Docs
-- `docs/architecture.md`
-- `docs/discovery.md`
-- `docs/runbook.md`
+- `docs/architecture/architecture.md`
+- `docs/extraction/discovery.md`
+- `docs/operations/runbook.md`

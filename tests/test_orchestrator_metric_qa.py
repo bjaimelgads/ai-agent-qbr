@@ -212,6 +212,37 @@ def test_finalize_answer_text_prefers_streamed_answer_for_agui() -> None:
     )
 
 
+def test_finalize_answer_text_prefers_streamed_answer_for_agui_even_with_query_metrics_call() -> None:
+    metric_answer = MetricAnswer(
+        summary_text="The total value is 488,609,626.09 across 75 records.",
+        table_data=[
+            {
+                "document_name": "Disney+ EMEA FY25 H2.pptx",
+                "slide_number": 4,
+                "slide_title": "Total Media Investment",
+            }
+        ],
+    )
+
+    formatted = _finalize_answer_text(
+        output_protocol="agui",
+        extracted_answer_text="fallback",
+        metric_answer=metric_answer,
+        streamed_answer_text=(
+            "Disney+ total media investment in H2 2025 in EMEA was $2.8M | "
+            "Disney+ EMEA FY25 H2.pptx slide 4."
+        ),
+        tool_calls=[{"tool_name": "query_metrics"}],
+        qbr_citations=[],
+    )
+
+    assert (
+        formatted
+        == "Disney+ total media investment in H2 2025 in EMEA was $2.8M | "
+        "Disney+ EMEA FY25 H2.pptx - Total Media Investment."
+    )
+
+
 def test_finalize_answer_text_keeps_metric_format_outside_agui() -> None:
     metric_answer = MetricAnswer(
         summary_text="The total value is 488,609,626.09 across 75 records.",

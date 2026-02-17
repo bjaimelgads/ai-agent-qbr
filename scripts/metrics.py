@@ -113,7 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     extract_parser.add_argument(
         "--cache-dir",
-        default=str(repo_root / "extraction_output" / ".metric_adjudicator_cache"),
+        default=str(repo_root / "qbr_extraction" / "qbr_pipeline" / "output" / ".metric_adjudicator_cache"),
         help="Cache directory for adjudication",
     )
     extract_parser.set_defaults(func=extract_command)

@@ -6,6 +6,9 @@ A comprehensive document intelligence system for parsing, enhancing, and queryin
 
 QBR Intelligence extracts structured data from PowerPoint presentations using [Kreuzberg](https://github.com/flatline-ai/kreuzberg), enhances it with LLM-powered analysis via [DSPY](https://github.com/stanfordnlp/dspy), and provides a queryable interface for AI agents.
 
+Extraction pipeline docs now live in:
+- `qbr_extraction/qbr_pipeline/pipelines/extraction/docs/`
+
 ### Key Features
 
 - **Document Extraction**: Parse PPTX files to extract text, slides, metrics, charts, and images
@@ -81,42 +84,49 @@ QBR_POST_EMBEDDINGS_NORMALIZE=true
 
 ### Processing Documents
 
+Canonical entrypoint:
+```bash
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx
+```
+
+Legacy compatibility wrapper (still supported):
+
 ```bash
 # Extraction only (no LLM, default)
-uv run python run_pipeline.py document.pptx
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx
 
 # Full pipeline: extraction + LLM enhancement
-uv run python run_pipeline.py document.pptx --llm
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --llm
 
 # LLM adjudicator only (low-confidence metric adjudication)
-uv run python run_pipeline.py document.pptx --llm-adjudicator
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --llm-adjudicator
 
-# Extraction outputs to extraction_output/<pptx-stem>/
-uv run python run_pipeline.py document.pptx --export-extraction
+# Extraction outputs to qbr_extraction/qbr_pipeline/output/<pptx-stem>/
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --export-extraction
 
 # Process all PPTX files in a folder (top-level only)
-uv run python run_pipeline.py --folder decks --export-extraction
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py --folder decks --export-extraction
 
 # Query existing data only
-uv run python run_pipeline.py --query-only
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py --query-only
 
 # Query specific document
-uv run python run_pipeline.py --query-only --document-id 1
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py --query-only --document-id 1
 
 # Export data to JSON files
-uv run python run_pipeline.py --query-only --document-id 1 --export ./output
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py --query-only --document-id 1 --export ./output
 
 # Custom database
-uv run python run_pipeline.py document.pptx --db sqlite:///custom.db
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --db sqlite:///custom.db
 
 # Overwrite existing document rows with the same filename
-uv run python run_pipeline.py document.pptx --override
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --override
 
 # Process and also backfill slides.title deterministically from PPTX titles
-uv run python run_pipeline.py document.pptx --backfill-slide-titles
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --backfill-slide-titles
 
 # Process a folder and backfill titles for each ingested document
-uv run python run_pipeline.py --folder decks --backfill-slide-titles
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py --folder decks --backfill-slide-titles
 ```
 
 ### Metrics Extraction CLI
@@ -455,9 +465,9 @@ For quick extraction without the full pipeline:
 
 ```bash
 # Run the standalone extraction script
-uv run python extract_qbr.py document.pptx
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/scripts/extract_kreuzberg_standalone.py document.pptx
 
-# Outputs to extraction_output/<pptx-stem>/:
+# Outputs to qbr_extraction/qbr_pipeline/output/<pptx-stem>/:
 #   - full_content.json
 #   - slides.json
 #   - metrics.json
@@ -504,7 +514,7 @@ The LLM enhancement processes each slide and chart individually. For faster proc
 
 ```bash
 # Skip LLM enhancement
-uv run python run_pipeline.py document.pptx --no-llm
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx --no-llm
 ```
 
 ### Database Schema Changes
@@ -513,7 +523,7 @@ If you modify models, delete the database to recreate:
 
 ```bash
 rm qbr_intelligence.db
-uv run python run_pipeline.py document.pptx
+uv run python qbr_extraction/qbr_pipeline/pipelines/extraction/run_extraction_pipeline.py document.pptx
 ```
 
 ### Import Errors

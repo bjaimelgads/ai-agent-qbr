@@ -1,0 +1,77 @@
+{
+  "presentation_id": "1pCMJ3-SMrHvRCvfIH4uGOjZaqiBX2yywmws3UVaSq9c",
+  "slide_id": "g2d4bce6ca92_0_492",
+  "chart_refs": [
+    {
+      "element_id": "g311d379fca0_1_2",
+      "spreadsheet_id": "13geu9ojqFBaRjZFOP_FhmlpTd0-FzLMU9mF83UFErzs",
+      "chart_id": 810199149,
+      "chart_title": null,
+      "chart_subtitle": null,
+      "a1_ranges": [
+        "'Copy of Copy of Sheet3'!B10:Q10",
+        "'Copy of Copy of Sheet3'!B11:Q11",
+        "'Copy of Copy of Sheet3'!B12:Q12"
+      ],
+      "values_by_range": {
+        "'Copy of Copy of Sheet3'!B10:Q10": [
+          [
+            "",
+            "HU",
+            "UK",
+            "DK",
+            "SE",
+            "PL",
+            "NO",
+            "ES",
+            "FI",
+            "GR",
+            "DE",
+            "FR",
+            "NL",
+            "IT",
+            "TR"
+          ]
+        ],
+        "'Copy of Copy of Sheet3'!B11:Q11": [
+          [
+            "Active %",
+            "40%",
+            "39%",
+            "38%",
+            "35%",
+            "35%",
+            "35%",
+            "33%",
+            "31%",
+            "30%",
+            "30%",
+            "29%",
+            "29%",
+            "28%",
+            "27%"
+          ]
+        ],
+        "'Copy of Copy of Sheet3'!B12:Q12": [
+          [
+            "Lapsed %",
+            "60%",
+            "61%",
+            "62%",
+            "65%",
+            "65%",
+            "65%",
+            "67%",
+            "69%",
+            "70%",
+            "70%",
+            "71%",
+            "71%",
+            "72%",
+            "73%"
+          ]
+        ]
+      }
+    }
+  ]
+}

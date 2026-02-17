@@ -1048,10 +1048,7 @@ def _build_order_by_with_overall_priority(
     return (
         f"{base_order_by}, "
         "CASE "
-        "WHEN lower(coalesce(llm_context_label, '')) = 'overall' THEN 0 "
-        "WHEN lower(coalesce(llm_context_label, '')) LIKE '%overall%' THEN 0 "
-        "WHEN lower(coalesce(llm_context_label, '')) LIKE '%at a glance%' THEN 0 "
-        "WHEN lower(coalesce(llm_context_label, '')) LIKE '%at-a-glance%' THEN 0 "
+        "WHEN lower(coalesce(baseline_type, '')) = 'overall' THEN 0 "
         "ELSE 1 END ASC"
     )
 

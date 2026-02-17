@@ -35,7 +35,7 @@ from ..models import (
     ResolvedMetricIntent,
     SearchResults,
 )
-from qbr_intelligence.schemas.metric_qa import MetricAnswer
+from qbr_intelligence.schemas.metric_qa import MetricAnswer, MetricEvidenceAnswer
 
 __all__ = [
     "agent_capabilities",
@@ -58,6 +58,7 @@ __all__ = [
     "MetadataCatalogArgs",
     "MetadataCatalogResult",
     "MetricAnswer",
+    "MetricEvidenceAnswer",
     "RefineMetricIntentArgs",
     "RefineMetricIntentResult",
     "RegionFilterVerificationArgs",
@@ -79,7 +80,7 @@ def build_catalog_bundle() -> tuple[list[Node], ModelRegistry]:
         RegionFilterVerificationArgs,
         RegionFilterVerificationResult,
     )
-    registry.register("query_metrics", MetricQueryArgs, MetricAnswer)
+    registry.register("query_metrics", MetricQueryArgs, MetricEvidenceAnswer)
     registry.register("metadata_catalog", MetadataCatalogArgs, MetadataCatalogResult)
     registry.register("resolve_metric_intent", ResolveMetricIntentArgs, ResolveMetricIntentResult)
     registry.register("refine_metric_intent", RefineMetricIntentArgs, RefineMetricIntentResult)

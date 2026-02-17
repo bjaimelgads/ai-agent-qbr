@@ -162,8 +162,7 @@ def parse_pptx_deck(path: str | Path) -> DeckContent:
 def _parse_from_extraction_output(deck_path: Path) -> DeckContent | None:
     repo_root = Path(__file__).resolve().parents[3]
     candidates = [
-        repo_root / "extraction_output",
-        repo_root / "qbr_extraction" / "extraction_output",
+        repo_root / "qbr_extraction" / "qbr_pipeline" / "output",
     ]
     deck_name = deck_path.stem
     for base in candidates:

@@ -36,11 +36,12 @@ htmlcov/
 *.pptx
 *.docx
 *.db
+*.csv
 
 # Build
 build/
 dist/
-extraction_output/
+qbr_extraction/qbr_pipeline/output/
 # MLflow
 mlruns/
 mlartifacts/
@@ -53,17 +54,15 @@ mlflow.db-journal
 .kreuzberg/
 
 # Extraction outputs (business metrics)
-extraction_output/**/11_business_metrics.json
-extraction_output/**/12_business_metrics_deduped.json
-extraction_output/**/13_business_metrics_refined.json
-extraction_output/**/*business_metrics*.json
-extraction_output/**/01_extraction_metadata.json
-extraction_output/**/07_images_metadata.json
-extraction_output/**/10_llm_outputs.json
-extraction_output/**/10_llm_task_manifest.json
-extraction_output/**/pipeline_timing_*.json
-extraction_output/strategy_*/
-extraction_output/Disney+ US FY25 H2/
+qbr_extraction/qbr_pipeline/output/**/11_business_metrics.json
+qbr_extraction/qbr_pipeline/output/**/12_business_metrics_deduped.json
+qbr_extraction/qbr_pipeline/output/**/13_business_metrics_refined.json
+qbr_extraction/qbr_pipeline/output/**/*business_metrics*.json
+qbr_extraction/qbr_pipeline/output/**/01_extraction_metadata.json
+qbr_extraction/qbr_pipeline/output/**/07_images_metadata.json
+qbr_extraction/qbr_pipeline/output/**/10_llm_outputs.json
+qbr_extraction/qbr_pipeline/output/**/10_llm_task_manifest.json
+qbr_extraction/qbr_pipeline/output/**/pipeline_timing_*.json
 
 # Legacy e2e output
 qbr_legacy_e2e/
@@ -71,12 +70,13 @@ qbr_legacy_e2e.db
 
 # Local OAuth tokens
 .google_slides_token.json
+.google_sheets_token.json
 
 # Local debug traces
 data/debug/
 
 # Local run notes
-docs/LOCAL_RUN_LLM.md
+
 
 # Local/generated retrieval artifacts
 data/faiss/index.faiss

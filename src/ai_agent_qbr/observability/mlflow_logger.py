@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Iterator
@@ -20,6 +21,17 @@ def _get_mlflow():
     return mlflow
 
 
+def _normalize_tracking_uri(uri: str | None) -> str | None:
+    if not uri:
+        return uri
+    if not uri.startswith("sqlite:///") or uri.startswith("sqlite:////"):
+        return uri
+    db_path = uri.replace("sqlite:///", "", 1)
+    if not os.path.isabs(db_path):
+        db_path = os.path.abspath(db_path)
+    return f"sqlite:////{db_path.lstrip('/')}"
+
+
 @dataclass
 class MlflowConfig:
     enabled: bool
@@ -31,6 +43,22 @@ class MlflowTracer:
     def __init__(self, config: MlflowConfig) -> None:
         self._config = config
         self._mlflow = _get_mlflow() if config.enabled else None
+        self._configured = False
+
+    def _configure(self) -> None:
+        if self._configured or not self._mlflow:
+            return
+        tracking_uri = _normalize_tracking_uri(self._config.tracking_uri)
+        if tracking_uri:
+            self._mlflow.set_tracking_uri(tracking_uri)
+            if tracking_uri.startswith("sqlite:////"):
+                # Keep local runs stable and avoid noisy progress logs.
+                self._mlflow.set_registry_uri(tracking_uri)
+                os.environ.setdefault("MLFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR", "false")
+                os.environ.setdefault("MLFLOW_TRACKING_INSECURE_TLS", "true")
+        if self._config.experiment:
+            self._mlflow.set_experiment(self._config.experiment)
+        self._configured = True
 
     @contextmanager
     def interaction_run(self, *, run_name: str, tags: dict[str, str]) -> Iterator[object | None]:
@@ -38,10 +66,7 @@ class MlflowTracer:
             yield None
             return
         try:
-            if self._config.tracking_uri:
-                self._mlflow.set_tracking_uri(self._config.tracking_uri)
-            if self._config.experiment:
-                self._mlflow.set_experiment(self._config.experiment)
+            self._configure()
             parent_run = self._mlflow.active_run()
             with self._mlflow.start_run(
                 run_name=run_name,
@@ -59,6 +84,7 @@ class MlflowTracer:
             yield None
             return
         try:
+            self._configure()
             with self._mlflow.start_run(run_name=run_name, nested=True, tags=tags or {}):
                 yield self._mlflow
         except Exception as exc:  # noqa: BLE001
@@ -108,8 +134,13 @@ class MlflowTrace:
     def _configure(self) -> None:
         if self._configured or not self._mlflow:
             return
-        if self._config.tracking_uri:
-            self._mlflow.set_tracking_uri(self._config.tracking_uri)
+        tracking_uri = _normalize_tracking_uri(self._config.tracking_uri)
+        if tracking_uri:
+            self._mlflow.set_tracking_uri(tracking_uri)
+            if tracking_uri.startswith("sqlite:////"):
+                self._mlflow.set_registry_uri(tracking_uri)
+                os.environ.setdefault("MLFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR", "false")
+                os.environ.setdefault("MLFLOW_TRACKING_INSECURE_TLS", "true")
         if self._config.experiment:
             self._mlflow.set_experiment(self._config.experiment)
         try:
@@ -130,11 +161,15 @@ class MlflowTrace:
         if not self._mlflow:
             yield None
             return
-        self._configure()
-        with self._mlflow.start_span(name=name, span_type=span_type, attributes=attributes) as span:
-            if inputs:
-                span.set_inputs(inputs)
-            yield span
+        try:
+            self._configure()
+            with self._mlflow.start_span(name=name, span_type=span_type, attributes=attributes) as span:
+                if inputs:
+                    span.set_inputs(inputs)
+                yield span
+        except Exception as exc:  # noqa: BLE001
+            _LOGGER.warning("MLflow trace span disabled due to runtime error: %s", exc)
+            yield None
 
     def set_outputs(self, span: object | None, outputs: dict[str, Any]) -> None:
         if not span:
