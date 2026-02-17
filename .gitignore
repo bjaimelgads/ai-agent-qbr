@@ -36,6 +36,7 @@ htmlcov/
 *.pptx
 *.docx
 *.db
+*.csv
 
 # Build
 build/
@@ -69,6 +70,7 @@ qbr_legacy_e2e.db
 
 # Local OAuth tokens
 .google_slides_token.json
+.google_sheets_token.json
 
 # Local debug traces
 data/debug/
