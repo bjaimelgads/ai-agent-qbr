@@ -1,0 +1,199 @@
+command: [
+  "python",
+  "app.py"
+]
+env:
+  # ------------------------------------------------------------
+  # Core runtime / Databricks
+  # ------------------------------------------------------------
+  - name: 'USE_STUB_LLM'
+    value: 'false'
+  - name: 'DATABRICKS_HOST'
+    value: 'https://dbc-3b4bc42a-bf11.cloud.databricks.com'
+  - name: 'DATABRICKS_OAUTH_SCOPE'
+    value: 'all-apis'
+  - name: 'PLATFORM_URL'
+    value: 'https://prd-ai-platform-backend-185296477739056.aws.databricksapps.com'
+  - name: 'OUTPUT_PROTOCOL'
+    value: 'agui'
+  - name: 'USE_NATIVE_REASONING'
+    value: 'true'
+  - name: 'REASONING_EFFORT'
+    value: 'medium'
+  - name: 'PLANNER_STREAM_FINAL_RESPONSE'
+    value: 'true'
+  - name: 'PLANNER_DEBUG_EVENTS'
+    value: 'true'
+  - name: 'LOG_LEVEL'
+    value: 'INFO'
+
+  # ------------------------------------------------------------
+  # LLM
+  # ------------------------------------------------------------
+  - name: 'LLM_MODEL_NAME'
+    value: 'databricks-claude-sonnet-4-5'
+  - name: 'LLM_MAX_TOKENS'
+    value: '4000'
+  - name: 'LLM_CACHE_ENABLED'
+    value: 'true'
+  - name: 'LLM_ANSWER_ENABLED'
+    value: 'true'
+  - name: 'LLM_INTENT_ENABLED'
+    value: 'true'
+  - name: 'LLM_MAX_CALLS_PER_QUERY'
+    value: '1'
+  - name: 'REFLECTION_ENABLED'
+    value: 'false'
+  - name: 'REFLECTION_REQUIRE_SEARCH_DOCUMENTS_ON_LOW_CONFIDENCE'
+    value: 'false'
+  - name: 'REFLECTION_QUALITY_THRESHOLD'
+    value: '0.8'
+  - name: 'REFLECTION_MAX_REVISIONS'
+    value: '2'
+  - name: 'REFLECTION_USE_SEPARATE_LLM'
+    value: 'false'
+
+  # ------------------------------------------------------------
+  # Region verifier
+  # ------------------------------------------------------------
+  - name: 'REGION_VERIFY_MODEL_NAME'
+    value: 'databricks-gpt-5-mini'
+  - name: 'REGION_VERIFY_MAX_TOKENS'
+    value: '256'
+
+  # ------------------------------------------------------------
+  # Lakebase (Databricks Postgres)
+  # ------------------------------------------------------------
+  # Iceberg-style DB URL placeholder (ignored by QBR runtime when placeholder-host is set).
+  - name: 'QBR_DB_URL'
+    value: 'postgresql+asyncpg://token:@placeholder-host:5432/databricks_postgres'
+  - name: 'QBR_LAKEBASE_ENABLED'
+    value: 'true'
+  - name: 'QBR_DATABRICKS_APP_AUTH'
+    value: 'true'
+  - name: 'QBR_LAKEBASE_DATABRICKS_HOST'
+    value: 'dbc-3b4bc42a-bf11.cloud.databricks.com'
+  - name: 'QBR_LAKEBASE_WORKSPACE_ID'
+    value: '185296477739056'
+  - name: 'QBR_LAKEBASE_DB_INSTANCE'
+    value: 'prd-qbr'
+  - name: 'QBR_LAKEBASE_DB_NAME'
+    value: 'databricks_postgres'
+  - name: 'QBR_LAKEBASE_DB_PORT'
+    value: '5432'
+  - name: 'QBR_LAKEBASE_DB_USERNAME'
+    value: '9d99a9b3-324f-4d5e-b712-3cd7a01e953e'
+  - name: 'STORAGE_BACKEND'
+    value: 'postgres'
+
+  # ------------------------------------------------------------
+  # Retrieval + embeddings
+  # ------------------------------------------------------------
+  - name: 'VECTOR_BACKEND'
+    value: 'pgvector'
+  - name: 'EMBEDDINGS_BACKEND'
+    value: 'sentence_transformers'
+  - name: 'EMBEDDINGS_MODEL'
+    value: 'all-MiniLM-L6-v2'
+  - name: 'EMBEDDINGS_NORMALIZE'
+    value: 'true'
+  - name: 'RETRIEVAL_TOP_K'
+    value: '5'
+  - name: 'RETRIEVAL_ENABLED'
+    value: 'false'
+  - name: 'RETRIEVAL_INCLUDE_DOCUMENT_PATH'
+    value: 'false'
+  - name: 'RETRIEVAL_MIN_SCORE'
+    value: ''
+  - name: 'TEXT_SEARCH_BACKEND'
+    value: 'postgres_fts'
+  - name: 'RETRIEVAL_TEXT_WEIGHT'
+    value: '0.6'
+  - name: 'RETRIEVAL_VECTOR_WEIGHT'
+    value: '0.4'
+  - name: 'RETRIEVAL_CANDIDATE_MULTIPLIER'
+    value: '4'
+  - name: 'RETRIEVAL_MMR_LAMBDA'
+    value: '0.5'
+  - name: 'RETRIEVAL_MAX_CHUNKS_PER_DOC'
+    value: '3'
+  - name: 'METRIC_QA_RETRIEVAL_LOG'
+    value: 'true'
+  - name: 'METRIC_QA_DEBUG_LOG'
+    value: 'true'
+  - name: 'COMPARISON_TOP_DOCS'
+    value: '3'
+  - name: 'COMPARISON_PER_DOC_K'
+    value: '3'
+  - name: 'COMPARISON_STAGE1_TOP_K'
+    value: ''
+  - name: 'METRIC_PREFILTER_CANDIDATE_TOTAL_LIMIT'
+    value: '70'
+  - name: 'METRIC_PREFILTER_CANDIDATE_SINGLE_DOC_LIMIT'
+    value: '40'
+  - name: 'METRIC_PREFILTER_CANDIDATE_MIN_PER_DOC'
+    value: '6'
+  - name: 'METRIC_PREFILTER_FINAL_PER_DOC_LIMIT'
+    value: '10'
+  - name: 'METRIC_PREFILTER_FINAL_TOTAL_LIMIT'
+    value: '40'
+  - name: 'LOG_SQLITE_STATUS'
+    value: false
+
+  # ------------------------------------------------------------
+  # Reranking
+  # ------------------------------------------------------------
+  - name: 'RERANK_BACKEND'
+    value: 'cross_encoder'
+  - name: 'RERANK_MODEL'
+    value: 'cross-encoder/ms-marco-MiniLM-L-6-v2'
+  - name: 'RERANK_TOP_N'
+    value: '20'
+
+  # ------------------------------------------------------------
+  # FAISS (disabled in dev by default)
+  # ------------------------------------------------------------
+  - name: 'FAISS_DIR'
+    value: '/app/python/source_code/data/faiss'
+  - name: 'FAISS_NORMALIZE'
+    value: 'true'
+  - name: 'FAISS_INDEX_TYPE'
+    value: 'Flat'
+  - name: 'FAISS_METRIC'
+    value: 'ip'
+  - name: 'FAISS_AUTO_BUILD'
+    value: 'false'
+  - name: 'FAISS_REBUILD_ON_STARTUP'
+    value: 'false'
+
+  # ------------------------------------------------------------
+  # MLflow
+  # ------------------------------------------------------------
+  - name: 'MLFLOW_ENABLED'
+    value: 'true'
+  - name: 'MLFLOW_TRACKING_URI'
+    value: 'databricks'
+  - name: 'MLFLOW_TRACING_ENABLED'
+    value: 'true'
+  - name: 'MLFLOW_EXPERIMENT'
+    value: '/Shared/ai-qbr-agent'
+
+  # ------------------------------------------------------------
+  # App flags
+  # ------------------------------------------------------------
+  - name: 'RICH_OUTPUT_ENABLED'
+    value: 'false'
+  - name: 'METRIC_ROUTER_ENABLED'
+    value: 'true'
+  - name: 'FISCAL_YEAR_START_MONTH'
+    value: '10'
+
+  # ------------------------------------------------------------
+  # Guardrails
+  # ------------------------------------------------------------
+  - name: 'GUARDRAILS_ENABLED'
+    value: 'false'
+  - name: 'GUARDRAILS_MODE'
+    value: 'enforce'
+  - name: 'GUARDRAILS_ROUTER_ENDPOINT'
+    value: 'https://dbc-3b4bc42a-bf11.cloud.databricks.com/ml/endpoints/slm-router/metrics?o=185296477739056'
