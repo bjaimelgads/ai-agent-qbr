@@ -1,0 +1,157 @@
+[
+  {
+    "id": "1d526cd0e48543e4a1da26b47b3c252b",
+    "name": "Content Store Roadblock Spend",
+    "raw_value": "$17M",
+    "normalized_value": 17000000.0,
+    "unit": "currency",
+    "metric_type": "currency",
+    "category": "cost",
+    "raw_context": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA acc",
+    "slide_number": 4,
+    "source": "slide_text",
+    "metric_catalog_id": 32,
+    "metric_catalog_slug": "csrb_spend",
+    "extraction_confidence": 0.76,
+    "metadata": {
+      "qualifiers": {
+        "country": "United States",
+        "geo": "Global",
+        "audience": "lapsed",
+        "timeframe": "FY"
+      },
+      "extraction_method": "same_block",
+      "context_trace": [
+        {
+          "strategy": "rule_based",
+          "period_label": "H2 FY24",
+          "period_start": "2024-04-01",
+          "period_end": "2024-09-30",
+          "baseline_text": "YoY",
+          "baseline_type": "yoy",
+          "source_snippet": "H2 FY24"
+        }
+      ]
+    },
+    "period_label": "H2 FY24",
+    "period_start": "2024-04-01",
+    "period_end": "2024-09-30",
+    "brand": "Disney+",
+    "baseline_text": "YoY",
+    "baseline_type": "yoy"
+  },
+  {
+    "id": "2030034a9e544ebfa313471e3a8d1fcf",
+    "name": "Click Through Rate",
+    "raw_value": "100%",
+    "normalized_value": 100.0,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "performance",
+    "raw_context": "CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enab",
+    "slide_number": 8,
+    "source": "slide_text",
+    "metric_catalog_id": 1,
+    "metric_catalog_slug": "click_through_rate",
+    "extraction_confidence": 0.853375,
+    "metadata": {
+      "qualifiers": {
+        "country": "United States"
+      },
+      "extraction_method": "same_block",
+      "context_trace": [
+        {
+          "strategy": "rule_based",
+          "period_label": "H2 FY24",
+          "period_start": "2024-04-01",
+          "period_end": "2024-09-30",
+          "baseline_text": null,
+          "baseline_type": null,
+          "source_snippet": "H2 FY24"
+        }
+      ]
+    },
+    "period_label": "H2 FY24",
+    "period_start": "2024-04-01",
+    "period_end": "2024-09-30",
+    "brand": "Disney+",
+    "baseline_text": null,
+    "baseline_type": null
+  },
+  {
+    "id": "6731dec61e8b4c50bab8b2c66cef0784",
+    "name": "Reach",
+    "raw_value": "16",
+    "normalized_value": 16.0,
+    "unit": "count",
+    "metric_type": "count",
+    "category": "reach",
+    "raw_context": "Vs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creati",
+    "slide_number": 8,
+    "source": "slide_text",
+    "metric_catalog_id": 22,
+    "metric_catalog_slug": "reach",
+    "extraction_confidence": 0.9614999999999998,
+    "metadata": {
+      "qualifiers": {
+        "country": "United States"
+      },
+      "extraction_method": "same_block",
+      "context_trace": [
+        {
+          "strategy": "rule_based",
+          "period_label": "H2 FY24",
+          "period_start": "2024-04-01",
+          "period_end": "2024-09-30",
+          "baseline_text": "vs or leverage Targeted Rotational Carousel Video",
+          "baseline_type": "target",
+          "source_snippet": "H2 FY24"
+        }
+      ]
+    },
+    "period_label": "H2 FY24",
+    "period_start": "2024-04-01",
+    "period_end": "2024-09-30",
+    "brand": "Disney+",
+    "baseline_text": "vs or leverage Targeted Rotational Carousel Video",
+    "baseline_type": "target"
+  },
+  {
+    "id": "c42f94db427f4de9b827370e578fe460",
+    "name": "Share of Voice",
+    "raw_value": "100%",
+    "normalized_value": 100.0,
+    "unit": "percent",
+    "metric_type": "percentage",
+    "category": "reach",
+    "raw_context": "CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enab",
+    "slide_number": 8,
+    "source": "slide_text",
+    "metric_catalog_id": 24,
+    "metric_catalog_slug": "share_of_voice",
+    "extraction_confidence": 0.9588749999999999,
+    "metadata": {
+      "qualifiers": {
+        "country": "United States"
+      },
+      "extraction_method": "same_block",
+      "context_trace": [
+        {
+          "strategy": "rule_based",
+          "period_label": "H2 FY24",
+          "period_start": "2024-04-01",
+          "period_end": "2024-09-30",
+          "baseline_text": null,
+          "baseline_type": null,
+          "source_snippet": "H2 FY24"
+        }
+      ]
+    },
+    "period_label": "H2 FY24",
+    "period_start": "2024-04-01",
+    "period_end": "2024-09-30",
+    "brand": "Disney+",
+    "baseline_text": null,
+    "baseline_type": null
+  }
+]

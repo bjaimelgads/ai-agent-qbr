@@ -1,0 +1,18 @@
+flowchart LR
+  classDef step fill:#eef6ff,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+  classDef next fill:#ecfdf5,stroke:#16a34a,stroke-width:1.5px,color:#052e16
+  classDef pain fill:#fff7ed,stroke:#ea580c,stroke-width:1.5px,color:#431407
+
+  S1["Step 1<br/>Broad search across all docs and slides<br/>Good proof of concept"]:::step --> P1["Pain point<br/>Noisy context hurts precise deck comparisons"]:::pain
+
+  P1 --> S2["Step 2<br/>Intent-based narrowing"]:::step
+  S2 --> F1["Filters<br/>Region • Brand/Client • Time Period"]:::step
+  S2 --> F2["metric_catalog<br/>Business metric grounding"]:::step
+  F1 --> O2["Outcome<br/>More focused retrieval"]:::step
+  F2 --> O2
+
+  O2 --> S3["Step 3<br/>Multi-deck search + source links"]:::step
+  S3 --> O3["Current value<br/>Stronger comparisons + transparent answers"]:::step
+
+  O3 --> N1["Next<br/>Improve metric catalog quality"]:::next
+  O3 --> N2["Next<br/>Table-style metric retrieval<br/>(e.g., CPA by recent quarters)"]:::next

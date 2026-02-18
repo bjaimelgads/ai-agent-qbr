@@ -1,0 +1,1496 @@
+{
+  "labels": [
+    {
+      "metric_id": "csrb_spend",
+      "metric_name": "Content Store Roadblock Spend",
+      "alias": "Content Store Roadblock Spend",
+      "label_text": "Content Store Roadblock",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        524,
+        547
+      ],
+      "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+      "priority": 0
+    },
+    {
+      "metric_id": "unique_reach",
+      "metric_name": "Unique Reach",
+      "alias": "Unique Reach",
+      "label_text": "Unique Reach",
+      "slide_index": 6,
+      "source_type": "slide_text",
+      "block_id": "6:2464",
+      "span": [
+        40,
+        52
+      ],
+      "context_text": "A Winning Combination of\nGlobal Scale & Unique Reach",
+      "priority": 0
+    },
+    {
+      "metric_id": "reach",
+      "metric_name": "Reach",
+      "alias": "Reach",
+      "label_text": "Reach",
+      "slide_index": 6,
+      "source_type": "slide_text",
+      "block_id": "6:2464",
+      "span": [
+        47,
+        52
+      ],
+      "context_text": "A Winning Combination of\nGlobal Scale & Unique Reach",
+      "priority": 0
+    },
+    {
+      "metric_id": "reach",
+      "metric_name": "Reach",
+      "alias": "Reach",
+      "label_text": "Reach",
+      "slide_index": 6,
+      "source_type": "table_cell",
+      "block_id": "6:2465:r2c1",
+      "span": [
+        13,
+        18
+      ],
+      "context_text": "Deduplicated Reach \nAgainst Other TV OEMs",
+      "priority": 0
+    },
+    {
+      "metric_id": "click_through_rate",
+      "metric_name": "Click Through Rate",
+      "alias": "Click Through Rate",
+      "label_text": "CTR",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        169,
+        172
+      ],
+      "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+      "priority": 0
+    },
+    {
+      "metric_id": "reach",
+      "metric_name": "Reach",
+      "alias": "Reach",
+      "label_text": "reach",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        400,
+        405
+      ],
+      "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+      "priority": 0
+    },
+    {
+      "metric_id": "share_of_voice",
+      "metric_name": "Share of Voice",
+      "alias": "Share of Voice",
+      "label_text": "SOV",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        254,
+        257
+      ],
+      "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+      "priority": 0
+    }
+  ],
+  "values": [
+    {
+      "raw_value_text": "7x",
+      "normalized_value": 7.0,
+      "unit": "ratio",
+      "scale": "ones",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        334,
+        336
+      ],
+      "context_text": "er, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMe",
+      "qualifiers": {
+        "audience": "lapsed"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "2x",
+      "normalized_value": 2.0,
+      "unit": "ratio",
+      "scale": "ones",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        443,
+        445
+      ],
+      "context_text": "nt Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including C",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "8x",
+      "normalized_value": 8.0,
+      "unit": "ratio",
+      "scale": "ones",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        449,
+        451
+      ],
+      "context_text": "histication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "$17M",
+      "normalized_value": 17000000.0,
+      "unit": "currency",
+      "scale": "M",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        35,
+        39
+      ],
+      "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA acc",
+      "qualifiers": {
+        "geo": "Global",
+        "timeframe": "FY"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "$9.4M",
+      "normalized_value": 9400000.0,
+      "unit": "currency",
+      "scale": "M",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        82,
+        87
+      ],
+      "context_text": "25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Mar",
+      "qualifiers": {
+        "geo": "Global",
+        "timeframe": "FY"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "$4.3M",
+      "normalized_value": 4300000.0,
+      "unit": "currency",
+      "scale": "M",
+      "slide_index": 4,
+      "source_type": "slide_text",
+      "block_id": "4:2453",
+      "span": [
+        130,
+        135
+      ],
+      "context_text": "isney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launch",
+      "qualifiers": {
+        "geo": "Global",
+        "timeframe": "FY"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "01",
+      "normalized_value": 1.0,
+      "unit": "count",
+      "scale": "ones",
+      "slide_index": 5,
+      "source_type": "slide_text",
+      "block_id": "5:2459",
+      "span": [
+        8,
+        10
+      ],
+      "context_text": "Section 01",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "+12%",
+      "normalized_value": 12.0,
+      "unit": "percent",
+      "scale": "ones",
+      "slide_index": 6,
+      "source_type": "slide_text",
+      "block_id": "6:2471",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "+12% YoY\nGrowth",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "48M",
+      "normalized_value": 48000000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 6,
+      "source_type": "table_cell",
+      "block_id": "6:2465:r0c0",
+      "span": [
+        0,
+        3
+      ],
+      "context_text": "48M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "176M",
+      "normalized_value": 176000000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 6,
+      "source_type": "table_cell",
+      "block_id": "6:2465:r1c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "176M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "90%+",
+      "normalized_value": 90.0,
+      "unit": "percent",
+      "scale": "ones",
+      "slide_index": 6,
+      "source_type": "table_cell",
+      "block_id": "6:2465:r2c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "90%+",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "7.85M",
+      "normalized_value": 7850000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2478:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "7.85M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "5.38M",
+      "normalized_value": 5380000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2479:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "5.38M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "4.93M",
+      "normalized_value": 4930000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2480:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "4.93M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "4.15M",
+      "normalized_value": 4150000.0000000005,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2481:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "4.15M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "3.05M",
+      "normalized_value": 3050000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2482:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "3.05M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "2.27M",
+      "normalized_value": 2270000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2488:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "2.27M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "1.41M",
+      "normalized_value": 1410000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2489:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "1.41M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "1.31M",
+      "normalized_value": 1310000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2491:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "1.31M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "802K",
+      "normalized_value": 802000.0,
+      "unit": "count",
+      "scale": "K",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2494:r0c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "802K",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "686K",
+      "normalized_value": 686000.0,
+      "unit": "count",
+      "scale": "K",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2495:r0c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "686K",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "606K",
+      "normalized_value": 606000.0,
+      "unit": "count",
+      "scale": "K",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2498:r0c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "606K",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "457K",
+      "normalized_value": 457000.0,
+      "unit": "count",
+      "scale": "K",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2500:r0c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "457K",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "736K",
+      "normalized_value": 736000.0,
+      "unit": "count",
+      "scale": "K",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2503:r0c0",
+      "span": [
+        0,
+        4
+      ],
+      "context_text": "736K",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "1.68M",
+      "normalized_value": 1680000.0,
+      "unit": "count",
+      "scale": "M",
+      "slide_index": 7,
+      "source_type": "table_cell",
+      "block_id": "7:2504:r0c0",
+      "span": [
+        0,
+        5
+      ],
+      "context_text": "1.68M",
+      "qualifiers": {},
+      "is_range": false
+    },
+    {
+      "raw_value_text": "2x",
+      "normalized_value": 2.0,
+      "unit": "ratio",
+      "scale": "ones",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        214,
+        216
+      ],
+      "context_text": "erformer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotati",
+      "qualifiers": {
+        "country": "United States"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "2019+",
+      "normalized_value": 2019.0,
+      "unit": "count",
+      "scale": "ones",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        116,
+        121
+      ],
+      "context_text": "ce with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other p",
+      "qualifiers": {
+        "country": "United States"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "100%",
+      "normalized_value": 100.0,
+      "unit": "percent",
+      "scale": "ones",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        249,
+        253
+      ],
+      "context_text": "CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enab",
+      "qualifiers": {
+        "country": "United States"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "16",
+      "normalized_value": 16.0,
+      "unit": "count",
+      "scale": "ones",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        346,
+        348
+      ],
+      "context_text": "Vs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creati",
+      "qualifiers": {
+        "country": "United States"
+      },
+      "is_range": false
+    },
+    {
+      "raw_value_text": "9",
+      "normalized_value": 9.0,
+      "unit": "count",
+      "scale": "ones",
+      "slide_index": 8,
+      "source_type": "slide_text",
+      "block_id": "8:2626",
+      "span": [
+        349,
+        350
+      ],
+      "context_text": "or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative",
+      "qualifiers": {
+        "country": "United States"
+      },
+      "is_range": false
+    }
+  ],
+  "links": [
+    {
+      "label": {
+        "metric_id": "csrb_spend",
+        "metric_name": "Content Store Roadblock Spend",
+        "alias": "Content Store Roadblock Spend",
+        "label_text": "Content Store Roadblock",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          524,
+          547
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "7x",
+        "normalized_value": 7.0,
+        "unit": "ratio",
+        "scale": "ones",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          334,
+          336
+        ],
+        "context_text": "er, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMe",
+        "qualifiers": {
+          "audience": "lapsed"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 188.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.26
+    },
+    {
+      "label": {
+        "metric_id": "csrb_spend",
+        "metric_name": "Content Store Roadblock Spend",
+        "alias": "Content Store Roadblock Spend",
+        "label_text": "Content Store Roadblock",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          524,
+          547
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2x",
+        "normalized_value": 2.0,
+        "unit": "ratio",
+        "scale": "ones",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          443,
+          445
+        ],
+        "context_text": "nt Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including C",
+        "qualifiers": {},
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 79.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.35112499999999996
+    },
+    {
+      "label": {
+        "metric_id": "csrb_spend",
+        "metric_name": "Content Store Roadblock Spend",
+        "alias": "Content Store Roadblock Spend",
+        "label_text": "Content Store Roadblock",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          524,
+          547
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "8x",
+        "normalized_value": 8.0,
+        "unit": "ratio",
+        "scale": "ones",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          449,
+          451
+        ],
+        "context_text": "histication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content",
+        "qualifiers": {},
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 73.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.357875
+    },
+    {
+      "label": {
+        "metric_id": "csrb_spend",
+        "metric_name": "Content Store Roadblock Spend",
+        "alias": "Content Store Roadblock Spend",
+        "label_text": "Content Store Roadblock",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          524,
+          547
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "$17M",
+        "normalized_value": 17000000.0,
+        "unit": "currency",
+        "scale": "M",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          35,
+          39
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA acc",
+        "qualifiers": {
+          "geo": "Global",
+          "timeframe": "FY"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 485.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.76
+    },
+    {
+      "label": {
+        "metric_id": "csrb_spend",
+        "metric_name": "Content Store Roadblock Spend",
+        "alias": "Content Store Roadblock Spend",
+        "label_text": "Content Store Roadblock",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          524,
+          547
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "$9.4M",
+        "normalized_value": 9400000.0,
+        "unit": "currency",
+        "scale": "M",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          82,
+          87
+        ],
+        "context_text": "25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Mar",
+        "qualifiers": {
+          "geo": "Global",
+          "timeframe": "FY"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 437.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.76
+    },
+    {
+      "label": {
+        "metric_id": "csrb_spend",
+        "metric_name": "Content Store Roadblock Spend",
+        "alias": "Content Store Roadblock Spend",
+        "label_text": "Content Store Roadblock",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          524,
+          547
+        ],
+        "context_text": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launched Disney+ International Rebrand, Ad Tier, Seasonal Promo, & UEFA on Platform\nExecuted Lapsed Audience Strategy across 7x Markets\nEnhanced Measurement Sophistication by increasing LG Incrementality \u201cMediaboost\u201d Measurement from 2x to 8x Markets\nLeveraged first-to-market/Beta opportunities Globally including Content Store Roadblock and Video Carousel",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "$4.3M",
+        "normalized_value": 4300000.0,
+        "unit": "currency",
+        "scale": "M",
+        "slide_index": 4,
+        "source_type": "slide_text",
+        "block_id": "4:2453",
+        "span": [
+          130,
+          135
+        ],
+        "context_text": "isney Streaming Global invested $9.4M with LG Ads in FY24,   EMEA accounted for $4.3M of the investment\nNumber of Markets and investment flat YoY\nSuccessfully launch",
+        "qualifiers": {
+          "geo": "Global",
+          "timeframe": "FY"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 389.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.76
+    },
+    {
+      "label": {
+        "metric_id": "click_through_rate",
+        "metric_name": "Click Through Rate",
+        "alias": "Click Through Rate",
+        "label_text": "CTR",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          169,
+          172
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2x",
+        "normalized_value": 2.0,
+        "unit": "ratio",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          214,
+          216
+        ],
+        "context_text": "erformer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotati",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 42.0,
+        "same_line": 1.0,
+        "has_separator": 0.0
+      },
+      "score": 0.41275
+    },
+    {
+      "label": {
+        "metric_id": "click_through_rate",
+        "metric_name": "Click Through Rate",
+        "alias": "Click Through Rate",
+        "label_text": "CTR",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          169,
+          172
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2019+",
+        "normalized_value": 2019.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          116,
+          121
+        ],
+        "context_text": "ce with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other p",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 48.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.18599999999999994
+    },
+    {
+      "label": {
+        "metric_id": "click_through_rate",
+        "metric_name": "Click Through Rate",
+        "alias": "Click Through Rate",
+        "label_text": "CTR",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          169,
+          172
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "100%",
+        "normalized_value": 100.0,
+        "unit": "percent",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          249,
+          253
+        ],
+        "context_text": "CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enab",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 77.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.853375
+    },
+    {
+      "label": {
+        "metric_id": "click_through_rate",
+        "metric_name": "Click Through Rate",
+        "alias": "Click Through Rate",
+        "label_text": "CTR",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          169,
+          172
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "16",
+        "normalized_value": 16.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          346,
+          348
+        ],
+        "context_text": "Vs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creati",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 174.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.26
+    },
+    {
+      "label": {
+        "metric_id": "click_through_rate",
+        "metric_name": "Click Through Rate",
+        "alias": "Click Through Rate",
+        "label_text": "CTR",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          169,
+          172
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "9",
+        "normalized_value": 9.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          349,
+          350
+        ],
+        "context_text": "or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 177.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.26
+    },
+    {
+      "label": {
+        "metric_id": "reach",
+        "metric_name": "Reach",
+        "alias": "Reach",
+        "label_text": "reach",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          400,
+          405
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2x",
+        "normalized_value": 2.0,
+        "unit": "ratio",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          214,
+          216
+        ],
+        "context_text": "erformer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotati",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 184.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.26
+    },
+    {
+      "label": {
+        "metric_id": "reach",
+        "metric_name": "Reach",
+        "alias": "Reach",
+        "label_text": "reach",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          400,
+          405
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2019+",
+        "normalized_value": 2019.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          116,
+          121
+        ],
+        "context_text": "ce with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other p",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 279.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.56
+    },
+    {
+      "label": {
+        "metric_id": "reach",
+        "metric_name": "Reach",
+        "alias": "Reach",
+        "label_text": "reach",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          400,
+          405
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "100%",
+        "normalized_value": 100.0,
+        "unit": "percent",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          249,
+          253
+        ],
+        "context_text": "CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enab",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 147.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.274625
+    },
+    {
+      "label": {
+        "metric_id": "reach",
+        "metric_name": "Reach",
+        "alias": "Reach",
+        "label_text": "reach",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          400,
+          405
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "16",
+        "normalized_value": 16.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          346,
+          348
+        ],
+        "context_text": "Vs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creati",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 52.0,
+        "same_line": 1.0,
+        "has_separator": 1.0
+      },
+      "score": 0.9614999999999998
+    },
+    {
+      "label": {
+        "metric_id": "reach",
+        "metric_name": "Reach",
+        "alias": "Reach",
+        "label_text": "reach",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          400,
+          405
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "9",
+        "normalized_value": 9.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          349,
+          350
+        ],
+        "context_text": "or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 50.0,
+        "same_line": 1.0,
+        "has_separator": 0.0
+      },
+      "score": 0.9037499999999999
+    },
+    {
+      "label": {
+        "metric_id": "share_of_voice",
+        "metric_name": "Share of Voice",
+        "alias": "Share of Voice",
+        "label_text": "SOV",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          254,
+          257
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2x",
+        "normalized_value": 2.0,
+        "unit": "ratio",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          214,
+          216
+        ],
+        "context_text": "erformer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotati",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 38.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.39724999999999994
+    },
+    {
+      "label": {
+        "metric_id": "share_of_voice",
+        "metric_name": "Share of Voice",
+        "alias": "Share of Voice",
+        "label_text": "SOV",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          254,
+          257
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "2019+",
+        "normalized_value": 2019.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          116,
+          121
+        ],
+        "context_text": "ce with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other p",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 133.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.09037499999999993
+    },
+    {
+      "label": {
+        "metric_id": "share_of_voice",
+        "metric_name": "Share of Voice",
+        "alias": "Share of Voice",
+        "label_text": "SOV",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          254,
+          257
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "100%",
+        "normalized_value": 100.0,
+        "unit": "percent",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          249,
+          253
+        ],
+        "context_text": "CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enab",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 1.0,
+        "same_line": 1.0,
+        "has_separator": 0.0
+      },
+      "score": 0.9588749999999999
+    },
+    {
+      "label": {
+        "metric_id": "share_of_voice",
+        "metric_name": "Share of Voice",
+        "alias": "Share of Voice",
+        "label_text": "SOV",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          254,
+          257
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "16",
+        "normalized_value": 16.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          346,
+          348
+        ],
+        "context_text": "Vs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creati",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 89.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.339875
+    },
+    {
+      "label": {
+        "metric_id": "share_of_voice",
+        "metric_name": "Share of Voice",
+        "alias": "Share of Voice",
+        "label_text": "SOV",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          254,
+          257
+        ],
+        "context_text": "LG has upgraded the Smart TV interface with the Carousel Home Screen, bringing a fresh interactive dimension to all 2019+ LG TVs\nTop Performer: Carousel supports strong CTR, often outperforming other placements by 2x\nHigh Impact and Rotational: Own 100% SOV of all TVs or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative: 3D Custom Carousel animation effects, Countdown Clock, etc.",
+        "priority": 0
+      },
+      "value": {
+        "raw_value_text": "9",
+        "normalized_value": 9.0,
+        "unit": "count",
+        "scale": "ones",
+        "slide_index": 8,
+        "source_type": "slide_text",
+        "block_id": "8:2626",
+        "span": [
+          349,
+          350
+        ],
+        "context_text": "or leverage Targeted Rotational Carousel Video\nVideo-First: enables standard 16:9 Trailers within the Carousel Companion to expand reach\nCustom Animated Creative",
+        "qualifiers": {
+          "country": "United States"
+        },
+        "is_range": false
+      },
+      "relation": "same_block",
+      "features": {
+        "distance": 92.0,
+        "same_line": 0.0,
+        "has_separator": 1.0
+      },
+      "score": 0.33649999999999997
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,23 @@
+{
+  "Disney+ EMEA  FY24 H2.pptx": "https://docs.google.com/presentation/d/1pCMJ3-SMrHvRCvfIH4uGOjZaqiBX2yywmws3UVaSq9c/edit?slide=id.g2b4e656bd14_1_0#slide=id.g2b4e656bd14_1_0",
+  "Disney+ EMEA  FY25 H2.pptx": "https://docs.google.com/presentation/d/1TUE0UJVrv_ILoXevXIWVN2wVD8cRSr1aIgWwkHfZmM0/edit?slide=id.g346c077bfb9_0_35#slide=id.g346c077bfb9_0_35",
+  "Disney+ EMEA FY25 H1.pptx": "https://docs.google.com/presentation/d/1pX0DMQDQiLNXcCSK_4VNVaO4T8H063UX1zMQzN1UMHk/edit?slide=id.g356cdf357fa_4_1284#slide=id.g356cdf357fa_4_1284",
+  "Disney+ US FY24 H2.pptx": "https://docs.google.com/presentation/d/1bpKzGb7E_Vo9C7U_mJbVXbNqeS-8sAbkYNx6Rbu8zdU/edit?slide=id.g2b4e656bd14_1_0#slide=id.g2b4e656bd14_1_0",
+  "Disney+ US FY25 H1.pptx": "https://docs.google.com/presentation/d/1kMoN6NF7V1Eh1lJYHIGBmYRcBBzdlpXUygr0d1KRH8A/edit?slide=id.g3504c071f70_0_0#slide=id.g3504c071f70_0_0",
+  "Disney+ US FY25 H2.pptx": "https://docs.google.com/presentation/d/1ZXqf5w5tDK7ru_jaShhAOD2rZRUAAuAPqrPYx84YfFs/edit?slide=id.g3504c071f70_0_0#slide=id.g3504c071f70_0_0",
+  "Disney+ US FY24 H1.pptx": {
+    "url": "https://docs.google.com/presentation/d/1HgdfoaGyLnPoPFbMYVgKNddajzEWtCQwZc8IU83w1SY",
+    "slide_ranges": [
+      { "start": 1, "end": 15 },
+      { "start": 16, "end": 29 },
+      { "start": 45, "end": 52 }
+    ]
+  },
+  "Disney+ EMEA FY24 H1.pptx": {
+    "url": "https://docs.google.com/presentation/d/1HgdfoaGyLnPoPFbMYVgKNddajzEWtCQwZc8IU83w1SY",
+    "slide_ranges": [
+      { "start": 1, "end": 15 },
+      { "start": 30, "end": 41 }
+    ]
+  }
+}

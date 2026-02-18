@@ -1,0 +1,93 @@
+{
+  "total": 3,
+  "results": [
+    {
+      "id": "metric_then_followup_compare",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "CPA for Disney+ in FY24 H2 US",
+          "router_matched": true,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "and in H1?",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 3,
+          "query": "compare them",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 4,
+          "query": "what about CPE too?",
+          "router_matched": true,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        }
+      ]
+    },
+    {
+      "id": "metric_incomplete_then_clarify",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "what was the investment",
+          "router_matched": true,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "for FY24 H2",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 3,
+          "query": "US",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "Based on the available context from the Disney+ US FY24 H1 presentation, I don't have specific information about the investment amount for FY24 H2.\n\nThe documents I have access to cover FY24 H1 (first half) for Disney+ US, which includes:\n- Business review information\n- Market data showing LG and Samsung TVs make up the majority of the US market\n- Technical details about Clean Rooms and identity matching capabilities\n\nHowever, there is no mention of investment figures for FY24 H2 (second half) in the available slides (slides 1, 6, and 12).\n\nTo provide you with the investment information for FY24 H2, I would need access to:\n- A Disney+ US FY24 H2 presentation, or\n- Financial summary slides that include H2 investment details, or\n- A full-year FY24 deck that breaks down investments by half\n\nCould you clarify if you're looking for a specific type of investment (media spend, platform investment, etc.), or if there's a different time period or client deck I should reference?"
+        }
+      ]
+    },
+    {
+      "id": "metric_fuzzy_wording",
+      "topic": "metrics",
+      "turns": [
+        {
+          "turn": 1,
+          "query": "how did efficiency change from H1 to H2",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 2,
+          "query": "i mean CPA and CPE",
+          "router_matched": true,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        },
+        {
+          "turn": 3,
+          "query": "US only",
+          "router_matched": false,
+          "metric_tool_used": false,
+          "answer": "I'm unable to complete that request."
+        }
+      ]
+    }
+  ]
+}

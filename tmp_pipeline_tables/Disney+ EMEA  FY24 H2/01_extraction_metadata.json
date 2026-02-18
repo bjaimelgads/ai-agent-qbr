@@ -1,0 +1,656 @@
+{
+  "source_file": "qbr_extraction/decks/Disney+ EMEA  FY24 H2.pptx",
+  "extraction_timestamp": "2026-02-15T21:21:28.655689",
+  "kreuzberg_version": "4.0.0",
+  "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "page_count": 8,
+  "detected_languages": [
+    "eng",
+    "fra",
+    "dan",
+    "lat",
+    "deu",
+    "por"
+  ],
+  "table_count": 15,
+  "kreuzberg_table_count": 0,
+  "image_count": 169,
+  "chunk_count": 9,
+  "metadata": {
+    "pages": {
+      "boundaries": [
+        {
+          "byte_end": 798,
+          "byte_start": 0,
+          "page_number": 1
+        },
+        {
+          "byte_end": 1705,
+          "byte_start": 798,
+          "page_number": 2
+        },
+        {
+          "byte_end": 2674,
+          "byte_start": 1705,
+          "page_number": 3
+        },
+        {
+          "byte_end": 3726,
+          "byte_start": 2674,
+          "page_number": 4
+        },
+        {
+          "byte_end": 4690,
+          "byte_start": 3726,
+          "page_number": 5
+        },
+        {
+          "byte_end": 4774,
+          "byte_start": 4690,
+          "page_number": 6
+        },
+        {
+          "byte_end": 5620,
+          "byte_start": 4774,
+          "page_number": 7
+        },
+        {
+          "byte_end": 6525,
+          "byte_start": 5620,
+          "page_number": 8
+        },
+        {
+          "byte_end": 7992,
+          "byte_start": 6525,
+          "page_number": 9
+        },
+        {
+          "byte_end": 8494,
+          "byte_start": 7992,
+          "page_number": 10
+        },
+        {
+          "byte_end": 9527,
+          "byte_start": 8494,
+          "page_number": 11
+        },
+        {
+          "byte_end": 10347,
+          "byte_start": 9527,
+          "page_number": 12
+        },
+        {
+          "byte_end": 10436,
+          "byte_start": 10347,
+          "page_number": 13
+        },
+        {
+          "byte_end": 11465,
+          "byte_start": 10436,
+          "page_number": 14
+        },
+        {
+          "byte_end": 13048,
+          "byte_start": 11465,
+          "page_number": 15
+        },
+        {
+          "byte_end": 13749,
+          "byte_start": 13048,
+          "page_number": 16
+        },
+        {
+          "byte_end": 14708,
+          "byte_start": 13749,
+          "page_number": 17
+        },
+        {
+          "byte_end": 15647,
+          "byte_start": 14708,
+          "page_number": 18
+        },
+        {
+          "byte_end": 16048,
+          "byte_start": 15647,
+          "page_number": 19
+        },
+        {
+          "byte_end": 17214,
+          "byte_start": 16048,
+          "page_number": 20
+        },
+        {
+          "byte_end": 17394,
+          "byte_start": 17214,
+          "page_number": 21
+        },
+        {
+          "byte_end": 17621,
+          "byte_start": 17394,
+          "page_number": 22
+        },
+        {
+          "byte_end": 17848,
+          "byte_start": 17621,
+          "page_number": 23
+        },
+        {
+          "byte_end": 18803,
+          "byte_start": 17848,
+          "page_number": 24
+        },
+        {
+          "byte_end": 19030,
+          "byte_start": 18803,
+          "page_number": 25
+        },
+        {
+          "byte_end": 19918,
+          "byte_start": 19030,
+          "page_number": 26
+        },
+        {
+          "byte_end": 20031,
+          "byte_start": 19918,
+          "page_number": 27
+        },
+        {
+          "byte_end": 20111,
+          "byte_start": 20031,
+          "page_number": 28
+        },
+        {
+          "byte_end": 20247,
+          "byte_start": 20111,
+          "page_number": 29
+        },
+        {
+          "byte_end": 21618,
+          "byte_start": 20247,
+          "page_number": 30
+        },
+        {
+          "byte_end": 21783,
+          "byte_start": 21618,
+          "page_number": 31
+        },
+        {
+          "byte_end": 22000,
+          "byte_start": 21783,
+          "page_number": 32
+        },
+        {
+          "byte_end": 22937,
+          "byte_start": 22000,
+          "page_number": 33
+        },
+        {
+          "byte_end": 23010,
+          "byte_start": 22937,
+          "page_number": 34
+        },
+        {
+          "byte_end": 23942,
+          "byte_start": 23010,
+          "page_number": 35
+        },
+        {
+          "byte_end": 25871,
+          "byte_start": 23942,
+          "page_number": 36
+        },
+        {
+          "byte_end": 26310,
+          "byte_start": 25871,
+          "page_number": 37
+        },
+        {
+          "byte_end": 26609,
+          "byte_start": 26310,
+          "page_number": 38
+        },
+        {
+          "byte_end": 27428,
+          "byte_start": 26609,
+          "page_number": 39
+        },
+        {
+          "byte_end": 28358,
+          "byte_start": 27428,
+          "page_number": 40
+        },
+        {
+          "byte_end": 29332,
+          "byte_start": 28358,
+          "page_number": 41
+        },
+        {
+          "byte_end": 29389,
+          "byte_start": 29332,
+          "page_number": 42
+        },
+        {
+          "byte_end": 29839,
+          "byte_start": 29389,
+          "page_number": 43
+        },
+        {
+          "byte_end": 30485,
+          "byte_start": 29839,
+          "page_number": 44
+        },
+        {
+          "byte_end": 31152,
+          "byte_start": 30485,
+          "page_number": 45
+        },
+        {
+          "byte_end": 31694,
+          "byte_start": 31152,
+          "page_number": 46
+        },
+        {
+          "byte_end": 32114,
+          "byte_start": 31694,
+          "page_number": 47
+        },
+        {
+          "byte_end": 32738,
+          "byte_start": 32114,
+          "page_number": 48
+        },
+        {
+          "byte_end": 33668,
+          "byte_start": 32738,
+          "page_number": 49
+        },
+        {
+          "byte_end": 34565,
+          "byte_start": 33668,
+          "page_number": 50
+        },
+        {
+          "byte_end": 35070,
+          "byte_start": 34565,
+          "page_number": 51
+        },
+        {
+          "byte_end": 35345,
+          "byte_start": 35070,
+          "page_number": 52
+        },
+        {
+          "byte_end": 36300,
+          "byte_start": 35345,
+          "page_number": 53
+        },
+        {
+          "byte_end": 37282,
+          "byte_start": 36300,
+          "page_number": 54
+        },
+        {
+          "byte_end": 38503,
+          "byte_start": 37282,
+          "page_number": 55
+        },
+        {
+          "byte_end": 40119,
+          "byte_start": 38503,
+          "page_number": 56
+        },
+        {
+          "byte_end": 40886,
+          "byte_start": 40119,
+          "page_number": 57
+        },
+        {
+          "byte_end": 42105,
+          "byte_start": 40886,
+          "page_number": 58
+        },
+        {
+          "byte_end": 43401,
+          "byte_start": 42105,
+          "page_number": 59
+        },
+        {
+          "byte_end": 44416,
+          "byte_start": 43401,
+          "page_number": 60
+        },
+        {
+          "byte_end": 44940,
+          "byte_start": 44416,
+          "page_number": 61
+        },
+        {
+          "byte_end": 45529,
+          "byte_start": 44940,
+          "page_number": 62
+        },
+        {
+          "byte_end": 46036,
+          "byte_start": 45529,
+          "page_number": 63
+        },
+        {
+          "byte_end": 47237,
+          "byte_start": 46036,
+          "page_number": 64
+        },
+        {
+          "byte_end": 47979,
+          "byte_start": 47237,
+          "page_number": 65
+        },
+        {
+          "byte_end": 48475,
+          "byte_start": 47979,
+          "page_number": 66
+        },
+        {
+          "byte_end": 48917,
+          "byte_start": 48475,
+          "page_number": 67
+        },
+        {
+          "byte_end": 49888,
+          "byte_start": 48917,
+          "page_number": 68
+        },
+        {
+          "byte_end": 49992,
+          "byte_start": 49888,
+          "page_number": 69
+        },
+        {
+          "byte_end": 52542,
+          "byte_start": 49992,
+          "page_number": 70
+        },
+        {
+          "byte_end": 53725,
+          "byte_start": 52542,
+          "page_number": 71
+        },
+        {
+          "byte_end": 54425,
+          "byte_start": 53725,
+          "page_number": 72
+        },
+        {
+          "byte_end": 55223,
+          "byte_start": 54425,
+          "page_number": 73
+        },
+        {
+          "byte_end": 55830,
+          "byte_start": 55223,
+          "page_number": 74
+        },
+        {
+          "byte_end": 56397,
+          "byte_start": 55830,
+          "page_number": 75
+        },
+        {
+          "byte_end": 57292,
+          "byte_start": 56397,
+          "page_number": 76
+        },
+        {
+          "byte_end": 58081,
+          "byte_start": 57292,
+          "page_number": 77
+        },
+        {
+          "byte_end": 59174,
+          "byte_start": 58081,
+          "page_number": 78
+        }
+      ],
+      "pages": [
+        {
+          "number": 1
+        },
+        {
+          "number": 2
+        },
+        {
+          "number": 3
+        },
+        {
+          "number": 4
+        },
+        {
+          "number": 5
+        },
+        {
+          "number": 6
+        },
+        {
+          "number": 7
+        },
+        {
+          "number": 8
+        },
+        {
+          "number": 9
+        },
+        {
+          "number": 10
+        },
+        {
+          "number": 11
+        },
+        {
+          "number": 12
+        },
+        {
+          "number": 13
+        },
+        {
+          "number": 14
+        },
+        {
+          "number": 15
+        },
+        {
+          "number": 16
+        },
+        {
+          "number": 17
+        },
+        {
+          "number": 18
+        },
+        {
+          "number": 19
+        },
+        {
+          "number": 20
+        },
+        {
+          "number": 21
+        },
+        {
+          "number": 22
+        },
+        {
+          "number": 23
+        },
+        {
+          "number": 24
+        },
+        {
+          "number": 25
+        },
+        {
+          "number": 26
+        },
+        {
+          "number": 27
+        },
+        {
+          "number": 28
+        },
+        {
+          "number": 29
+        },
+        {
+          "number": 30
+        },
+        {
+          "number": 31
+        },
+        {
+          "number": 32
+        },
+        {
+          "number": 33
+        },
+        {
+          "number": 34
+        },
+        {
+          "number": 35
+        },
+        {
+          "number": 36
+        },
+        {
+          "number": 37
+        },
+        {
+          "number": 38
+        },
+        {
+          "number": 39
+        },
+        {
+          "number": 40
+        },
+        {
+          "number": 41
+        },
+        {
+          "number": 42
+        },
+        {
+          "number": 43
+        },
+        {
+          "number": 44
+        },
+        {
+          "number": 45
+        },
+        {
+          "number": 46
+        },
+        {
+          "number": 47
+        },
+        {
+          "number": 48
+        },
+        {
+          "number": 49
+        },
+        {
+          "number": 50
+        },
+        {
+          "number": 51
+        },
+        {
+          "number": 52
+        },
+        {
+          "number": 53
+        },
+        {
+          "number": 54
+        },
+        {
+          "number": 55
+        },
+        {
+          "number": 56
+        },
+        {
+          "number": 57
+        },
+        {
+          "number": 58
+        },
+        {
+          "number": 59
+        },
+        {
+          "number": 60
+        },
+        {
+          "number": 61
+        },
+        {
+          "number": 62
+        },
+        {
+          "number": 63
+        },
+        {
+          "number": 64
+        },
+        {
+          "number": 65
+        },
+        {
+          "number": 66
+        },
+        {
+          "number": 67
+        },
+        {
+          "number": 68
+        },
+        {
+          "number": 69
+        },
+        {
+          "number": 70
+        },
+        {
+          "number": 71
+        },
+        {
+          "number": 72
+        },
+        {
+          "number": 73
+        },
+        {
+          "number": 74
+        },
+        {
+          "number": 75
+        },
+        {
+          "number": 76
+        },
+        {
+          "number": 77
+        },
+        {
+          "number": 78
+        }
+      ],
+      "total_count": 78,
+      "unit_type": "slide"
+    },
+    "format": {
+      "format_type": "pptx"
+    }
+  }
+}

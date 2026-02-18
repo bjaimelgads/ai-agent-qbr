@@ -1,0 +1,17 @@
+command: [
+  "python",
+  "app.py"
+]
+env:
+  - name: 'USE_STUB_LLM'
+    value: 'false'
+  - name: 'DATABRICKS_HOST'
+    value: 'https://dbc-3b4bc42a-bf11.cloud.databricks.com'
+  - name: 'DATABRICKS_TOKEN'
+    value: '${DATABRICKS_TOKEN}'
+  - name: 'LLM_MODEL_NAME'
+    value: 'databricks-claude-sonnet-4-5'
+  - name: 'LLM_MAX_TOKENS'
+    value: '4000'
+  - name: 'LLM_CACHE_ENABLED'
+    value: 'true'
