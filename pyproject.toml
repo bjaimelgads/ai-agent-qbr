@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-agent-qbr"
+version = "0.1.0"
+description = "PenguiFlow react template for ai-agent-qbr."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "penguiflow[planner]>=2.11.2",
+    "dspy>=3.1",
+    "databricks-sdk>=0.57.0",
+    "fastapi>=0.115.2",
+    "faiss-cpu>=1.8.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.6",
+    "python-dotenv>=1.0.0",
+    "google-api-python-client>=2.148.0",
+    "google-auth>=2.35.0",
+    "google-auth-oauthlib>=1.2.1",
+    "ag-ui-protocol>=0.1.10",
+    "aiosqlite>=0.22.1",
+    "asyncpg>=0.29.0",
+    "psycopg[binary]>=3.2.1",
+    "sqlalchemy>=2.0.45",
+    "sentence-transformers>=5.1.1",
+    "uvicorn>=0.30.6",
+    "websockets>=12.0",
+    "python-pptx>=1.0.2",
+    "kreuzberg==4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.23",
+]
+observability = [
+    "mlflow>=2.13.0",
+]
+embeddings = [
+]
+retrieval = [
+    "numpy>=1.26.0",
+]
+extraction = [
+    "dspy>=3.1",
+    "greenlet>=3.3.0",
+    "kreuzberg==4.0.0",
+    "onnxruntime>=1.22.0",
+    "python-dotenv>=1.2.1",
+    "sqlalchemy>=2.0.45",
+]
+
+[project.scripts]
+ai_agent_qbr = "ai_agent_qbr.__main__:main"
+ai_agent_qbr_playground_ui = "ai_agent_qbr.playground_ui:main"
+metrics = "ai_agent_qbr.metrics_cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

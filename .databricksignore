@@ -1,0 +1,5 @@
+# Ignore local DB and FAISS artifacts
+qbr_intelligence.db
+data/qbr_intelligence.db
+data/faiss/
+data/faiss_metric/

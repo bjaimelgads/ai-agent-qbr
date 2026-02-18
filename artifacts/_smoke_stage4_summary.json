@@ -1,0 +1,24 @@
+{
+  "instances_scanned": 1723,
+  "unique_metric_names": 312,
+  "catalog_mapped_unique": 43,
+  "unresolved_unique_names": 322,
+  "clusters_total": 247,
+  "clusters_with_unit_conflict": 42,
+  "cluster_unit_conflict_ratio": 0.17,
+  "auto_cluster_rows": 134,
+  "avg_similarity_auto_cluster_rows": 1.0,
+  "clustering_quality": "good",
+  "normalization_status_counts": {
+    "cluster_review": 668,
+    "cluster_auto": 134,
+    "catalog_mapped": 772,
+    "needs_review": 149
+  },
+  "validation_status_counts": {
+    "warn": 1023,
+    "pass": 658,
+    "fail": 42
+  },
+  "output_csv": "artifacts/_smoke_stage4.csv"
+}

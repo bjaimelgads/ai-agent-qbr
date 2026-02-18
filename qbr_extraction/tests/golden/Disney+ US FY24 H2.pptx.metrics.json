@@ -1,0 +1,6282 @@
+[
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 4,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 17000000.0,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$17M",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed",
+      "timeframe": "FY"
+    },
+    "confidence": 0.79,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "4:2602",
+      "snippet": "FY25 XLOB Partnership APPROVED  at $17M Endeavor\nDisney Streaming Global invested $9.4M with LG Ads, Domestic  accounte"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 4,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 3800000.0,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$3.8M",
+    "label_text": "investment",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed",
+      "timeframe": "FY"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "4:2602",
+      "snippet": "vor\nDisney Streaming Global invested $9.4M with LG Ads, Domestic  accounted for $3.8M  of the investment, up 13% YoY\nSuccessfully launched ESPN App, Hulu on Disney+,"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 7,
+    "metric_id": "purchases",
+    "metric_name": "Purchases",
+    "value": 100.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "100%",
+    "label_text": "Purchase",
+    "qualifiers": {},
+    "confidence": 0.524875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "7:2626",
+      "snippet": "023. Question: Net Any Purchase of TVs by Brand. Note: Numbers do not add up to 100% because of multiple TVs within individual households."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 7,
+    "metric_id": "reach",
+    "metric_name": "Reach",
+    "value": 5.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "5%",
+    "label_text": "reach",
+    "qualifiers": {},
+    "confidence": 0.4225,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "7:notes",
+      "snippet": "Less than 5% duplication against other OEMs gives you the scale and the reach needed to fulf"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 7,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 94.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "94%",
+    "label_text": "Deduplicated Reach",
+    "qualifiers": {},
+    "confidence": 0.46887499999999993,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "7:2628",
+      "snippet": "94%\nDeduplicated Reach\nvs."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 7,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 97.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "97%",
+    "label_text": "Deduplicated Reach",
+    "qualifiers": {},
+    "confidence": 0.46887499999999993,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "7:2627",
+      "snippet": "97%\nDeduplicated Reach\nvs."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 8,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 2.0,
+    "unit": "ratio",
+    "scale": "ones",
+    "raw_value_text": "2x",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 0.542125,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "8:2638",
+      "snippet": "abled - Leverage up to :30 video for both Roadblocks and ROS, driving CTR up to 2x higher vs. static\n(NEW) 3D Animated Carousel - \u2018Break the glass\u2019 and bring imag"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 8,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "30",
+    "label_text": "launches",
+    "qualifiers": {},
+    "confidence": 0.8200000000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "8:2638",
+      "snippet": "attention and drive them into the Disney+ app.\nVideo Enabled - Leverage up to :30 video for both Roadblocks and ROS, driving CTR up to 2x higher vs. static\n(NEW)"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 14,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 1.0,
+    "unit": "ratio",
+    "scale": "ones",
+    "raw_value_text": "1/1",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "geo": "US",
+      "timeframe": "Q"
+    },
+    "confidence": 0.29000000000000004,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "14:2699",
+      "snippet": "deo-enabled\nDetails |  FY25-Q2\nFirst-IO in\n100% SOV, two week time-frames\nOpen: 1/1-1/15 & 2/15-2/28\n4x Creative Cards minimum\nReporting includes standard metrics"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 14,
+    "metric_id": "share_of_voice",
+    "metric_name": "Share of Voice",
+    "value": 100.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "100%",
+    "label_text": "SOV",
+    "qualifiers": {
+      "geo": "US",
+      "timeframe": "Q"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "14:2699",
+      "snippet": "JPG or PNG. No animated GIFs.\nNEW! Video-enabled\nDetails |  FY25-Q2\nFirst-IO in\n100% SOV, two week time-frames\nOpen: 1/1-1/15 & 2/15-2/28\n4x Creative Cards minimum"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 15,
+    "metric_id": "clicks",
+    "metric_name": "Clicks",
+    "value": 63.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "63%",
+    "label_text": "Click",
+    "qualifiers": {
+      "geo": "US",
+      "timeframe": "Q"
+    },
+    "confidence": 0.404375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "15:2717",
+      "snippet": "& Availability\nBanner: 1770x221\nRolling out on LG TV models from 2020 onward (~63% of LG footprint by EOY)\nMarkets: US, UK, ES, DE, IT, & AU\nAvailable Ad Interact"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 18,
+    "metric_id": "clicks",
+    "metric_name": "Clicks",
+    "value": 7.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "7",
+    "label_text": "click",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "18:2757:r3c1",
+      "snippet": "Alignment on updated lookback windows (7 day view-through; 1 day click)\nReporting only on purchase_completed event in ad"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 18,
+    "metric_id": "completes",
+    "metric_name": "Completes",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "complete",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "18:notes",
+      "snippet": "look forward to executing\nPrivacy\nAudience capability questionnaire sent out on 3/29, LG to complete by 4/17. This will give Disney a better idea of LG data coll"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 18,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 7.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "7",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 0.8987499999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "18:2757:r3c1",
+      "snippet": "Alignment on updated lookback windows (7 day view-through; 1 day click)\nReporting only on purchase_completed event in ad"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 18,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "spend",
+    "qualifiers": {
+      "geo": "Global"
+    },
+    "confidence": 0.33999999999999997,
+    "extraction_method": "table_col_down",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "18:2757:r2c1",
+      "snippet": "d Beyond)\nAvails Updated Proactively Every 45 days, sharing Roadblock Snapshot: 3-month lookahead"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 18,
+    "metric_id": "views",
+    "metric_name": "Views",
+    "value": 7.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "7",
+    "label_text": "view",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "18:2757:r3c1",
+      "snippet": "Alignment on updated lookback windows (7 day view-through; 1 day click)\nReporting only on purchase_completed event in ad"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 19,
+    "metric_id": "completes",
+    "metric_name": "Completes",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "complete",
+    "qualifiers": {
+      "geo": "US"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "19:notes",
+      "snippet": "look forward to executing\nPrivacy\nAudience capability questionnaire sent out on 3/29, LG to complete by 4/17. This will give Disney a better idea of LG data coll"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 19,
+    "metric_id": "cost_per_install",
+    "metric_name": "Cost per Install",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "CPI",
+    "qualifiers": {
+      "geo": "US"
+    },
+    "confidence": 0.44899999999999995,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "19:notes",
+      "snippet": "Launched Incrementality \u201cMediaboost\u201d Measurement in 12 markets:  \nUS, UK, DE, AU, KR, JP, IT, ES, FR, GR, PL, & SE\n\nReporting\nCPI now"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 19,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 3.0,
+    "unit": "ratio",
+    "scale": "ones",
+    "raw_value_text": "3x",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "geo": "US"
+    },
+    "confidence": 0.32825000000000004,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "19:2767:r3c1",
+      "snippet": "Hosted US Creative Summit\nStreamlined asset requirements - 3x ad sizes are required and ability to exclude InLine Banner\nTested Multi-card Ro"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 21,
+    "metric_id": "reach",
+    "metric_name": "Reach",
+    "value": 4500000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "4.5M",
+    "label_text": "reach",
+    "qualifiers": {},
+    "confidence": 0.8841249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "21:2784",
+      "snippet": "24% (4.5M)\nAvg monthly campaign reach against LG universe"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 21,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 1000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "1M",
+    "label_text": "reach",
+    "qualifiers": {},
+    "confidence": 0.9373750000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "21:notes",
+      "snippet": "Adam\u000bJune had roadblocks and ROS \u2013 highest reach - The \nOn average, reaching 1M uniques a month with current strategy"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 22,
+    "metric_id": "share_of_voice",
+    "metric_name": "Share of Voice",
+    "value": 20000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "20 M",
+    "label_text": "SOV",
+    "qualifiers": {
+      "geo": "US"
+    },
+    "confidence": 0.440125,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "22:2796",
+      "snippet": "With a 88 index vs the top 20 M&E accounts, Disney+ is allowing competitors to achieve a much greater SOV acros"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 23,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 220000.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$220K",
+    "label_text": "CSRB",
+    "qualifiers": {
+      "audience": "lapsed",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "23:notes",
+      "snippet": "Comparing end of June to end of September\n\n\nH2 Spend:\u000bCSRB: $163KLapsed ROS: $220K\u000bNot Installed ROS: $80K\u000bRB: $1.59M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 23,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 220000.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$220K",
+    "label_text": "Spend",
+    "qualifiers": {
+      "audience": "lapsed",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "23:notes",
+      "snippet": "Comparing end of June to end of September\n\n\nH2 Spend:\u000bCSRB: $163KLapsed ROS: $220K\u000bNot Installed ROS: $80K\u000bRB: $1.59M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 24,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 1.5,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "1.5",
+    "label_text": "launch",
+    "qualifiers": {},
+    "confidence": 0.9918749999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "24:2830",
+      "snippet": "% increase in average minutes streamed vs the overall audience, generating over 1.5 hours of watch time per launch"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 13.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$13",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "Unique reach deduped \n** $13 CPA Decrease from H1 - confirm\n\nLast H2 stats: *** METHODOLOGY CHANGED! \nTotal"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 27.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$27.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "ast H2 stats: *** METHODOLOGY CHANGED! \nTotal installs: 179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 45.44,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.44",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.9677499999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2861",
+      "snippet": "CPA*\n$45.44"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.59,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.59",
+    "label_text": "CPE",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": ": *** METHODOLOGY CHANGED! \nTotal installs: 179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2H24: Freque"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.83,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.83",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 0.9688749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2864",
+      "snippet": "CPE\n$0.83"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "frequency",
+    "metric_name": "Frequency",
+    "value": 13000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "13M",
+    "label_text": "Frequency",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9339999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2H24: Frequency\u000bOverall frequency = 12X\nApr: 3.4x\nMay:"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 263500.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "263.5K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9977499999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2858",
+      "snippet": "Total Installs:\n263.5K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 94400000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "94.4M",
+    "label_text": "installs",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.93025,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "D! \nTotal installs: 179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2H24: Frequency\u000bOverall frequency ="
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 32500000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "32.5M",
+    "label_text": "Launches",
+    "qualifiers": {},
+    "confidence": 0.9977499999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2863",
+      "snippet": "Total Launches:\n32.5M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 94400000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "94.4M",
+    "label_text": "Launches",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.947125,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "D! \nTotal installs: 179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2H24: Frequency\u000bOverall frequency ="
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 93.8,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "93.8",
+    "label_text": "Session",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2859",
+      "snippet": "Duration per Session\n93.8 mins"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 13.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$13",
+    "label_text": "investment",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.8200000000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "Unique reach deduped \n** $13 CPA Decrease from H1 - confirm\n\nLast H2 stats: *** METHODOLOGY CHANGED! \nTotal"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 2049999.9999999998,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$2.05M",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9977499999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2854",
+      "snippet": "Investment:\n$2.05M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 11750000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "11.75M",
+    "label_text": "reach",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.8365,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "x\u000bJun:8.2x\u000bJuly: 1.6x\u000bAug: 5.0x\u000bSept:6.5x\n\n2H24: Unique device reach\u000bTotal UDs: 11.75M\nApr: 1.78M\nMay: 4.13M\u000bJun:6.79M\u000bJuly: 496.8K\u000bAug: 6.56M\u000bSept:7.49M\n\n\nVs H1\nH2 h"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 11800000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "11.8M",
+    "label_text": "Unique Reach",
+    "qualifiers": {},
+    "confidence": 0.9688749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "26:2867",
+      "snippet": "Unique Reach\n11.8M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 13000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "13M",
+    "label_text": "Unique Reach",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2H24: Frequency\u000bOverall frequency = 12X\nApr: 3.4x\nMay:"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 26,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 94400000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "94.4M",
+    "label_text": "Unique reach",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.85,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "26:notes",
+      "snippet": "D! \nTotal installs: 179K\nLaunches: 40M\nCPA: $27.29\nCPE: $0.59\nAverage Duration: 94.4M\nUnique Reach: 13M\nAvg Monthly Freq: 4.4x\n\n\n2H24: Frequency\u000bOverall frequency ="
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 5.01,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$5.01",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.87,
+    "extraction_method": "table_col_down",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "27:2881:r2c3",
+      "snippet": "$5.01"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 18.16,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "18.16",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.595375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "27:notes",
+      "snippet": "Not Installed CPA last time = 18.16\nUntargeted RB last time = \n\nDisney = much more consistent presence"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 4.82,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$4.82",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 0.87,
+    "extraction_method": "table_col_down",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "27:2881:r1c2",
+      "snippet": "$4.82"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 1.13,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$1.13",
+    "label_text": "Content Store RB",
+    "qualifiers": {},
+    "confidence": 0.88,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "27:2881:r4c2",
+      "snippet": "$1.13"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 8.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "8",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 0.47087499999999993,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "27:2882",
+      "snippet": "With 8 Roadblocks, the Content Store Roadblock Sponsorship, and Not Installed & Lapsed"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 8.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "8",
+    "label_text": "engagement",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 0.8681249999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "27:2882",
+      "snippet": "With 8 Roadblocks, the Content Store Roadblock Sponsorship, and Not Installed & Lapsed"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 1.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.10%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.33999999999999997,
+    "extraction_method": "table_col_down",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "27:2881:r2c1",
+      "snippet": "1.10%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 27,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 2049999.9999999998,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$2.05M",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "27:2883",
+      "snippet": "Investment = $2.05M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 45.55,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.55",
+    "label_text": "acquired users",
+    "qualifiers": {},
+    "confidence": 0.487375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2904",
+      "snippet": "isney+ saw an increase in installs & acquired users and a more efficient CPA of $45.55"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 36.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+36%",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2910",
+      "snippet": "+36%\nAcquired Users"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 45.55,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.55",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2904",
+      "snippet": "isney+ saw an increase in installs & acquired users and a more efficient CPA of $45.55"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": -22.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "-22%",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.46887499999999993,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2909",
+      "snippet": "-22%\nCPA"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 45.55,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.55",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {},
+    "confidence": 0.88425,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2904",
+      "snippet": "isney+ saw an increase in installs & acquired users and a more efficient CPA of $45.55"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 29.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+29%",
+    "label_text": "Install Rate",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2905",
+      "snippet": "+29%\nInstall Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 45.55,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.55",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 0.46825,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2904",
+      "snippet": "isney+ saw an increase in installs & acquired users and a more efficient CPA of $45.55"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 29.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+29%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2905",
+      "snippet": "+29%\nInstall Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 31.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+31%",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2906",
+      "snippet": "+31%\nInstalls"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 28,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 45.55,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.55",
+    "label_text": "investment",
+    "qualifiers": {},
+    "confidence": 0.87825,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "28:2904",
+      "snippet": "isney+ saw an increase in installs & acquired users and a more efficient CPA of $45.55"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 29,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 51.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "51%",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.43037499999999995,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "29:2916",
+      "snippet": "the Content Store Roadblock, 8 home screen takeovers, and AV, Disney was active 51% of H2 and had a much stronger presence this half vs prior"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 30,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 118000.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$118K",
+    "label_text": "investment",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "30:2930",
+      "snippet": "initiatives with LG Ads over the past 6 months, with Standalone ($1.03M) having $118K more investment vs Bundle ($912K) ($460K Duo & $452K Trio)"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "Acquired User",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2971",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session.\nIntenders = Installers who did NOT become an acquired user Sour"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 15.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "15%",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.425375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2973",
+      "snippet": "15%\nInstalls to Acquired Users Ratio"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 58.52,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "58.52",
+    "label_text": "acquired user",
+    "qualifiers": {
+      "audience": "new_users",
+      "timeframe": "Q"
+    },
+    "confidence": 0.9617500000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "31:notes",
+      "snippet": "-22% cost-per-acquired user this half vs last!!\n\nLast half = 58.52 with rb + AV Not Installed so content store really helped drive down\n**85% Inte"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 1750000.0,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$1.75M",
+    "label_text": "cost-per-acquired user",
+    "qualifiers": {
+      "audience": "new_users",
+      "timeframe": "Q"
+    },
+    "confidence": 0.85,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "31:notes",
+      "snippet": "ped drive down\n**85% Intenders - Audience recommendation \n\nExample: \u201cYTTV spent $1.75M to acquire 69k net new YTTV acquired users in Q3\u201924, delivering CPA of $25.42"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 25.42,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$25.42",
+    "label_text": "CPA",
+    "qualifiers": {
+      "audience": "new_users",
+      "timeframe": "Q"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "31:notes",
+      "snippet": "t $1.75M to acquire 69k net new YTTV acquired users in Q3\u201924, delivering CPA of $25.42 \nThis represents a decrease of 54% due to the Content Store Roadblocks\u201d \n\n\n\n58."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 45.44,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.44",
+    "label_text": "CPA",
+    "qualifiers": {
+      "audience": "new_users",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2959",
+      "snippet": "ed $1.8M towards acquisition lines to acquire 40K new users in H2, delivering a $45.44 CPA -22% decrease of $13 vs H1 with help from the Content Store Roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.35,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2971",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session.\nIntenders = Installers who did NOT become an acquired user Sour"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 22.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "22%",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.45199999999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2975",
+      "snippet": "22%\nMore Efficient CPA vs Last Half"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 45.44,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$45.44",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "audience": "new_users",
+      "timeframe": "H"
+    },
+    "confidence": 0.9926249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2959",
+      "snippet": "ed $1.8M towards acquisition lines to acquire 40K new users in H2, delivering a $45.44 CPA -22% decrease of $13 vs H1 with help from the Content Store Roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "Content Store RB",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.29000000000000004,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2971",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session.\nIntenders = Installers who did NOT become an acquired user Sour"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 143000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "143M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2967",
+      "snippet": "Impressions\n143M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "installs",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9884999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2971",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session.\nIntenders = Installers who did NOT become an acquired user Sour"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 15.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "15%",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2973",
+      "snippet": "15%\nInstalls to Acquired Users Ratio"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 263400.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "263.4K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2968",
+      "snippet": "Installs\n263.4K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "launches",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2971",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session.\nIntenders = Installers who did NOT become an acquired user Sour"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 31,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "session",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "31:2971",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session.\nIntenders = Installers who did NOT become an acquired user Sour"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 17900.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "17.9K",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r5c1",
+      "snippet": "17.9K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 19.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "19%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "all CPA of $50.90\nContent Store RB has highest Installs to Acquisition ratio of 19%, highest CTR of 0.36% (3x benchmark) and strong install rate of 0.54%\nNative RO"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "clicks",
+    "metric_name": "Clicks",
+    "value": 159600.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "159.6K",
+    "label_text": "Clicks",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r3c1",
+      "snippet": "159.6K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 50.9,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$50.90",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "Overall CPA of $50.90\nContent Store RB has highest Installs to Acquisition ratio of 19%, highest CTR"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 88.66,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$88.66",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r6c1",
+      "snippet": "$88.66"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 162900.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$162.9K",
+    "label_text": "Content Store RB",
+    "qualifiers": {},
+    "confidence": 0.81,
+    "extraction_method": "table_col_down",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r1c2",
+      "snippet": "$162.9K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 50.9,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$50.90",
+    "label_text": "Content Store RB",
+    "qualifiers": {},
+    "confidence": 0.908875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "Overall CPA of $50.90\nContent Store RB has highest Installs to Acquisition ratio of 19%, highest CTR"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 0.54,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.54%",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "on ratio of 19%, highest CTR of 0.36% (3x benchmark) and strong install rate of 0.54%\nNative ROS (targeting non installers) has the most efficient CPA, highest insta"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 1.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.10%",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "(targeting non installers) has the most efficient CPA, highest install rate of 1.10%)\n\nHalo effect"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 0.54,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.54%",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 0.509875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "on ratio of 19%, highest CTR of 0.36% (3x benchmark) and strong install rate of 0.54%\nNative ROS (targeting non installers) has the most efficient CPA, highest insta"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 1.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.10%",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 0.509875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "(targeting non installers) has the most efficient CPA, highest install rate of 1.10%)\n\nHalo effect"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 111600.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "111.6K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r4c1",
+      "snippet": "111.6K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 19.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "19%",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.49187499999999995,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "32:notes",
+      "snippet": "all CPA of $50.90\nContent Store RB has highest Installs to Acquisition ratio of 19%, highest CTR of 0.36% (3x benchmark) and strong install rate of 0.54%\nNative RO"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "reach",
+    "metric_name": "Reach",
+    "value": 10500000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "10.5M",
+    "label_text": "Reach",
+    "qualifiers": {},
+    "confidence": 0.88,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r2c1",
+      "snippet": "10.5M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 32,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 1590000.0,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$1.59M",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "32:2984:r1c1",
+      "snippet": "$1.59M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 2.03,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$2.03",
+    "label_text": "CPE",
+    "qualifiers": {
+      "audience": "lapsed",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "33:notes",
+      "snippet": "First time focused in on Lapsed opportunity audience for Rotational\nH1 CPE: $2.03 All Targeted, breakout Lapsed last time \u2014  0.66\nQ1 had 59 cent and Q2 had 66 ce"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 220000.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$220K",
+    "label_text": "CPE",
+    "qualifiers": {
+      "audience": "lapsed",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2994",
+      "snippet": "For the first time executing Lapsed Audiences targeting with $220K investment,  achieved an efficient $4.82 CPE in H2 and brought 46.6K Lapsed use"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 24.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "24",
+    "label_text": "CPE",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 0.548875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2993",
+      "snippet": "2H\u201924 CPE - Lapsed ROS"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 2.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2",
+    "label_text": "Engaged User",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2992",
+      "snippet": "Engaged User: any user that launches Disney+ for 2 or more +30 minute session within 7 day attribution window"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 17200000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "17.2M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:3003",
+      "snippet": "Impressions\n17.2M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 2.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2",
+    "label_text": "launches",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2992",
+      "snippet": "Engaged User: any user that launches Disney+ for 2 or more +30 minute session within 7 day attribution window"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 46600.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "46.6K",
+    "label_text": "launches",
+    "qualifiers": {
+      "audience": "lapsed",
+      "timeframe": "H"
+    },
+    "confidence": 0.764875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2994",
+      "snippet": "eting with $220K investment,  achieved an efficient $4.82 CPE in H2 and brought 46.6K Lapsed users back into the app for 2+ qualified launches"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 659900.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "659.9K",
+    "label_text": "Launches",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:3004",
+      "snippet": "Launches\n659.9K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "session",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2992",
+      "snippet": "Engaged User: any user that launches Disney+ for 2 or more +30 minute session within 7 day attribution window"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 33,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 220000.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$220K",
+    "label_text": "investment",
+    "qualifiers": {
+      "audience": "lapsed",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "33:2994",
+      "snippet": "For the first time executing Lapsed Audiences targeting with $220K investment,  achieved an efficient $4.82 CPE in H2 and brought 46.6K Lapsed use"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 34,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 0.16,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.16%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "34:3018:r1c1",
+      "snippet": "0.16%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 34,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 37.97,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$37.97",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "34:3018:r4c1",
+      "snippet": "$37.97"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 34,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 1.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "1",
+    "label_text": "engagement",
+    "qualifiers": {},
+    "confidence": 0.9749999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "34:3015",
+      "snippet": "68% of carousel creatives were static\u2013the lowest performing ad unit.With only 1 activation, 3D animation drove highest engagement rates and lowest cost-pers, w"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 34,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 0.22,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.22%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "34:3018:r3c1",
+      "snippet": "0.22%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 34,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 17.92,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "17.92%",
+    "label_text": "Launch",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "34:3018:r2c1",
+      "snippet": "17.92%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 35,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 10800.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "10.8K",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.9321249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "35:3039",
+      "snippet": "10.8K\nTotal Acquired Users"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 35,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 21400.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "21.4K",
+    "label_text": "Engaged Users",
+    "qualifiers": {},
+    "confidence": 0.9321249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "35:3037",
+      "snippet": "21.4K\nTotal Engaged Users"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 35,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 113250.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$113.25K",
+    "label_text": "impressions",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.49187499999999995,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "35:3035",
+      "snippet": "Disney+ received more than $113.25K in added value (over 9M impressions) in H2\u201924 thanks to the Disney XLOB FY\u201924 P"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 35,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 80700.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "80.7K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "35:3040",
+      "snippet": "80.7K\nInstalls"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 35,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 386000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "386K",
+    "label_text": "Launches",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "35:3038",
+      "snippet": "386K\nLaunches"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "acquired users",
+    "qualifiers": {},
+    "confidence": 0.971625,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852\n\nNotes"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 71.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "71%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "ew. \nNotes: 8% of total budget = 12.6% of total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targete"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.54775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "budget = 12.6% of total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 2.0,
+    "unit": "ratio",
+    "scale": "ones",
+    "raw_value_text": "2x",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.512875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "al estate is the top performing LG native placement, that\u2019s been driving nearly 2x more efficient than Disney\u2019s 1H CPA on Home Screen Native Roadblocks."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 16.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "16%",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "new_users",
+      "timeframe": "H"
+    },
+    "confidence": 0.428125,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "37:3068",
+      "snippet": "e Content Store Roadblock was only 8% of the Domestic investment and drove over 16% new users for Disney+, effectively engaging audiences actively seeking new cont"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 0.9907499999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "budget = 12.6% of total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 2258852.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2,258,852",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 0.9493750000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "5% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852\n\nNotes: 8% of total budget = 12.6% of total installs, 15.9% acquired users. 71%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852\n\nNotes"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 2258852.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2,258,852",
+    "label_text": "launches",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "5% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852\n\nNotes: 8% of total budget = 12.6% of total installs, 15.9% acquired users. 71%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "share_of_voice",
+    "metric_name": "Share of Voice",
+    "value": 100.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "100%",
+    "label_text": "SOV",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "new_users",
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "37:3068",
+      "snippet": "Wish\nTaylor Swift: The Era\u2019s Tour\nVanderpump Villa | Wish\nShogun | The Marvels\n100% SOV across both weeks"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "share_of_voice",
+    "metric_name": "Share of Voice",
+    "value": 100.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "100%",
+    "label_text": "SOV",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "Disney+ ran a two-week 100% SOV roadblock within the LG content store ecosystem\u2013gaining access to viewers a"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 16.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "16%",
+    "label_text": "investment",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "new_users",
+      "timeframe": "H"
+    },
+    "confidence": 0.502,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "37:3068",
+      "snippet": "e Content Store Roadblock was only 8% of the Domestic investment and drove over 16% new users for Disney+, effectively engaging audiences actively seeking new cont"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 37,
+    "metric_id": "views",
+    "metric_name": "Views",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "view",
+    "qualifiers": {},
+    "confidence": 0.866125,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "37:notes",
+      "snippet": "total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852\n\nNotes"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "acquired users",
+    "qualifiers": {},
+    "confidence": 0.971625,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "38:notes",
+      "snippet": "total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 6400.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "6.4K",
+    "label_text": "acquired users",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3087",
+      "snippet": "The Content Store drove over 6.4K acquired users for Disney+, effectively engaging audiences actively seeking new"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 71.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "71%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "38:notes",
+      "snippet": "Notes: 8% of total budget = 12.6% of total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targete"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 25.5,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$25.50",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.9688749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3081",
+      "snippet": "CPA\n$25.50"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.54775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "38:notes",
+      "snippet": "budget = 12.6% of total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 1.13,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$1.13",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 0.9688749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3077",
+      "snippet": "CPE\n$1.13"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 144500.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "144.5K",
+    "label_text": "Engaged Users",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3080",
+      "snippet": "Engaged Users\n144.5K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "frequency",
+    "metric_name": "Frequency",
+    "value": 1800000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "1.8M",
+    "label_text": "Frequency",
+    "qualifiers": {},
+    "confidence": 0.908875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3076",
+      "snippet": "Unique Reach / Frequency\n1.8M / 3.4x"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 0.9907499999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "38:notes",
+      "snippet": "budget = 12.6% of total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "38:notes",
+      "snippet": "total installs, 15.9% acquired users. 71% more efficient CPA, 185% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 33400.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "33.4K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3078",
+      "snippet": "Installs\n33.4K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "launch_rate",
+    "metric_name": "Launch Rate",
+    "value": 37.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "37%",
+    "label_text": "Launch Rate",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3082",
+      "snippet": "Launch Rate\n37%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 2258852.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2,258,852",
+    "label_text": "launches",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "38:notes",
+      "snippet": "5% higher CTR, 3.31X higher install rate than non targeted RB.\nTotal launches = 2,258,852"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 37.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "37%",
+    "label_text": "Launch",
+    "qualifiers": {},
+    "confidence": 0.43324999999999997,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3082",
+      "snippet": "Launch Rate\n37%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 162900.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$162.9K",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3075",
+      "snippet": "Investment\n$162.9K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 38,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 1800000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "1.8M",
+    "label_text": "Unique Reach",
+    "qualifiers": {},
+    "confidence": 0.955375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "38:3076",
+      "snippet": "Unique Reach / Frequency\n1.8M / 3.4x"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 16.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "16%",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.42874999999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "39:3096",
+      "snippet": "16%\nOf Total Acquired Users"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 2.9,
+    "unit": "ratio",
+    "scale": "ones",
+    "raw_value_text": "2.9x",
+    "label_text": "CTR",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.46099999999999997,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "39:3097",
+      "snippet": "2.9x\nHigher CTR vs overall H2"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 71.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "71%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "39:notes",
+      "snippet": "Content Store was the best performing placement that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.54775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "39:notes",
+      "snippet": "est performing placement that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 0.9851249999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "39:notes",
+      "snippet": "est performing placement that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 6.2,
+    "unit": "ratio",
+    "scale": "ones",
+    "raw_value_text": "6.2x",
+    "label_text": "Install Rate",
+    "qualifiers": {},
+    "confidence": 0.431,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "39:3095",
+      "snippet": "6.2x\nHigher Install Rate than Native Home Screen Roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 13.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "13%",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.42874999999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "39:3098",
+      "snippet": "13%\nOf Total Installs"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "39:notes",
+      "snippet": "nt that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 39,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 6.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "6",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.9276249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "39:3095",
+      "snippet": "6.2x\nHigher Install Rate than Native Home Screen Roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 42,
+    "metric_id": "install_lift",
+    "metric_name": "Install Lift",
+    "value": 200.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+200%",
+    "label_text": "install lift",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "42:3161",
+      "snippet": "weeks of 100% SOV among a key location for app-download intenders led to a near +200% install lift, making this activation a key contributor to the success of H2"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 42,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 2.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2",
+    "label_text": "install",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9821249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "42:3161",
+      "snippet": "2 weeks of 100% SOV among a key location for app-download intenders led to a near"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 42,
+    "metric_id": "share_of_voice",
+    "metric_name": "Share of Voice",
+    "value": 100.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "100%",
+    "label_text": "SOV",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "42:3161",
+      "snippet": "2 weeks of 100% SOV among a key location for app-download intenders led to a near +200% install"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "cost_per_install",
+    "metric_name": "Cost per Install",
+    "value": 84.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "84",
+    "label_text": "CPI",
+    "qualifiers": {},
+    "confidence": 0.54325,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "ns to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI.\n\n-"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 3200000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "3.2M",
+    "label_text": "impressions",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "did drive stronger incremental lift. \n\nOverall, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and gen"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "install_lift",
+    "metric_name": "Install Lift",
+    "value": 9.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "9",
+    "label_text": "install lift",
+    "qualifiers": {},
+    "confidence": 0.4775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9 \n\n-This data shows install lift for each March roadblock. \n-The 3/16 roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 0.50875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "ed triple digit lifts! \n- The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift. \n\nOverall, these two roadbl"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "ed triple digit lifts! \n- The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift. \n\nOverall, these two roadbl"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 50000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "50K",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "all, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI.\n\n-"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 43,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 9.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "9",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 0.9775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "43:notes",
+      "snippet": "build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9 \n\n-This data shows install lift for each March roadblock. \n-The 3/16 roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "cost_per_install",
+    "metric_name": "Cost per Install",
+    "value": 84.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "84",
+    "label_text": "CPI",
+    "qualifiers": {},
+    "confidence": 0.54325,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "ns to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI.\n\n-"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 3200000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "3.2M",
+    "label_text": "impressions",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "did drive stronger incremental lift. \n\nOverall, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and gen"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "install_lift",
+    "metric_name": "Install Lift",
+    "value": 9.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "9",
+    "label_text": "install lift",
+    "qualifiers": {},
+    "confidence": 0.4775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9 \n\n-This data shows install lift for each March roadblock. \n-The 3/16 roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 0.50875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "ed triple digit lifts! \n- The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift. \n\nOverall, these two roadbl"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "ed triple digit lifts! \n- The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift. \n\nOverall, these two roadbl"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 2.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "2",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 0.88825,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "44:3194",
+      "snippet": "drove highest incremental installs.\nOn the other hand, roadblocks that included 2 movie titles saw lowest lift."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 50000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "50K",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "all, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI.\n\n-"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 44,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 9.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "9",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 0.9775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "44:notes",
+      "snippet": "build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9 \n\n-This data shows install lift for each March roadblock. \n-The 3/16 roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 71.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "71%",
+    "label_text": "CTR",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "48:notes",
+      "snippet": "Content Store was the best performing placement that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 71.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+71%",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "FY"
+    },
+    "confidence": 0.532,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "48:3242",
+      "snippet": "oadblock proved to an effective complement Disney+ high impact strategy driving +71% more efficient CPA. Prioritize Content Store Roadblock for FY25 Strategy"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "CPA",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 0.54775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "48:notes",
+      "snippet": "est performing placement that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 71.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "+71%",
+    "label_text": "Content Store Roadblock",
+    "qualifiers": {
+      "timeframe": "FY"
+    },
+    "confidence": 0.45399999999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "48:3242",
+      "snippet": "oadblock proved to an effective complement Disney+ high impact strategy driving +71% more efficient CPA. Prioritize Content Store Roadblock for FY25 Strategy"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 46000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "46K",
+    "label_text": "Engaged Users",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "48:3239",
+      "snippet": "Incorporating Lapsed Audience to Carousel Only Rotational brought back 46K Engaged Users into the Disney+ app. Expand on targeting strategies specifically"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 185.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "185%",
+    "label_text": "install rate",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 0.9851249999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "48:notes",
+      "snippet": "est performing placement that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 48,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "install",
+    "qualifiers": {
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "48:notes",
+      "snippet": "nt that ran in 2H, accounting for 71% more efficient CPA, 185% higher CTR,  and 3.31x higher install rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "clicks",
+    "metric_name": "Clicks",
+    "value": 7.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "7",
+    "label_text": "click",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "51:3287:r3c1",
+      "snippet": "Alignment on updated lookback windows (7 day view-through; 1 day click)"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "completes",
+    "metric_name": "Completes",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "complete",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "51:notes",
+      "snippet": "look forward to executing\nPrivacy\nAudience capability questionnaire sent out on 3/29, LG to complete by 4/17. This will give Disney a better idea of LG data coll"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "conversions",
+    "metric_name": "Conversions",
+    "value": 8.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "8",
+    "label_text": "conversions",
+    "qualifiers": {},
+    "confidence": 0.8961250000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "51:3287:r3c2",
+      "snippet": "Deterministic matching dependent on ADID letter (latest feedback 11/8) + Dev Work Scope sent to DS\u000b\nKochava conversions to be joined with Daily Deliv"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 0.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0",
+    "label_text": "Spend",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "51:3287:r1c2",
+      "snippet": "t or SFTP \nCurrently sent daily via email \nDaily IO Scaled Spend column will be $0 if over-delivery starts to occur"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 0.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0",
+    "label_text": "spend",
+    "qualifiers": {
+      "geo": "Global"
+    },
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "51:3287:r1c2",
+      "snippet": "t or SFTP \nCurrently sent daily via email \nDaily IO Scaled Spend column will be $0 if over-delivery starts to occur"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 24.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "24",
+    "label_text": "spend",
+    "qualifiers": {
+      "geo": "Global"
+    },
+    "confidence": 0.39875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "51:3287:r1c1",
+      "snippet": "Integrated Kochava, Creative Group IDs to Creative IDs post September \u201824\nQuarterly Delivery of Global Dashboard \nUpdated Weekly Report to reflect two co"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 51,
+    "metric_id": "views",
+    "metric_name": "Views",
+    "value": 7.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "7",
+    "label_text": "view",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "51:3287:r3c1",
+      "snippet": "Alignment on updated lookback windows (7 day view-through; 1 day click)"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 52,
+    "metric_id": "completes",
+    "metric_name": "Completes",
+    "value": 3.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "3",
+    "label_text": "complete",
+    "qualifiers": {
+      "geo": "US"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "52:notes",
+      "snippet": "look forward to executing\nPrivacy\nAudience capability questionnaire sent out on 3/29, LG to complete by 4/17. This will give Disney a better idea of LG data coll"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 52,
+    "metric_id": "cost_per_install",
+    "metric_name": "Cost per Install",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "CPI",
+    "qualifiers": {
+      "geo": "US"
+    },
+    "confidence": 0.44899999999999995,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "52:notes",
+      "snippet": "Launched Incrementality \u201cMediaboost\u201d Measurement in 12 markets:  \nUS, UK, DE, AU, KR, JP, IT, ES, FR, GR, PL, & SE\n\nReporting\nCPI now"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 53,
+    "metric_id": "clicks",
+    "metric_name": "Clicks",
+    "value": 159600.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "159.6K",
+    "label_text": "Clicks",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "53:3304:r2c1",
+      "snippet": "159.6K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 53,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.7,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.70",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "53:3304:r5c1",
+      "snippet": "$0.70"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 53,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 162900.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$162.9K",
+    "label_text": "Content Store RB",
+    "qualifiers": {},
+    "confidence": 0.81,
+    "extraction_method": "table_col_down",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "53:3304:r1c2",
+      "snippet": "$162.9K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 53,
+    "metric_id": "engagements",
+    "metric_name": "Engagements",
+    "value": 2300000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "2.3M",
+    "label_text": "Engaged Users",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "53:3304:r4c1",
+      "snippet": "2.3M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 53,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 29300000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "29.3M",
+    "label_text": "Launches",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "53:3304:r3c1",
+      "snippet": "29.3M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 53,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 1590000.0,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$1.59M",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "53:3304:r1c1",
+      "snippet": "$1.59M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 54,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.8,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.80",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "54:3317:r3c1",
+      "snippet": "$0.80"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 54,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 20.9,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "20.9%",
+    "label_text": "Launch",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "54:3317:r2c1",
+      "snippet": "20.9%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 54,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 1030000.0,
+    "unit": "currency",
+    "scale": "M",
+    "raw_value_text": "$1.03M",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "54:3317:r1c1",
+      "snippet": "$1.03M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 5.01,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$5.01",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "55:3332",
+      "snippet": "1.10% Install Rate\n$5.01 CPA\n6.7X greater install rate than roadblocks"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 4.82,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$4.82",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "55:3337",
+      "snippet": "660K  Launches\n$4.82 CPE\n3.84% Launch Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 1.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.10%",
+    "label_text": "Install Rate",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "55:3332",
+      "snippet": "1.10% Install Rate\n$5.01 CPA\n6.7X greater install rate than roadblocks"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 1.55,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.55%",
+    "label_text": "Install rate",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "55:notes",
+      "snippet": "Install rate ROS AV not installed only = 1.55%\u000bInstall rate RB = 0.11%\n\nAV creatives: Haunted Mansion & Bundle Duo"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 0.11,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.11%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.567625,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "55:notes",
+      "snippet": "Install rate ROS AV not installed only = 1.55%\u000bInstall rate RB = 0.11%\n\nAV creatives: Haunted Mansion & Bundle Duo"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 1.55,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.55%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.54175,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "55:notes",
+      "snippet": "Install rate ROS AV not installed only = 1.55%\u000bInstall rate RB = 0.11%\n\nAV creatives: Haunted Mansion & Bundle Duo"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 6.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "6",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "55:3332",
+      "snippet": "1.10% Install Rate\n$5.01 CPA\n6.7X greater install rate than roadblocks"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "launch_rate",
+    "metric_name": "Launch Rate",
+    "value": 3.84,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "3.84%",
+    "label_text": "Launch Rate",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "55:3337",
+      "snippet": "660K  Launches\n$4.82 CPE\n3.84% Launch Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 55,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 660000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "660K",
+    "label_text": "Launches",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "55:3337",
+      "snippet": "660K  Launches\n$4.82 CPE\n3.84% Launch Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 10800.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "+10.8K",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3372",
+      "snippet": "+10.8K\nAcquired Users"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "acquisitions",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9581249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 12.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$12",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 0.85,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer to th"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 27.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$27.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "There is DEFINITELY opportunity to leverage ROS in the future.\n\nCPA prior was $27.29 with the 5 minute window instead of the 30 minutes\nRoadblocks this half alone g"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 7.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$7",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "ced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer t"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 7.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$7.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "cost here.\nOtherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given subscription fees and your customer lifetime value"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.530875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "cost_per_mille",
+    "metric_name": "Cost per Mille",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPM",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.454375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 10800000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "10.8M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3360",
+      "snippet": "Impressions\n10.8M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 146000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "146M",
+    "label_text": "impressions",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "y this works is we start with impressions. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who install"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 201000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "201K",
+    "label_text": "impressions",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "s. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "installs",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9884999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 80700.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "+80.7K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3371",
+      "snippet": "+80.7K\nInstalls"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 118500.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "118.5K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3361",
+      "snippet": "Installs\n118.5K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 201000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "201K",
+    "label_text": "installs",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "s. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 21000.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "21,000",
+    "label_text": "installs",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "window instead of the 30 minutes\nRoadblocks this half alone generated more than 21,000 installs vs last half. \n\n-what is your goal CPA?"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "launches",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "session",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "30",
+    "label_text": "session",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "installs occurred. Of those who installed, 30K launched Disney+ for at least 1 30 minutes or more session.\nWe back that acquisition number into your TOTAL spend"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 12.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$12",
+    "label_text": "spend",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 0.8200000000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "56:notes",
+      "snippet": "reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer to th"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 56,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "spend",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.473875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "56:3365",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "Acquired User",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 12.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$12",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 0.85,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer to th"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 27.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$27.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "There is DEFINITELY opportunity to leverage ROS in the future.\n\nCPA prior was $27.29 with the 5 minute window instead of the 30 minutes\nRoadblocks this half alone g"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 7.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$7",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "ced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer t"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 7.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$7.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "cost here.\nOtherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given subscription fees and your customer lifetime value"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.530875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "cost_per_mille",
+    "metric_name": "Cost per Mille",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPM",
+    "qualifiers": {},
+    "confidence": 0.454375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 162920.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$162.92K",
+    "label_text": "Content Store RB",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3409",
+      "snippet": "Content Store RB: $162.92K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 126000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "126M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3387",
+      "snippet": "Impressions\n126M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 146000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "146M",
+    "label_text": "impressions",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "y this works is we start with impressions. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who install"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 201000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "201K",
+    "label_text": "impressions",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "s. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 6100000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "6.1M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3403",
+      "snippet": "Impressions\n6.1M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 0.9884999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 111600.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "111.6K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3388",
+      "snippet": "Installs\n111.6K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 201000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "201K",
+    "label_text": "installs",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "s. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 21000.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "21,000",
+    "label_text": "installs",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "window instead of the 30 minutes\nRoadblocks this half alone generated more than 21,000 installs vs last half. \n\n-what is your goal CPA?"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 33400.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "33.4K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3404",
+      "snippet": "Installs\n33.4K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "launches",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "session",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "30",
+    "label_text": "session",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "installs occurred. Of those who installed, 30K launched Disney+ for at least 1 30 minutes or more session.\nWe back that acquisition number into your TOTAL spend"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 12.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$12",
+    "label_text": "spend",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 0.8200000000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "57:notes",
+      "snippet": "reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer to th"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 57,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "spend",
+    "qualifiers": {},
+    "confidence": 0.473875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "57:3392",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "acquisitions",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9581249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 12.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$12",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 0.85,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer to th"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 27.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$27.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "There is DEFINITELY opportunity to leverage ROS in the future.\n\nCPA prior was $27.29 with the 5 minute window instead of the 30 minutes\nRoadblocks this half alone g"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 7.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$7",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "ced reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer t"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 7.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$7.29",
+    "label_text": "CPA",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "cost here.\nOtherwise, I did want to shift our focus here to ROS. It achieved a $7.29 CPA which is wonderful given subscription fees and your customer lifetime value"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.530875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "cost_per_mille",
+    "metric_name": "Cost per Mille",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPM",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.454375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 10800000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "10.8M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3424",
+      "snippet": "Impressions\n10.8M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 146000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "146M",
+    "label_text": "impressions",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "y this works is we start with impressions. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who install"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 201000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "201K",
+    "label_text": "impressions",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "s. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 1.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.10%",
+    "label_text": "Install Rate",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3435",
+      "snippet": "1.10%\nInstall Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "installs",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.9884999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 1.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "1.10%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3435",
+      "snippet": "1.10%\nInstall Rate"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 118500.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "118.5K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3425",
+      "snippet": "Installs\n118.5K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 19.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "19%",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3434",
+      "snippet": "19%\nInstalls to Acquisition Ratio"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 201000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "201K",
+    "label_text": "installs",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "s. For example, the roadblock delivered 146M impressions. Of those impressions, 201K installs occurred. Of those who installed, 30K launched Disney+ for at least 1"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 21000.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "21,000",
+    "label_text": "installs",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "window instead of the 30 minutes\nRoadblocks this half alone generated more than 21,000 installs vs last half. \n\n-what is your goal CPA?"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "launches",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "session",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "30",
+    "label_text": "session",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "installs occurred. Of those who installed, 30K launched Disney+ for at least 1 30 minutes or more session.\nWe back that acquisition number into your TOTAL spend"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 12.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$12",
+    "label_text": "spend",
+    "qualifiers": {
+      "geo": "US",
+      "audience": "lapsed"
+    },
+    "confidence": 0.8200000000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "58:notes",
+      "snippet": "reporting I did want to call out that the CPA range per roadblock was about $7-$12 which is fabulous.\nWe also have TLAMP now which helps us get a bit closer to th"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 58,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "spend",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.473875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "58:3429",
+      "snippet": "aid Media + AVAcquired User = any user that installs and launches Disney+ for a +30 minute session. CPA based on roadblocks spend with AV acquisitions. AV ROS base"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 59,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 0.15,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.15%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "59:3440:r3c1",
+      "snippet": "0.15%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 59,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 82.36,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$82.36",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "59:3440:r6c1",
+      "snippet": "$82.36"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 59,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.71,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.71",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "59:3440:r7c1",
+      "snippet": "$0.71"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 59,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 0.1,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.10%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "59:3440:r4c1",
+      "snippet": "0.10%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 59,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 24.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "24%",
+    "label_text": "Launch",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "59:3440:r5c1",
+      "snippet": "24%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 59,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 180400.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$180.4K",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "59:3440:r1c1",
+      "snippet": "$180.4K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "Acquired User",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.8203750000000001,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3481",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u20192"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "acquisitions",
+    "metric_name": "Acquisitions",
+    "value": 15.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "15%",
+    "label_text": "Acquired Users",
+    "qualifiers": {},
+    "confidence": 0.425375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3483",
+      "snippet": "15%\nInstalls to Acquired Users Ratio"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 13.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$13",
+    "label_text": "CPA",
+    "qualifiers": {
+      "audience": "new_users"
+    },
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3469",
+      "snippet": "sition lines, acquiring 40K new users with a CPA more efficient vs last half by $13!"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "CPA",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.2884999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3481",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u20192"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 22.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "22%",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.45199999999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3485",
+      "snippet": "22%\nMore Efficient CPA vs Last Half"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "csrb_spend",
+    "metric_name": "Content Store Roadblock Spend",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "Content Store RB",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.17562499999999998,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3481",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u20192"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 143000000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "143M",
+    "label_text": "Impressions",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3477",
+      "snippet": "Impressions\n143M"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "installs",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.7885,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3481",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u20192"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 15.0,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "15%",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.43887499999999996,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3483",
+      "snippet": "15%\nInstalls to Acquired Users Ratio"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 263400.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "263.4K",
+    "label_text": "Installs",
+    "qualifiers": {},
+    "confidence": 0.9388749999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3478",
+      "snippet": "Installs\n263.4K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "launches",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.8031249999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3481",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u20192"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 61,
+    "metric_id": "sessions",
+    "metric_name": "Sessions",
+    "value": 30.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "+30",
+    "label_text": "session",
+    "qualifiers": {
+      "timeframe": "H"
+    },
+    "confidence": 0.8109999999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "61:3481",
+      "snippet": "Acquired User = any user that installs and launches Disney+ for a +30 minute session. Source: LG Ad Solutions TV Campaigns Data during Disney FY H2\u20192"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 62,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 40.74,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$40.74",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "62:3492:r3c1",
+      "snippet": "$40.74"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 62,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 0.21,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.21%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "62:3492:r2c1",
+      "snippet": "0.21%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 62,
+    "metric_id": "spend",
+    "metric_name": "Spend",
+    "value": 916300.0,
+    "unit": "currency",
+    "scale": "K",
+    "raw_value_text": "$916.3K",
+    "label_text": "Investment",
+    "qualifiers": {},
+    "confidence": 0.9099999999999999,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "62:3492:r1c1",
+      "snippet": "$916.3K"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 63,
+    "metric_id": "unique_reach",
+    "metric_name": "Unique Reach",
+    "value": 1300000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "1.3M",
+    "label_text": "reach",
+    "qualifiers": {},
+    "confidence": 0.948375,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "63:3509",
+      "snippet": "ey\u2019s Native ROS drove 24% incremental reach to the roadblock strategy, engaging 1.3M unique devices that weren\u2019t exposed to the roadblock."
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 66,
+    "metric_id": "click_through_rate",
+    "metric_name": "Click Through Rate",
+    "value": 0.16,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.16%",
+    "label_text": "CTR",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "66:3592:r1c1",
+      "snippet": "0.16%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 66,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 37.97,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$37.97",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 0.94,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "66:3592:r4c1",
+      "snippet": "$37.97"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 66,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 0.22,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "0.22%",
+    "label_text": "Install",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "66:3592:r3c1",
+      "snippet": "0.22%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 66,
+    "metric_id": "launches",
+    "metric_name": "Launches",
+    "value": 17.92,
+    "unit": "percent",
+    "scale": "ones",
+    "raw_value_text": "17.92%",
+    "label_text": "Launch",
+    "qualifiers": {},
+    "confidence": 0.41,
+    "extraction_method": "table_row_right",
+    "provenance": {
+      "source_type": "table_cell",
+      "shape_id_or_cell_id": "66:3592:r2c1",
+      "snippet": "17.92%"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 67,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 44.0,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$44",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "67:3615",
+      "snippet": "CPA: $44.34CPE: $0.39"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 67,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 65.66,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$65.66",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "67:3614",
+      "snippet": "CPA: $65.66\nCPE: $0.70"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 67,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 70.29,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$70.29",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "67:3613",
+      "snippet": "CPA: $70.29\nCPE: $0.62"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 67,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 78.11,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$78.11",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "67:3619",
+      "snippet": "CPA: $78.11\nCPE: $0.70"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 67,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.62,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.62",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "67:3613",
+      "snippet": "CPA: $70.29\nCPE: $0.62"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 67,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.7,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.70",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "67:3614",
+      "snippet": "CPA: $65.66\nCPE: $0.70"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 2.96,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$2.96",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3641",
+      "snippet": "CPA: $2.96\nCPE : $0.70"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 3.23,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$3.23",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3640",
+      "snippet": "CPA: $3.23\nCPE: $0.64"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 4.58,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$4.58",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3639",
+      "snippet": "CPA: $4.58\nCPE: $0.62"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_acquisition",
+    "metric_name": "Cost per Acquisition",
+    "value": 9.86,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$9.86",
+    "label_text": "CPA",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3654",
+      "snippet": "CPA: $9.86\nCPE: $6.72"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.62,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.62",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3639",
+      "snippet": "CPA: $4.58\nCPE: $0.62"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.64,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.64",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3640",
+      "snippet": "CPA: $3.23\nCPE: $0.64"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 0.7,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$0.70",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3641",
+      "snippet": "CPA: $2.96\nCPE : $0.70"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 68,
+    "metric_id": "cost_per_engagement",
+    "metric_name": "Cost per Engagement",
+    "value": 6.72,
+    "unit": "currency",
+    "scale": "ones",
+    "raw_value_text": "$6.72",
+    "label_text": "CPE",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "68:3654",
+      "snippet": "CPA: $9.86\nCPE: $6.72"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "cost_per_install",
+    "metric_name": "Cost per Install",
+    "value": 84.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "84",
+    "label_text": "CPI",
+    "qualifiers": {},
+    "confidence": 0.54325,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "ns to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI.\n\n-"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "impressions",
+    "metric_name": "Impressions",
+    "value": 3200000.0,
+    "unit": "count",
+    "scale": "M",
+    "raw_value_text": "3.2M",
+    "label_text": "impressions",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "did drive stronger incremental lift. \n\nOverall, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and gen"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "install_lift",
+    "metric_name": "Install Lift",
+    "value": 9.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "9",
+    "label_text": "install lift",
+    "qualifiers": {},
+    "confidence": 0.4775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9 \n\n-This data shows install lift for each March roadblock. \n-The 3/16 roadblock"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "install_rate",
+    "metric_name": "Install Rate",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "install rate",
+    "qualifiers": {},
+    "confidence": 0.50875,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "ed triple digit lifts! \n- The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift. \n\nOverall, these two roadbl"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 12.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "12",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "ed triple digit lifts! \n- The 3/16 roadblock had a higher install rate, but the 12 hour roadblock did drive stronger incremental lift. \n\nOverall, these two roadbl"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 21.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "21",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 0.9922499999999999,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "slide_text",
+      "shape_id_or_cell_id": "69:3661",
+      "snippet": "Even with static creatives, Halloween roadblocks (9/16 + 9/21) yielded top incremental install growth, whereas video-enabled saw strongest in"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 50000.0,
+    "unit": "count",
+    "scale": "K",
+    "raw_value_text": "50K",
+    "label_text": "installs",
+    "qualifiers": {},
+    "confidence": 1.0,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "all, these two roadblocks delivered 3.2M impressions to Not Installed, achieved 50K installs from not installed, and generated an 84 cent CPI.\n\n-"
+    }
+  },
+  {
+    "deck_id": "Disney+ US FY24 H2",
+    "slide_index": 69,
+    "metric_id": "installs",
+    "metric_name": "Installs",
+    "value": 9.0,
+    "unit": "count",
+    "scale": "ones",
+    "raw_value_text": "9",
+    "label_text": "install",
+    "qualifiers": {},
+    "confidence": 0.9775,
+    "extraction_method": "same_block",
+    "provenance": {
+      "source_type": "speaker_notes",
+      "shape_id_or_cell_id": "69:notes",
+      "snippet": "build Disney+ benchmarks since we only got the TLAMP consent letter signed on 2/9 \n\n-This data shows install lift for each March roadblock. \n-The 3/16 roadblock"
+    }
+  }
+]

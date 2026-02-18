@@ -1,0 +1,24 @@
+{
+  "instances_scanned": 1560,
+  "unique_metric_names": 321,
+  "catalog_mapped_unique": 43,
+  "unresolved_unique_names": 333,
+  "clusters_total": 250,
+  "clusters_with_unit_conflict": 42,
+  "cluster_unit_conflict_ratio": 0.168,
+  "auto_cluster_rows": 94,
+  "avg_similarity_auto_cluster_rows": 0.9999,
+  "clustering_quality": "good",
+  "normalization_status_counts": {
+    "cluster_review": 648,
+    "cluster_auto": 94,
+    "catalog_mapped": 677,
+    "needs_review": 141
+  },
+  "validation_status_counts": {
+    "warn": 956,
+    "pass": 567,
+    "fail": 37
+  },
+  "output_csv": "artifacts/_smoke_after_delete_stage4.csv"
+}

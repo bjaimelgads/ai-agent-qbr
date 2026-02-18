@@ -1,0 +1,273 @@
+from __future__ import annotations
+
+import asyncio
+import os
+from dataclasses import dataclass
+
+import pytest
+from fastapi.testclient import TestClient
+from penguiflow.planner import PlannerFinish
+from sqlalchemy import JSON, Column, Float, Integer, MetaData, String, Table, Text, text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+from ai_agent_qbr.api.app import create_app
+from ai_agent_qbr.config import Config
+from ai_agent_qbr.infrastructure.memory_store import InMemoryMemoryStore
+from ai_agent_qbr.models import Query
+from ai_agent_qbr.orchestrator import AiAgentQbrOrchestrator
+from ai_agent_qbr.tools.analyze import analyze_results
+from ai_agent_qbr.tools.search import search_documents
+from ai_agent_qbr.transport.websocket.schemas import (
+    OutputError,
+    OutputFinal,
+    OutputPing,
+    OutputPong,
+    OutputReady,
+    OutputThinking,
+    OutputUserMessage,
+)
+from qbr_agent.application.ports import Reranker
+from qbr_agent.infrastructure.embeddings import HashEmbeddingsProvider
+from qbr_agent.infrastructure.factory import InfrastructureBundle
+from qbr_agent.infrastructure.sqlalchemy_repository import SqlAlchemyKnowledgeRepository
+from qbr_agent.infrastructure.vector_index import SqliteEmbeddingVectorIndex
+
+
+class ToolRunnerPlanner:
+    def __init__(self) -> None:
+        self.last_llm_context = None
+
+    async def run(self, *, query, llm_context, tool_context):
+        self.last_llm_context = llm_context
+        ctx = type("ToolContext", (), {"tool_context": tool_context})
+        search_results = await search_documents(Query(question=query), ctx)
+        analysis = await analyze_results(search_results, ctx)
+        return PlannerFinish(
+            reason="answer_complete",
+            payload={"raw_answer": analysis.text},
+            metadata={},
+        )
+
+
+@dataclass
+class DebugReranker(Reranker):
+    calls: int = 0
+
+    async def score(self, *, query: str, chunks) -> list[float]:
+        self.calls += 1
+        needle = query.lower()
+        scores = []
+        for chunk in chunks:
+            text = chunk.content.lower()
+            score = 0.0
+            if "h1" in text:
+                score += 2.0
+            if "h2" in text:
+                score += 2.0
+            if "added value" in text:
+                score += 1.0
+            if "difference" in needle or "difference" in text:
+                score += 0.5
+            scores.append(score)
+        return scores
+
+
+def _setup_db(db_url: str) -> None:
+    async def _run():
+        engine = create_async_engine(db_url)
+        metadata = MetaData()
+        Table(
+            "clients",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("name", String(255), unique=True),
+        )
+        Table(
+            "documents",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("filename", String(255)),
+            Column("client_id", Integer),
+            Column("period", String(100)),
+            Column("status", String(50)),
+            Column("executive_summary", Text),
+        )
+        Table(
+            "chunks",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("document_id", Integer),
+            Column("content", Text),
+            Column("start_slide", Integer),
+            Column("end_slide", Integer),
+            Column("summary", Text),
+            Column("topics", JSON),
+            Column("importance_score", Float),
+            Column("embedding", JSON),
+            Column("embedding_model", String(100)),
+        )
+        Table(
+            "slides",
+            metadata,
+            Column("id", Integer, primary_key=True),
+            Column("document_id", Integer),
+            Column("slide_number", Integer),
+            Column("title", Text),
+            Column("key_message", Text),
+            Column("slide_type", String(100)),
+            Column("insights", Text),
+            Column("action_items", Text),
+        )
+
+        async with engine.begin() as conn:
+            await conn.run_sync(metadata.create_all)
+            try:
+                await conn.execute(
+                    text(
+                        "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts "
+                        "USING fts5(content, content='chunks', content_rowid='id')"
+                    )
+                )
+            except Exception:
+                pass
+
+            provider = HashEmbeddingsProvider()
+            chunks = [
+                (1, 1, "H1 added value increased by 12% vs baseline.", 2),
+                (2, 1, "H1 vs H2 difference highlights stronger H1 lift.", 3),
+                (3, 2, "H2 added value was flat with softer incremental gains.", 5),
+                (4, 2, "H2 underperformed H1 on added value by 3%.", 6),
+            ]
+
+            await conn.execute(
+                metadata.tables["clients"].insert().values(
+                    id=1,
+                    name="Acme",
+                )
+            )
+            await conn.execute(
+                metadata.tables["documents"].insert().values(
+                    id=1,
+                    filename="qbr_h1.pptx",
+                    client_id=1,
+                    period="H1",
+                    status="enhanced",
+                    executive_summary="H1 summary",
+                )
+            )
+            await conn.execute(
+                metadata.tables["documents"].insert().values(
+                    id=2,
+                    filename="qbr_h2.pptx",
+                    client_id=1,
+                    period="H2",
+                    status="enhanced",
+                    executive_summary="H2 summary",
+                )
+            )
+
+            for chunk_id, doc_id, content, slide in chunks:
+                embedding = await provider.embed_query(content)
+                await conn.execute(
+                    metadata.tables["chunks"].insert().values(
+                        id=chunk_id,
+                        document_id=doc_id,
+                        content=content,
+                        start_slide=slide,
+                        end_slide=slide,
+                        summary=None,
+                        topics=None,
+                        importance_score=None,
+                        embedding=list(embedding.vector.values),
+                        embedding_model=embedding.model,
+                    )
+                )
+            try:
+                await conn.execute(text("INSERT INTO chunks_fts(chunks_fts) VALUES('rebuild')"))
+            except Exception:
+                pass
+
+        await engine.dispose()
+
+    asyncio.run(_run())
+
+
+def _validate_payload(payload: dict) -> None:
+    for model in (
+        OutputReady,
+        OutputThinking,
+        OutputUserMessage,
+        OutputFinal,
+        OutputError,
+        OutputPing,
+        OutputPong,
+    ):
+        try:
+            model.model_validate(payload)
+            return
+        except Exception:
+            continue
+    raise AssertionError(f"Unrecognized payload: {payload}")
+
+
+@pytest.mark.skipif(os.getenv("RUN_E2E") != "1", reason="Set RUN_E2E=1 to run legacy WebSocket e2e test.")
+def test_legacy_websocket_contract_and_rerank(tmp_path):
+    db_url = f"sqlite+aiosqlite:///{tmp_path / 'qbr_legacy_e2e.db'}"
+    _setup_db(db_url)
+
+    use_stub_llm = os.getenv("USE_STUB_LLM", "true").lower() in {"1", "true", "yes", "on"}
+    config = Config(
+        output_protocol="legacy",
+        use_stub_llm=use_stub_llm,
+        database_url=db_url,
+        embeddings_backend="hash",
+        embeddings_model="ignored",
+        storage_backend="sqlite",
+        vector_backend="sqlite_embeddings",
+        retrieval_top_k=3,
+        rerank_top_n=4,
+        retrieval_max_chunks_per_doc=1,
+    )
+
+    reranker = DebugReranker()
+    planner = ToolRunnerPlanner()
+
+    def orchestrator_factory(telemetry):
+        engine = create_async_engine(db_url)
+        sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
+        repository = SqlAlchemyKnowledgeRepository(sessionmaker=sessionmaker)
+        vector_index = SqliteEmbeddingVectorIndex(repository=repository)
+        infra = InfrastructureBundle(
+            repository=repository,
+            vector_index=vector_index,
+            embeddings=HashEmbeddingsProvider(),
+            reranker=reranker,
+        )
+        return AiAgentQbrOrchestrator(
+            config,
+            telemetry=telemetry,
+            planner=planner,
+            memory_store=InMemoryMemoryStore(max_turns=3, retrieval_turns=3),
+            infrastructure=infra,
+        )
+
+    app = create_app(config=config, orchestrator_factory=orchestrator_factory)
+
+    messages = []
+    with TestClient(app) as client:
+        with client.websocket_connect("/ws/chat/test-session") as ws:
+            ws.send_json(
+                {"message": "Hi, can you show me difference in added value regarding h1 and h2"}
+            )
+            for _ in range(40):
+                payload = ws.receive_json()
+                _validate_payload(payload)
+                messages.append(payload)
+                if payload.get("status") in {"final", "error"}:
+                    break
+
+    assert any(msg.get("status") == "ready" for msg in messages)
+    assert any(msg.get("status") == "thinking" for msg in messages)
+    assert any(msg.get("status") == "user_message" for msg in messages)
+    assert any(msg.get("status") == "final" for msg in messages)
+    assert reranker.calls > 0
