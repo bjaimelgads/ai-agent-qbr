@@ -9,7 +9,7 @@ description = "PenguiFlow react template for ai-agent-qbr."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "penguiflow[planner]>=2.11.2",
+    "penguiflow[planner]>=2.11.6",
     "dspy>=3.1",
     "databricks-sdk>=0.57.0",
     "fastapi>=0.115.2",

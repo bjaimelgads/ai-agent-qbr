@@ -83,3 +83,7 @@ data/faiss/index.faiss
 data/faiss/index_ids.json
 artifacts/local_run_*.json
 qbr_intelligence.db.bak*
+
+
+#Databrifcks
+.databrickscfg

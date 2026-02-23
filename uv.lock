@@ -93,7 +93,7 @@ requires-dist = [
     { name = "mlflow", marker = "extra == 'observability'", specifier = ">=2.13.0" },
     { name = "numpy", marker = "extra == 'retrieval'", specifier = ">=1.26.0" },
     { name = "onnxruntime", marker = "extra == 'extraction'", specifier = ">=1.22.0" },
-    { name = "penguiflow", extras = ["planner"], specifier = ">=2.11.2" },
+    { name = "penguiflow", extras = ["planner"], specifier = ">=2.11.6" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.1" },
     { name = "pydantic", specifier = ">=2.6" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4" },
@@ -3216,7 +3216,7 @@ wheels = [
 
 [[package]]
 name = "penguiflow"
-version = "2.11.2"
+version = "2.11.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -3226,9 +3226,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/8c/12b51b43b78dfe54341b6844d4b3ce0b764b2588ee022b12ba2e18d0b17e/penguiflow-2.11.2.tar.gz", hash = "sha256:4f124323eb68b5581e30459c2be83a3f2fb2aed15365db47be50a248b2ae01ca", size = 4351402, upload-time = "2026-01-22T00:51:21.585Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3a/a6/56a9fd80e258a026478674227d2eb671535d347d2ec738eb064da55108fc/penguiflow-2.11.6.tar.gz", hash = "sha256:686c66edacfd7eb7df1d96ed8a9084369bdc3be6d2ebc2be48bc2bb68f858dd9", size = 4469397, upload-time = "2026-02-18T22:17:08.241Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/45/cbb1258dd8a7afd7d7bf82673f56d668aa22db8b7f8ae983807b8a2b74a3/penguiflow-2.11.2-py3-none-any.whl", hash = "sha256:9fd46e2cf759d096884efe105a5091d50c566c49af8d4f4aba35210af62069bf", size = 4382974, upload-time = "2026-01-22T00:51:19.616Z" },
+    { url = "https://files.pythonhosted.org/packages/91/7d/a2d81026214ef595a2ad1733370a735584f402472901f0ef65bc8567276e/penguiflow-2.11.6-py3-none-any.whl", hash = "sha256:faaaf823eef0e56c48db0f87b48f89fbb69adbbc900daca7343b7324b8180c08", size = 4500284, upload-time = "2026-02-18T22:17:05.774Z" },
 ]
 
 [package.optional-dependencies]
