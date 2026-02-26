@@ -25,6 +25,15 @@ def _parse_args() -> argparse.Namespace:
         default="",
         help="Optional Lakebase instance name override (e.g. dev-qbr)",
     )
+    parser.add_argument(
+        "--auth-mode",
+        choices=("auto", "pat", "oauth"),
+        default="auto",
+        help=(
+            "Auth mode for Databricks SDK. "
+            "'auto' prefers OAuth client credentials when configured, otherwise PAT."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -113,18 +122,50 @@ def main() -> int:
         os.getenv("QBR_LAKEBASE_DATABRICKS_HOST", "")
         or os.getenv("DATABRICKS_HOST", "")
     )
-    token = (
+    pat_token = (
         os.getenv("DATABRICKS_API_KEY", "")
         or os.getenv("DATABRICKS_TOKEN", "")
         or os.getenv("QBR_LAKEBASE_TOKEN", "")
     ).strip()
-    if not host or not token:
+    client_id = (os.getenv("DATABRICKS_CLIENT_ID", "") or "").strip()
+    client_secret = (os.getenv("DATABRICKS_CLIENT_SECRET", "") or "").strip()
+    if not host:
         raise SystemExit(
-            "Missing Databricks auth. Require DATABRICKS_HOST/QBR_LAKEBASE_DATABRICKS_HOST "
-            "and DATABRICKS_API_KEY (or DATABRICKS_TOKEN/QBR_LAKEBASE_TOKEN)."
+            "Missing Databricks host. Set DATABRICKS_HOST or QBR_LAKEBASE_DATABRICKS_HOST."
         )
 
-    client = WorkspaceClient(host=host, token=token, auth_type="pat")
+    if args.auth_mode == "pat":
+        if not pat_token:
+            raise SystemExit(
+                "Missing PAT token. Set DATABRICKS_API_KEY (or DATABRICKS_TOKEN/QBR_LAKEBASE_TOKEN)."
+            )
+        client = WorkspaceClient(host=host, token=pat_token, auth_type="pat")
+    elif args.auth_mode == "oauth":
+        if not client_id or not client_secret:
+            raise SystemExit(
+                "Missing OAuth credentials. Set DATABRICKS_CLIENT_ID and DATABRICKS_CLIENT_SECRET."
+            )
+        client = WorkspaceClient(
+            host=host,
+            client_id=client_id,
+            client_secret=client_secret,
+        )
+    else:
+        # Auto mode: prefer OAuth client credentials if available, fallback to PAT.
+        if client_id and client_secret:
+            client = WorkspaceClient(
+                host=host,
+                client_id=client_id,
+                client_secret=client_secret,
+            )
+        elif pat_token:
+            client = WorkspaceClient(host=host, token=pat_token, auth_type="pat")
+        else:
+            raise SystemExit(
+                "Missing Databricks auth. Provide either DATABRICKS_CLIENT_ID + "
+                "DATABRICKS_CLIENT_SECRET, or DATABRICKS_API_KEY "
+                "(or DATABRICKS_TOKEN/QBR_LAKEBASE_TOKEN)."
+            )
     configured_instance = (args.instance_name or os.getenv("QBR_LAKEBASE_DB_INSTANCE", "")).strip()
     migration_target_host = os.getenv("MIGRATION_TARGET_HOST", "")
     instance_name = _resolve_instance_name(

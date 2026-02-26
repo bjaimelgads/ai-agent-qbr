@@ -31,7 +31,9 @@ import argparse
 import asyncio
 import json
 import os
+import shutil
 import subprocess
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -387,6 +389,31 @@ def _parse_slide_range(raw: str) -> tuple[int, int]:
     return (start, end)
 
 
+def _sqlite_path_from_url(database_url: str) -> Path | None:
+    prefixes = ("sqlite+aiosqlite:///", "sqlite:///")
+    for prefix in prefixes:
+        if database_url.startswith(prefix):
+            raw_path = database_url[len(prefix) :]
+            return Path(raw_path)
+    return None
+
+
+def _prepare_dry_run_database(database_url: str) -> tuple[str, Path]:
+    source_path = _sqlite_path_from_url(database_url)
+    if source_path is None:
+        raise ValueError(
+            "--dry-run currently supports only sqlite URLs "
+            "(e.g., sqlite+aiosqlite:///qbr_intelligence.db)."
+        )
+
+    temp_dir = Path(tempfile.mkdtemp(prefix="qbr_extraction_dry_run_"))
+    temp_db_path = temp_dir / source_path.name
+    if source_path.exists():
+        shutil.copy2(source_path, temp_db_path)
+    effective_url = f"sqlite+aiosqlite:///{temp_db_path}"
+    return effective_url, temp_dir
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="QBR Extraction Pipeline - Process and query QBR documents"
@@ -492,54 +519,101 @@ def main():
         action="store_true",
         help="Skip post-run rebuild of metric_fact_embeddings/metric FAISS index",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "Run processing against a temporary sqlite database copy and discard it at "
+            "the end (does not modify the original sqlite DB)"
+        ),
+    )
 
     args = parser.parse_args()
 
     async def run():
+        effective_db = args.db
+        dry_run_temp_dir: Path | None = None
+        if args.dry_run:
+            effective_db, dry_run_temp_dir = _prepare_dry_run_database(args.db)
+            print(
+                "\n[dry-run] Using isolated temporary database. "
+                f"Source DB will not be modified: {args.db}"
+            )
+            print(f"[dry-run] Temporary DB URL: {effective_db}")
+
         doc_id = args.document_id
         processed_any = False
 
-        if args.file and args.folder:
-            raise ValueError("Use either a single file or --folder, not both.")
-        if args.slide_range and args.max_slides:
-            raise ValueError("Use either --slide-range or --max-slides, not both.")
-        run_llm_metrics = args.llm_metrics
-        run_llm_enhancement = args.llm_enhancement
-        run_llm_summary = args.llm_summary
-        run_llm_adjudicator = args.llm_adjudicator
-        if args.llm:
-            run_llm_metrics = True
-            run_llm_enhancement = True
-            run_llm_summary = True
-            run_llm_adjudicator = True
-        if args.no_llm:
-            run_llm_metrics = False
-            run_llm_enhancement = False
-            run_llm_summary = False
-            run_llm_adjudicator = False
-        slide_range = _parse_slide_range(args.slide_range) if args.slide_range else None
-        max_slides = args.max_slides
-        if max_slides is not None and max_slides <= 0:
-            raise ValueError("--max-slides must be a positive integer.")
+        try:
+            if args.file and args.folder:
+                raise ValueError("Use either a single file or --folder, not both.")
+            if args.slide_range and args.max_slides:
+                raise ValueError("Use either --slide-range or --max-slides, not both.")
+            run_llm_metrics = args.llm_metrics
+            run_llm_enhancement = args.llm_enhancement
+            run_llm_summary = args.llm_summary
+            run_llm_adjudicator = args.llm_adjudicator
+            if args.llm:
+                run_llm_metrics = True
+                run_llm_enhancement = True
+                run_llm_summary = True
+                run_llm_adjudicator = True
+            if args.no_llm:
+                run_llm_metrics = False
+                run_llm_enhancement = False
+                run_llm_summary = False
+                run_llm_adjudicator = False
+            slide_range = _parse_slide_range(args.slide_range) if args.slide_range else None
+            max_slides = args.max_slides
+            if max_slides is not None and max_slides <= 0:
+                raise ValueError("--max-slides must be a positive integer.")
 
-        # Process document if provided
-        if args.folder and not args.query_only:
-            folder = Path(args.folder)
-            if not folder.is_absolute() and not folder.exists():
-                candidate = Path(__file__).resolve().parent / folder
-                if candidate.exists():
-                    folder = candidate
-            if not folder.exists():
-                raise ValueError(f"Folder not found: {folder}")
-            if not folder.is_dir():
-                raise ValueError(f"Not a folder: {folder}")
-            pptx_files = sorted(folder.glob("*.pptx"))
-            if not pptx_files:
-                print(f"No PPTX files found in {folder}")
-            for pptx_path in pptx_files:
+            # Process document if provided
+            if args.folder and not args.query_only:
+                folder = Path(args.folder)
+                if not folder.is_absolute() and not folder.exists():
+                    candidate = Path(__file__).resolve().parent / folder
+                    if candidate.exists():
+                        folder = candidate
+                if not folder.exists():
+                    raise ValueError(f"Folder not found: {folder}")
+                if not folder.is_dir():
+                    raise ValueError(f"Not a folder: {folder}")
+                pptx_files = sorted(folder.glob("*.pptx"))
+                if not pptx_files:
+                    print(f"No PPTX files found in {folder}")
+                for pptx_path in pptx_files:
+                    doc_id = await process_document(
+                        file_path=str(pptx_path),
+                        database_url=effective_db,
+                        run_llm_metrics=run_llm_metrics,
+                        run_llm_enhancement=run_llm_enhancement,
+                        run_llm_summary=run_llm_summary,
+                        run_llm_adjudicator=run_llm_adjudicator,
+                        export_outputs=args.export_extraction,
+                        output_dir=args.extraction_output_dir,
+                        override_existing=args.override,
+                        slide_range=slide_range,
+                        max_slides=max_slides,
+                    )
+                    processed_any = True
+                    if not args.skip_backfill_slide_titles and doc_id:
+                        stats = backfill_slide_titles_for_document(
+                            database_url=effective_db,
+                            document_id=doc_id,
+                            pptx_path=str(pptx_path),
+                            overwrite=args.backfill_slide_titles_overwrite,
+                        )
+                        print(
+                            "      Slide title backfill: "
+                            f"updated={stats.updated}, skipped_existing={stats.skipped_existing}, "
+                            f"skipped_empty={stats.skipped_empty}, skipped_same={stats.skipped_same}, "
+                            f"source={'pptx' if stats.source_pptx_used else 'raw_text'}"
+                        )
+            elif args.file and not args.query_only:
                 doc_id = await process_document(
-                    file_path=str(pptx_path),
-                    database_url=args.db,
+                    file_path=args.file,
+                    database_url=effective_db,
                     run_llm_metrics=run_llm_metrics,
                     run_llm_enhancement=run_llm_enhancement,
                     run_llm_summary=run_llm_summary,
@@ -553,9 +627,9 @@ def main():
                 processed_any = True
                 if not args.skip_backfill_slide_titles and doc_id:
                     stats = backfill_slide_titles_for_document(
-                        database_url=args.db,
+                        database_url=effective_db,
                         document_id=doc_id,
-                        pptx_path=str(pptx_path),
+                        pptx_path=args.file,
                         overwrite=args.backfill_slide_titles_overwrite,
                     )
                     print(
@@ -564,48 +638,24 @@ def main():
                         f"skipped_empty={stats.skipped_empty}, skipped_same={stats.skipped_same}, "
                         f"source={'pptx' if stats.source_pptx_used else 'raw_text'}"
                     )
-        elif args.file and not args.query_only:
-            doc_id = await process_document(
-                file_path=args.file,
-                database_url=args.db,
-                run_llm_metrics=run_llm_metrics,
-                run_llm_enhancement=run_llm_enhancement,
-                run_llm_summary=run_llm_summary,
-                run_llm_adjudicator=run_llm_adjudicator,
-                export_outputs=args.export_extraction,
-                output_dir=args.extraction_output_dir,
-                override_existing=args.override,
-                slide_range=slide_range,
-                max_slides=max_slides,
-            )
-            processed_any = True
-            if not args.skip_backfill_slide_titles and doc_id:
-                stats = backfill_slide_titles_for_document(
-                    database_url=args.db,
-                    document_id=doc_id,
-                    pptx_path=args.file,
-                    overwrite=args.backfill_slide_titles_overwrite,
-                )
-                print(
-                    "      Slide title backfill: "
-                    f"updated={stats.updated}, skipped_existing={stats.skipped_existing}, "
-                    f"skipped_empty={stats.skipped_empty}, skipped_same={stats.skipped_same}, "
-                    f"source={'pptx' if stats.source_pptx_used else 'raw_text'}"
-                )
 
-        if (
-            processed_any
-            and not args.query_only
-            and not args.skip_metric_fact_embeddings
-        ):
-            _rebuild_metric_fact_embeddings(args.db)
+            if (
+                processed_any
+                and not args.query_only
+                and not args.skip_metric_fact_embeddings
+            ):
+                _rebuild_metric_fact_embeddings(effective_db)
 
-        # Run query demo
-        await query_demo(args.db, doc_id)
+            # Run query demo
+            await query_demo(effective_db, doc_id)
 
-        # Export if requested
-        if args.export and doc_id:
-            await export_data(args.db, doc_id, args.export)
+            # Export if requested
+            if args.export and doc_id:
+                await export_data(effective_db, doc_id, args.export)
+        finally:
+            if dry_run_temp_dir is not None:
+                shutil.rmtree(dry_run_temp_dir, ignore_errors=True)
+                print(f"[dry-run] Removed temporary database directory: {dry_run_temp_dir}")
 
     asyncio.run(run())
 
