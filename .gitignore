@@ -83,3 +83,4 @@ data/faiss/index.faiss
 data/faiss/index_ids.json
 artifacts/local_run_*.json
 qbr_intelligence.db.bak*
+qbr_intelligence.db
